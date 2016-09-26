@@ -1,0 +1,152 @@
+{
+  "entities": [
+    {
+      "type": 0,
+      "secondaryType": 0,
+      "density": 1,
+      "friction": 0.5,
+      "restitution": 0.2,
+      "width": 6.86,
+      "height": 6,
+      "speed": 150,
+      "health": 200,
+      "mass": 5000,
+      "weaponPosition": [
+        {
+          "bulletType": 0,
+          "x": 1.8,
+          "y": 2
+        },
+        {
+          "bulletType": 0,
+          "x": -1.8,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "type": 0,
+      "secondaryType": 1,
+      "density": 1,
+      "friction": 0.5,
+      "restitution": 0.2,
+      "width": 7.25,
+      "height": 6,
+      "speed": 150,
+      "health": 200,
+      "mass": 5000,
+      "weaponPosition": [
+        {
+          "bulletType": 0,
+          "x": 1.8,
+          "y": 2
+        },
+        {
+          "bulletType": 0,
+          "x": -1.8,
+          "y": 2
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "secondaryType": 0,
+      "density": 5,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 75,
+      "mass": 6500000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 1,
+      "secondaryType": 1,
+      "density": 2,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 85,
+      "mass": 70000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 1,
+      "secondaryType": 2,
+      "density": 4,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 60,
+      "mass": 4000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 1,
+      "secondaryType": 3,
+      "density": 5,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 65,
+      "mass": 6000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 1,
+      "secondaryType": 4,
+      "density": 4,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 55,
+      "mass": 3000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 2,
+      "secondaryType": 0,
+      "density": 3,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 15,
+      "mass": 1500000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 2,
+      "secondaryType": 1,
+      "density": 3.5,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 20,
+      "mass": 2000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 2,
+      "secondaryType": 2,
+      "density": 3,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 18,
+      "mass": 1800000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 2,
+      "secondaryType": 3,
+      "density": 2,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 10,
+      "mass": 1000000,
+      "angularVelocity": 0.05
+    },
+    {
+      "type": 2,
+      "secondaryType": 4,
+      "density": 4,
+      "friction": 1,
+      "restitution": 0.1,
+      "radius": 25,
+      "mass": 2500000,
+      "angularVelocity": 0.05
+    }
+  ]
+}
