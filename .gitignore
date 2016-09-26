@@ -63,5 +63,4 @@ build/
 ## OS Specific
 .DS_Store
 
-## Raw Assets
-rawAssets/*
+## We will need Raw Assets, :P
