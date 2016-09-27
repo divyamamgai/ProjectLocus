@@ -33,7 +33,7 @@ public class BulletLoader implements Disposable {
         float width, halfWidth, height, halfHeight, speed;
         Vector2 bodyOrigin;
         int life;
-        public int damage;
+        public float damage;
 
         Definition(Bullet.Type type, JsonValue bulletJson) {
             this.type = type;
@@ -45,20 +45,19 @@ public class BulletLoader implements Disposable {
             fixtureDef.isSensor = false;
             fixtureDef.friction = 0f;
             fixtureDef.restitution = 0f;
-            // Bullets do not collide with each other.
             fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_BULLET;
             fixtureDef.filter.maskBits = CollisionDetector.MASK_BULLET;
             texture = new Texture("sprites/bullets/" + typeString + ".png");
             fixtureDef.density = bulletJson.getFloat("density");
             width = bulletJson.getFloat("width");
             halfWidth = width / 2f;
-            bodyOrigin = physicsLoader.getOrigin(typeString, width);
+            bodyOrigin = physicsLoader.getOrigin(typeString, width).cpy();
             height = bulletJson.getFloat("height");
             halfHeight = height / 2f;
             speed = bulletJson.getFloat("speed");
             // Set the life of the Bullets till they can travel across the World.
             life = (int) Math.ceil(Main.WORLD_DIAGONAL / speed);
-            damage = bulletJson.getInt("damage");
+            damage = bulletJson.getFloat("damage");
         }
 
         void attachFixture(Body body) {

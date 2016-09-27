@@ -9,6 +9,8 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,10 +126,17 @@ public class BodyEditorLoader {
      * copy it if you need it for later use.
      */
     public Vector2 getOrigin(String name, float scale) {
+
         RigidBodyModel rbModel = model.rigidBodies.get(name);
         if (rbModel == null) throw new RuntimeException("Name '" + name + "' was not found.");
 
-        return vec.set(rbModel.origin).scl(scale);
+        // Changes done by - Divya Mamgai
+        // Slight modification to be done to reduce the precession of the positions which are
+        // causing some weird bug in the game like Ship's actual position not matching up with
+        // that of the Box2D body.;
+        vec.set(rbModel.origin).scl(scale);
+        vec.set(Math.round(vec.x * 100f) / 100f, Math.round(vec.y * 100f) / 100f);
+        return vec;
     }
 
 //    /**

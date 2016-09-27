@@ -37,11 +37,10 @@ public class EntityLoader implements Disposable {
         BodyDef bodyDef;
         FixtureDef fixtureDef;
         Texture texture;
-        float width, halfWidth, height, halfHeight;
+        float width, halfWidth, height, halfHeight, radius, mass, gravitationalMass,
+                health, orbitalVelocity;
         Vector2 bodyOrigin;
-        int health;
         HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
-        float radius, mass, gravitationalMass;
         CircleShape circleShape;
 
         Definition(Entity.Type type, int secondaryType, JsonValue entityJson) {
@@ -84,37 +83,33 @@ public class EntityLoader implements Disposable {
                     width = entityJson.getFloat("width");
                     height = entityJson.getFloat("height");
 
-                    health = entityJson.getInt("health");
+                    health = entityJson.getFloat("health");
 
-                    bodyOrigin = physicsLoader.getOrigin(path, width);
+                    bodyOrigin = physicsLoader.getOrigin(path, width).cpy();
 
                     break;
                 case Planet:
+                case Moon:
 
                     bodyDef.type = BodyDef.BodyType.KinematicBody;
                     bodyDef.angularVelocity = entityJson.getFloat("angularVelocity");
 
                     radius = entityJson.getFloat("radius");
 
-                    fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
-                    fixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
-                    circleShape = new CircleShape();
-                    circleShape.setRadius(radius);
-                    fixtureDef.shape = circleShape;
+                    if (type == Entity.Type.Planet) {
 
-                    width = height = radius * 2;
+                        fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
+                        fixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
 
-                    bodyOrigin = new Vector2(radius, radius);
+                    } else {
 
-                    break;
-                case Moon:
+                        fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_MOON;
+                        fixtureDef.filter.maskBits = CollisionDetector.MASK_MOON;
 
-                    bodyDef.type = BodyDef.BodyType.DynamicBody;
+                        orbitalVelocity = entityJson.getFloat("orbitalVelocity");
 
-                    radius = entityJson.getFloat("radius");
+                    }
 
-                    fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
-                    fixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
                     circleShape = new CircleShape();
                     circleShape.setRadius(radius);
                     fixtureDef.shape = circleShape;
@@ -134,7 +129,7 @@ public class EntityLoader implements Disposable {
                     width = entityJson.getFloat("width");
                     height = entityJson.getFloat("height");
 
-                    health = entityJson.getInt("health");
+                    health = entityJson.getFloat("health");
 
                     bodyOrigin = physicsLoader.getOrigin(path, width);
 
@@ -152,7 +147,9 @@ public class EntityLoader implements Disposable {
         void attachFixture(Body body) {
             switch (type) {
                 case Planet:
+                case Moon:
                     body.createFixture(fixtureDef);
+                    circleShape.dispose();
                     break;
                 default:
                     physicsLoader.attachFixture(body, path, fixtureDef, width);
@@ -188,7 +185,7 @@ public class EntityLoader implements Disposable {
         }
     }
 
-    Definition get(Entity.Type type, int secondaryType) {
+    public Definition get(Entity.Type type, int secondaryType) {
         return definitionMap.get(type).get(secondaryType);
     }
 

@@ -27,7 +27,7 @@ public abstract class Entity extends Sprite {
     PlayScreen playScreen;
     public Body body;
     public EntityLoader.Definition definition;
-    public int health;
+    public float health;
     boolean isAlive = true;
 
     // Enable the constructors as per the needs.
@@ -59,6 +59,8 @@ public abstract class Entity extends Sprite {
 //    public Entity(Sprite sprite) {
 //        super(sprite);
 //    }
+
+    public abstract void drawHealth();
 
     public abstract void update();
 

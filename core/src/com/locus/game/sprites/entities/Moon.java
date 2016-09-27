@@ -5,22 +5,23 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.locus.game.Main;
 import com.locus.game.screens.PlayScreen;
 
 /**
- * Created by Divya Mamgai on 9/23/2016.
- * Planet
+ * Created by Divya Mamgai on 9/27/2016.
+ * Moon
  */
 
-public class Planet extends Entity {
+public class Moon extends Entity {
 
     public enum Type {
 
-        Desert,
-        Gas,
-        Rock,
-        Ice,
-        Volcano;
+        Rust,
+        Iron,
+        WhiteIce,
+        DarkIce,
+        Organic;
 
         public String toString() {
             return String.valueOf(ordinal());
@@ -29,12 +30,14 @@ public class Planet extends Entity {
     }
 
     private Circle gravityCircle;
+    private Vector2 planetPosition, orbitalVelocity;
 
-    public Planet(PlayScreen playScreen, Planet.Type type, float x, float y) {
+    public Moon(PlayScreen playScreen, Moon.Type type, float planetX, float planetY,
+                float orbitRadius, float orbitalAngle) {
 
         this.playScreen = playScreen;
 
-        definition = playScreen.entityLoader.get(Entity.Type.Planet, type.ordinal());
+        definition = playScreen.entityLoader.get(Entity.Type.Moon, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
@@ -42,18 +45,19 @@ public class Planet extends Entity {
 
         body = playScreen.gameWorld.createBody(definition.bodyDef);
 
-        body.setTransform(x, y, 0);
+        Vector2 moonPosition = (new Vector2(orbitRadius, 0)).rotate(orbitalAngle)
+                .add(planetX, planetY);
+
+        body.setTransform(moonPosition.x, moonPosition.y, 0);
         body.setUserData(this);
         definition.attachFixture(body);
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        gravityCircle = new Circle(x, y, definition.radius * 2f);
+        gravityCircle = new Circle(moonPosition.x, moonPosition.y, definition.radius * 2f);
+        planetPosition = new Vector2(planetX, planetY);
+        orbitalVelocity = new Vector2(1, 1);
 
-    }
-
-    public float getRadius() {
-        return definition.radius;
     }
 
     public void applyGravitationalForce(Entity entity) {
@@ -75,9 +79,18 @@ public class Planet extends Entity {
 
     @Override
     public void update() {
+
+        float angleRad = body.getPosition().sub(planetPosition).angleRad();
+        orbitalVelocity
+                .set(0, 1f)
+                .rotateRad(angleRad)
+                .scl(definition.orbitalVelocity);
+        body.setLinearVelocity(orbitalVelocity);
+
         Vector2 planetPosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(planetPosition.x, planetPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
     }
 
     @Override

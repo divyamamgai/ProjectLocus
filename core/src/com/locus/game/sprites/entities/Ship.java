@@ -80,10 +80,18 @@ public class Ship extends Entity {
     }
 
     @Override
+    public void drawHealth() {
+        Vector2 shipPosition = body.getPosition();
+        playScreen.game.spriteBatch.draw(playScreen.healthBackgroundTexture, shipPosition.x - 3f, shipPosition.y + 3f, 6f, 0.5f);
+        playScreen.game.spriteBatch.draw(playScreen.healthForegroundTexture, shipPosition.x - 3f, shipPosition.y + 3f, 6f * (health / 200f), 0.5f);
+    }
+
+    @Override
     public void update() {
-        float speed2 = body.getLinearVelocity().len2();
+        Vector2 linearVelocity = body.getLinearVelocity();
+        float speed2 = linearVelocity.len2();
         if (speed2 > MAX_SPEED2) {
-            body.setLinearVelocity(body.getLinearVelocity().scl(MAX_SPEED2 / speed2));
+            body.setLinearVelocity(linearVelocity.scl(MAX_SPEED2 / speed2));
         }
         Vector2 playerPosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(playerPosition.x, playerPosition.y);

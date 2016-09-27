@@ -106,7 +106,8 @@
       "restitution": 0.1,
       "radius": 15,
       "mass": 1500000,
-      "angularVelocity": 0.05
+      "angularVelocity": 0.075,
+      "orbitalVelocity": 2
     },
     {
       "type": 2,
@@ -116,7 +117,8 @@
       "restitution": 0.1,
       "radius": 20,
       "mass": 2000000,
-      "angularVelocity": 0.05
+      "angularVelocity": 0.075,
+      "orbitalVelocity": 2
     },
     {
       "type": 2,
@@ -126,7 +128,8 @@
       "restitution": 0.1,
       "radius": 18,
       "mass": 1800000,
-      "angularVelocity": 0.05
+      "angularVelocity": 0.05,
+      "orbitalVelocity": 2
     },
     {
       "type": 2,
@@ -136,7 +139,8 @@
       "restitution": 0.1,
       "radius": 10,
       "mass": 1000000,
-      "angularVelocity": 0.05
+      "angularVelocity": 0.075,
+      "orbitalVelocity": 2
     },
     {
       "type": 2,
@@ -146,7 +150,8 @@
       "restitution": 0.1,
       "radius": 25,
       "mass": 2500000,
-      "angularVelocity": 0.05
+      "angularVelocity": 0.075,
+      "orbitalVelocity": 10
     }
   ]
 }

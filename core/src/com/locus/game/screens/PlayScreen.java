@@ -3,6 +3,7 @@ package com.locus.game.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -15,6 +16,7 @@ import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
 import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;
+import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Player;
 import com.locus.game.sprites.entities.Ship;
@@ -50,6 +52,8 @@ public class PlayScreen implements Screen {
     public ArrayList<Bullet> bulletList;
     public Stack<Bullet> destroyBulletStack;
 
+    public Texture healthBackgroundTexture, healthForegroundTexture;
+
     // Debugging
     private Box2DDebugRenderer box2DDebugRenderer;
     private ShapeRenderer shapeRenderer;
@@ -83,13 +87,16 @@ public class PlayScreen implements Screen {
 
         entityList.add(new Ship(this, Ship.Type.Alien, Main.HALF_WORLD_WIDTH - 120f, Main.HALF_WORLD_HEIGHT));
 
-        level = new Level(this, Planet.Type.Ice, MathUtils.random(1, 8));
+        level = new Level(this, Planet.Type.Gas, Moon.Type.Organic, MathUtils.random(1, 8));
 
         inputController = new InputController(player, true, true);
 
         Gdx.input.setInputProcessor(inputController);
 
         timer = new Timer();
+
+        healthBackgroundTexture = new Texture(Gdx.files.internal("ui/health/background.png"));
+        healthForegroundTexture = new Texture(Gdx.files.internal("ui/health/foreground.png"));
 
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
@@ -126,6 +133,7 @@ public class PlayScreen implements Screen {
 
         if (level.isInLevel(player.body.getPosition())) {
             player.draw(game.spriteBatch);
+            player.drawHealth();
         }
 
         for (Entity entity : entityList) {
@@ -133,6 +141,7 @@ public class PlayScreen implements Screen {
             level.planet.applyGravitationalForce(entity);
             if (entity.inFrustum(camera.frustum)) {
                 entity.draw(game.spriteBatch);
+                entity.drawHealth();
             }
         }
 
@@ -156,7 +165,7 @@ public class PlayScreen implements Screen {
         }
 
         // Debugging
-//        box2DDebugRenderer.render(gameWorld, camera.combined);
+        box2DDebugRenderer.render(gameWorld, camera.combined);
 //
 //        shapeRenderer.setProjectionMatrix(camera.combined);
 //        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

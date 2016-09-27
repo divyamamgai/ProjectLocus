@@ -15,14 +15,18 @@ import com.locus.game.sprites.entities.Entity;
 public class CollisionDetector implements ContactListener {
 
     // Only powers of 2 up to 16th.
-    public static final short CATEGORY_PLANET = 0x0001;
-    public static final short MASK_PLANET = ~CATEGORY_PLANET;
-    public static final short CATEGORY_ASTEROID = 0x0002;
-    public static final short MASK_ASTEROID = ~CATEGORY_ASTEROID;
-    public static final short CATEGORY_BULLET = 0x0004;
+    public static final short CATEGORY_PLANET = 0x1;
+    // Enable Collision with all.
+    public static final short MASK_PLANET = -1;
+    public static final short CATEGORY_MOON = 0x2;
+    public static final short MASK_MOON = -1;
+    public static final short CATEGORY_ASTEROID = 0x4;
+    public static final short MASK_ASTEROID = -1;
+    public static final short CATEGORY_BULLET = 0x8;
+    // Bullets do not collide with each other.
     public static final short MASK_BULLET = ~CATEGORY_BULLET;
-    public static final short CATEGORY_SHIP = 0x0008;
-    public static final short MASK_SHIP = ~CATEGORY_SHIP;
+    public static final short CATEGORY_SHIP = 0x16;
+    public static final short MASK_SHIP = -1;
 
     public CollisionDetector() {
     }
@@ -52,7 +56,6 @@ public class CollisionDetector implements ContactListener {
                 if (bullet.ship != entity) {
                     switch (entity.definition.type) {
                         case Planet:
-                            break;
                         case Moon:
                             break;
                         default:

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.Main;
 import com.locus.game.screens.PlayScreen;
+import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 
 /**
@@ -16,19 +17,24 @@ import com.locus.game.sprites.entities.Planet;
 public class Level {
 
     private static final float BACKGROUND_SCALE = 7f;
-    private static final Circle LEVEL_CIRCLE = new Circle(Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT, 400f);
+    private static final Circle LEVEL_CIRCLE = new Circle(Main.HALF_WORLD_WIDTH,
+            Main.HALF_WORLD_HEIGHT, 400f);
 
     private PlayScreen playScreen;
     public Planet planet;
+    public Moon moon;
     private Texture backgroundTexture;
 
     private float backgroundPortionWidth, backgroundPortionHeight;
 
-    public Level(PlayScreen playScreen, Planet.Type planetType, int backgroundType) {
+    public Level(PlayScreen playScreen, Planet.Type planetType, Moon.Type moonType, int backgroundType) {
 
         this.playScreen = playScreen;
 
         planet = new Planet(playScreen, planetType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+
+        moon = new Moon(playScreen, moonType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT,
+                planet.getRadius() * 4f, 0);
 
         backgroundTexture = new Texture("backgrounds/" + backgroundType + ".jpg");
         backgroundTexture.setWrap(Texture.TextureWrap.Repeat,
@@ -39,41 +45,9 @@ public class Level {
 
     }
 
-//    private void definePlanet() {
-//
-//        BodyDef planetBodyDef = new BodyDef();
-//        planetBodyDef.position.set(Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
-//        planetBodyDef.type = BodyDef.BodyType.KinematicBody;
-//
-//        planetBody = gameWorld.createBody(planetBodyDef);
-//
-//        planetBody.setUserData(planetSprite);
-//
-//        FixtureDef planetFixtureDef = new FixtureDef();
-//        planetFixtureDef.density = 1f;
-//        planetFixtureDef.friction = 1f;
-//        planetFixtureDef.restitution = 0.1f;
-//        planetFixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
-//        planetFixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
-//
-//        CircleShape planetCircle = new CircleShape();
-//        planetCircle.setRadius(planetRadius);
-//
-//        planetFixtureDef.shape = planetCircle;
-//
-//        planetBody.createFixture(planetFixtureDef);
-//
-//        planetBody.setAngularVelocity(0.05f);
-//
-//        // Free up used memory, its not needed any more.
-//        planetCircle.dispose();
-//
-//    }
-
     public void update() {
-
         planet.update();
-
+        moon.update();
     }
 
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {
@@ -84,6 +58,10 @@ public class Level {
 
         if (planet.inFrustum(frustum)) {
             planet.draw(spriteBatch);
+        }
+
+        if (moon.inFrustum(frustum)) {
+            moon.draw(spriteBatch);
         }
 
     }
