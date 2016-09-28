@@ -12,16 +12,10 @@ import com.locus.game.tools.InputController;
  * Player
  */
 
-public class Player extends Ship implements InputController.InputCallback {
+public class Player extends Ship implements InputController.InputCallBack {
 
     public Player(PlayScreen playScreen, Ship.Type shipType, float x, float y) {
         super(playScreen, shipType, x, y);
-    }
-
-    @Override
-    public void applyImpulse(float xImpulse, float yImpulse) {
-        Vector2 playerPosition = body.getPosition();
-        body.applyLinearImpulse(xImpulse, yImpulse, playerPosition.x, playerPosition.y, true);
     }
 
     @Override
@@ -43,8 +37,8 @@ public class Player extends Ship implements InputController.InputCallback {
     }
 
     @Override
-    public void fireBullet() {
-        fire(Bullet.Type.Small);
+    public void fire() {
+        launchBullet(Bullet.Type.Small);
     }
 
     public void handleInput() {
@@ -61,7 +55,7 @@ public class Player extends Ship implements InputController.InputCallback {
             applyRotation(true);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            fire(Bullet.Type.Small);
+            launchBullet(Bullet.Type.Small);
         }
     }
 

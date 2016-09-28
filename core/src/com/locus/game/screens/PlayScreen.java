@@ -83,13 +83,13 @@ public class PlayScreen implements Screen {
         bulletList = new ArrayList<Bullet>();
         destroyBulletStack = new Stack<Bullet>();
 
-        player = new Player(this, Ship.Type.Human, Main.HALF_WORLD_WIDTH + 120f, Main.HALF_WORLD_HEIGHT);
+        player = new Player(this, Ship.Type.Human, Main.HALF_WORLD_WIDTH + 200f, Main.HALF_WORLD_HEIGHT);
 
-        entityList.add(new Ship(this, Ship.Type.Alien, Main.HALF_WORLD_WIDTH - 120f, Main.HALF_WORLD_HEIGHT));
+        entityList.add(new Ship(this, Ship.Type.Alien, Main.HALF_WORLD_WIDTH - 200f, Main.HALF_WORLD_HEIGHT));
 
         level = new Level(this, Planet.Type.Gas, Moon.Type.Organic, MathUtils.random(1, 8));
 
-        inputController = new InputController(player, true, true);
+        inputController = new InputController(player);
 
         Gdx.input.setInputProcessor(inputController);
 
@@ -112,6 +112,7 @@ public class PlayScreen implements Screen {
     @Override
     public void render(float delta) {
 
+        inputController.update();
         player.handleInput();
 
         gameWorld.step(Main.FPS, Main.VELOCITY_ITERATIONS, Main.POSITION_ITERATIONS);
@@ -154,8 +155,6 @@ public class PlayScreen implements Screen {
 
         game.spriteBatch.end();
 
-        inputController.draw(game.spriteBatch);
-
         while (destroyEntityStack.size() > 0) {
             destroyEntityStack.pop().destroy();
         }
@@ -165,7 +164,7 @@ public class PlayScreen implements Screen {
         }
 
         // Debugging
-        box2DDebugRenderer.render(gameWorld, camera.combined);
+//        box2DDebugRenderer.render(gameWorld, camera.combined);
 //
 //        shapeRenderer.setProjectionMatrix(camera.combined);
 //        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

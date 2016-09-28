@@ -64,7 +64,7 @@ public class Ship extends Entity {
 
     }
 
-    void fire(Bullet.Type type) {
+    void launchBullet(Bullet.Type type) {
         if (bulletsFired <= 2) {
             Vector2 shipPosition = body.getPosition();
             float angleRad = body.getAngle();
