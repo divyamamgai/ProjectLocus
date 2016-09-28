@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Timer;
+import com.esotericsoftware.kryonet.Server;
 import com.locus.game.Main;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.CollisionDetector;
@@ -59,6 +60,8 @@ public class PlayScreen implements Screen {
     private ShapeRenderer shapeRenderer;
 
     public PlayScreen(Main game) {
+
+        Server server = new Server();
 
         this.game = game;
 
