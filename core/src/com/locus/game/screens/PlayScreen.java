@@ -2,6 +2,7 @@ package com.locus.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -9,6 +10,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Timer;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.locus.game.Main;
 import com.locus.game.levels.Level;
@@ -23,6 +26,7 @@ import com.locus.game.sprites.entities.Player;
 import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.InputController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -62,6 +66,17 @@ public class PlayScreen implements Screen {
     public PlayScreen(Main game) {
 
         Server server = new Server();
+        server.addListener(new Listener() {
+            public void received(Connection connection, Object object) {
+
+            }
+        });
+        server.start();
+        try {
+            server.bind(54555, 54777);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         this.game = game;
 
@@ -115,27 +130,29 @@ public class PlayScreen implements Screen {
     @Override
     public void render(float delta) {
 
-        inputController.update();
-        player.handleInput();
-
         gameWorld.step(Main.FPS, Main.VELOCITY_ITERATIONS, Main.POSITION_ITERATIONS);
-
-        level.update();
-
-        player.update();
-        level.planet.applyGravitationalForce(player);
 
         camera.position.x += (player.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
         camera.position.y += (player.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
-
         camera.update();
 
         game.spriteBatch.setProjectionMatrix(camera.combined);
         game.spriteBatch.begin();
 
+        level.update();
         level.draw(game.spriteBatch, camera.frustum);
 
-        if (level.isInLevel(player.body.getPosition())) {
+        if (player.isAlive) {
+            inputController.update();
+//            player.handleInput();
+            player.update();
+            level.planet.applyGravitationalForce(player);
+            level.moon.applyGravitationalForce(player);
+            if (level.isInLevel(player.body.getPosition())) {
+                player.setColor(Color.WHITE);
+            } else {
+                player.setColor(Color.RED);
+            }
             player.draw(game.spriteBatch);
             player.drawHealth();
         }
@@ -143,6 +160,7 @@ public class PlayScreen implements Screen {
         for (Entity entity : entityList) {
             entity.update();
             level.planet.applyGravitationalForce(entity);
+            level.moon.applyGravitationalForce(entity);
             if (entity.inFrustum(camera.frustum)) {
                 entity.draw(game.spriteBatch);
                 entity.drawHealth();
@@ -167,7 +185,7 @@ public class PlayScreen implements Screen {
         }
 
         // Debugging
-//        box2DDebugRenderer.render(gameWorld, camera.combined);
+        box2DDebugRenderer.render(gameWorld, camera.combined);
 //
 //        shapeRenderer.setProjectionMatrix(camera.combined);
 //        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

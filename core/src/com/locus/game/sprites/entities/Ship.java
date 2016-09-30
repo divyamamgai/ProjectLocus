@@ -66,11 +66,11 @@ public class Ship extends Entity {
 
     void launchBullet(Bullet.Type type) {
         if (bulletsFired <= 2) {
-            Vector2 shipPosition = body.getPosition();
+            Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
                 playScreen.bulletList.add(new Bullet(playScreen, type, this,
-                        bulletPosition.set(weaponPosition).rotateRad(angleRad).add(shipPosition),
+                        bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad));
             }
         } else if (bulletsFired >= 6) {
@@ -81,9 +81,9 @@ public class Ship extends Entity {
 
     @Override
     public void drawHealth() {
-        Vector2 shipPosition = body.getPosition();
-        playScreen.game.spriteBatch.draw(playScreen.healthBackgroundTexture, shipPosition.x - 3f, shipPosition.y + 3f, 6f, 0.5f);
-        playScreen.game.spriteBatch.draw(playScreen.healthForegroundTexture, shipPosition.x - 3f, shipPosition.y + 3f, 6f * (health / 200f), 0.5f);
+        Vector2 bodyPosition = body.getPosition();
+        playScreen.game.spriteBatch.draw(playScreen.healthBackgroundTexture, bodyPosition.x - 3f, bodyPosition.y + 3f, 6f, 0.5f);
+        playScreen.game.spriteBatch.draw(playScreen.healthForegroundTexture, bodyPosition.x - 3f, bodyPosition.y + 3f, 6f * (health / 200f), 0.5f);
     }
 
     @Override
@@ -93,15 +93,15 @@ public class Ship extends Entity {
         if (speed2 > MAX_SPEED2) {
             body.setLinearVelocity(linearVelocity.scl(MAX_SPEED2 / speed2));
         }
-        Vector2 playerPosition = body.getPosition().sub(definition.bodyOrigin);
-        setPosition(playerPosition.x, playerPosition.y);
+        Vector2 spritePosition = body.getPosition().sub(definition.bodyOrigin);
+        setPosition(spritePosition.x, spritePosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
     @Override
     public boolean inFrustum(Frustum frustum) {
-        Vector2 playerPosition = body.getPosition();
-        return frustum.boundsInFrustum(playerPosition.x, playerPosition.y, 0,
+        Vector2 bodyPosition = body.getPosition();
+        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
                 definition.halfWidth, definition.halfHeight, 0);
     }
 

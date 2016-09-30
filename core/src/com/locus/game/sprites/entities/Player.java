@@ -59,4 +59,9 @@ public class Player extends Ship implements InputController.InputCallBack {
         }
     }
 
+    @Override
+    public void destroy() {
+        playScreen.gameWorld.destroyBody(body);
+    }
+
 }

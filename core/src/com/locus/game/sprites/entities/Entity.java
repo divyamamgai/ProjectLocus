@@ -28,7 +28,7 @@ public abstract class Entity extends Sprite {
     public Body body;
     public EntityLoader.Definition definition;
     public float health;
-    boolean isAlive = true;
+    public boolean isAlive = true;
 
     // Enable the constructors as per the needs.
 

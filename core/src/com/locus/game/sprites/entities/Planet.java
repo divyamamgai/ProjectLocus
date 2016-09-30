@@ -48,7 +48,7 @@ public class Planet extends Entity {
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        gravityCircle = new Circle(x, y, definition.radius * 2f);
+        gravityCircle = new Circle(x, y, definition.radius * 6f);
 
     }
 
@@ -75,21 +75,24 @@ public class Planet extends Entity {
 
     @Override
     public void update() {
-        Vector2 planetPosition = body.getPosition().sub(definition.bodyOrigin);
-        setPosition(planetPosition.x, planetPosition.y);
+        Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
+        setPosition(bodyPosition.x, bodyPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
     @Override
     public boolean inFrustum(Frustum frustum) {
-        Vector2 planetPosition = body.getPosition();
-        return frustum.boundsInFrustum(planetPosition.x, planetPosition.y, 0,
+        Vector2 bodyPosition = body.getPosition();
+        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
                 definition.halfWidth, definition.halfHeight, 0);
     }
 
     @Override
     public void kill() {
-        playScreen.destroyEntityStack.push(this);
+        if (isAlive) {
+            isAlive = false;
+            playScreen.destroyEntityStack.push(this);
+        }
     }
 
     @Override

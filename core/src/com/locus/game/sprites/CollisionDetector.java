@@ -39,7 +39,10 @@ public class CollisionDetector implements ContactListener {
         boolean isObjectBBullet = objectB instanceof Bullet;
         // Both cannot be Bullet due to Category masking.
         if (isObjectABullet || isObjectBBullet) {
+            // We now know with absolute certainty that one is a Bullet.
             Bullet bullet;
+            // We technically also know that remaining object is Entity but we try to be sure
+            // just in case.
             Entity entity = null;
             if (isObjectABullet) {
                 bullet = (Bullet) objectA;
@@ -69,6 +72,69 @@ public class CollisionDetector implements ContactListener {
         } else {
             Entity entityA = (Entity) objectA;
             Entity entityB = (Entity) objectB;
+            switch (entityA.definition.type) {
+                case Ship:
+                    float speed2;
+                    switch (entityB.definition.type) {
+                        case Ship:
+                            break;
+                        case Planet:
+                            speed2 = entityA.body.getLinearVelocity().len2();
+                            if ((speed2 > 900f) && ((entityA.health -= 75f) <= 0)) {
+                                entityA.kill();
+                            } else if ((entityA.health -= 5f) <= 0) {
+                                entityA.kill();
+                            }
+                            break;
+                        case Moon:
+                            speed2 = entityA.body.getLinearVelocity().len2();
+                            if ((speed2 > 900f) && ((entityA.health -= 25f) <= 0)) {
+                                entityA.kill();
+                            } else if ((entityA.health -= 1f) <= 0) {
+                                entityA.kill();
+                            }
+                            break;
+                        case Asteroid:
+                            break;
+                    }
+                    break;
+                case Planet:
+                    switch (entityB.definition.type) {
+                        case Ship:
+                            break;
+                        case Planet:
+                            break;
+                        case Moon:
+                            break;
+                        case Asteroid:
+                            break;
+                    }
+                    break;
+                case Moon:
+                    switch (entityB.definition.type) {
+                        case Ship:
+                            break;
+                        case Planet:
+                            break;
+                        case Moon:
+                            break;
+                        case Asteroid:
+                            break;
+                    }
+                    break;
+                case Asteroid:
+                    switch (entityB.definition.type) {
+                        case Ship:
+                            break;
+                        case Planet:
+                            break;
+                        case Moon:
+                            break;
+                        case Asteroid:
+                            break;
+                    }
+                    break;
+            }
         }
     }
 

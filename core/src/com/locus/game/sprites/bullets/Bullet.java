@@ -30,7 +30,7 @@ public class Bullet extends Sprite {
     public Ship ship;
     public Body body;
     public BulletLoader.Definition definition;
-    boolean isAlive = true;
+    private boolean isAlive = true;
 
     public Bullet(PlayScreen playScreen, Type type, Ship ship, Vector2 position, float angleRad) {
 
@@ -61,14 +61,14 @@ public class Bullet extends Sprite {
     }
 
     public void update() {
-        Vector2 bulletPosition = body.getPosition().sub(definition.bodyOrigin);
-        setPosition(bulletPosition.x, bulletPosition.y);
+        Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
+        setPosition(bodyPosition.x, bodyPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
     public boolean inFrustum(Frustum frustum) {
-        Vector2 bulletPosition = body.getPosition();
-        return frustum.boundsInFrustum(bulletPosition.x, bulletPosition.y, 0, definition.halfWidth, definition.halfHeight, 0);
+        Vector2 bodyPosition = body.getPosition();
+        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0, definition.halfWidth, definition.halfHeight, 0);
     }
 
     public void kill() {

@@ -12,7 +12,7 @@ public class Main extends Game implements Disposable {
     // GRAVITY in metres/seconds^2
     public static final Vector2 GRAVITY = new Vector2(0, 0);
     // Gravitational Constant - (N(m^2))/(kg^2)
-    public static final float GRAVITATIONAL_CONSTANT = 0.000005f;
+    public static final float GRAVITATIONAL_CONSTANT = 0.00004f;
     // Virtual Width of the Game World in meters.
     public static final float WORLD_WIDTH = 1280f;
     public static final float HALF_WORLD_WIDTH = WORLD_WIDTH / 2f;

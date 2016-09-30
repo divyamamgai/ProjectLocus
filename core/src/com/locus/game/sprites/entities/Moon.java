@@ -54,7 +54,7 @@ public class Moon extends Entity {
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        gravityCircle = new Circle(moonPosition.x, moonPosition.y, definition.radius * 2f);
+        gravityCircle = new Circle(moonPosition.x, moonPosition.y, definition.radius * 6f);
         planetPosition = new Vector2(planetX, planetY);
         orbitalVelocity = new Vector2(1, 1);
 
@@ -81,13 +81,16 @@ public class Moon extends Entity {
     public void update() {
 
         float angleRad = body.getPosition().sub(planetPosition).angleRad();
+        Vector2 bodyPosition = body.getPosition();
+
         orbitalVelocity
                 .set(0, 1f)
                 .rotateRad(angleRad)
                 .scl(definition.orbitalVelocity);
         body.setLinearVelocity(orbitalVelocity);
 
-        Vector2 planetPosition = body.getPosition().sub(definition.bodyOrigin);
+        gravityCircle.setPosition(bodyPosition);
+        Vector2 planetPosition = bodyPosition.sub(definition.bodyOrigin);
         setPosition(planetPosition.x, planetPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
@@ -95,14 +98,17 @@ public class Moon extends Entity {
 
     @Override
     public boolean inFrustum(Frustum frustum) {
-        Vector2 planetPosition = body.getPosition();
-        return frustum.boundsInFrustum(planetPosition.x, planetPosition.y, 0,
+        Vector2 bodyPosition = body.getPosition();
+        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
                 definition.halfWidth, definition.halfHeight, 0);
     }
 
     @Override
     public void kill() {
-        playScreen.destroyEntityStack.push(this);
+        if (isAlive) {
+            isAlive = false;
+            playScreen.destroyEntityStack.push(this);
+        }
     }
 
     @Override
