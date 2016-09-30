@@ -20,18 +20,20 @@ public class InputController implements InputProcessor {
 
     }
 
-    private float initialXCoordinate, initialYCoordinate;
+    private float initialXCoordinateRotation, initialYCoordinateThrust;
     private OrthographicCamera camera;
     private InputCallBack inputCallBack;
-    private static boolean rotationState, thrustState, rotationDirection, thrustDirection;
-    private static int pointerThrust, pointerRotation;
+    private static boolean rotationState, thrustState, rotationDirection,
+            thrustDirection, isSetRotationPointer, isSetThrustPointer;
+    private static int thrustPointerID, rotationPointerID;
 
     public InputController(InputCallBack inputCallBack) {
         this.inputCallBack = inputCallBack;
         camera = new OrthographicCamera(854, 480);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         rotationState = thrustState = rotationDirection = thrustDirection = false;
-        pointerRotation = pointerThrust = -1;
+        rotationPointerID = thrustPointerID = -1;
+        isSetRotationPointer = isSetThrustPointer = false;
     }
 
     @Override
@@ -53,35 +55,42 @@ public class InputController implements InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(touchPosition);
-        initialXCoordinate = touchPosition.x;
-        initialYCoordinate = touchPosition.y;
-        if (touchPosition.x > 0) {
-            pointerThrust = pointer;
-        } else {
-            pointerRotation = pointer;
+        if ((touchPosition.x > 0) && (!isSetThrustPointer)){
+            thrustPointerID = pointer;
+            isSetThrustPointer = true;
+            initialYCoordinateThrust = touchPosition.y;
         }
-        return false;
+        if((touchPosition.x < 0) && (!isSetRotationPointer)){
+            rotationPointerID = pointer;
+            isSetRotationPointer = true;
+            initialXCoordinateRotation = touchPosition.x;
+        }
+        return true;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (pointerRotation == pointer) {
+        if ((rotationPointerID == pointer) && (isSetRotationPointer)){
             rotationState = false;
+            isSetRotationPointer = false;
+            rotationPointerID = -1;
         }
-        if (pointerThrust == pointer) {
+        if ((thrustPointerID == pointer) && (isSetThrustPointer)){
             thrustState = false;
+            isSetThrustPointer = false;
+            thrustPointerID = -1;
         }
-        return false;
+        return true;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(touchPosition);
-        if (pointer == pointerThrust) {
+        if ((pointer == thrustPointerID) && (isSetThrustPointer)){
             if (touchPosition.x > 0) {
-                if (Math.abs(touchPosition.y - initialYCoordinate) > 24) {
-                    thrustDirection = (initialYCoordinate - touchPosition.y <= 0);
+                if (Math.abs(touchPosition.y - initialYCoordinateThrust) > 16) {
+                    thrustDirection = (initialYCoordinateThrust - touchPosition.y <= 0);
                     thrustState = true;
                 } else {
                     thrustState = false;
@@ -90,10 +99,10 @@ public class InputController implements InputProcessor {
                 thrustState = false;
             }
         }
-        if (pointer == pointerRotation) {
+        if ((pointer == rotationPointerID) && (isSetRotationPointer)) {
             if (touchPosition.x < 0) {
-                if (Math.abs(touchPosition.x - initialXCoordinate) > 24) {
-                    rotationDirection = (initialXCoordinate - touchPosition.x <= 0);
+                if (Math.abs(touchPosition.x - initialXCoordinateRotation) > 16) {
+                    rotationDirection = (initialXCoordinateRotation - touchPosition.x <= 0);
                     rotationState = true;
                 } else {
                     rotationState = false;
