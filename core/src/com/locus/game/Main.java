@@ -14,10 +14,10 @@ public class Main extends Game implements Disposable {
     // Gravitational Constant - (N(m^2))/(kg^2)
     public static final float GRAVITATIONAL_CONSTANT = 0.00004f;
     // Virtual Width of the Game World in meters.
-    public static final float WORLD_WIDTH = 1280f;
+    private static final float WORLD_WIDTH = 1280f;
     public static final float HALF_WORLD_WIDTH = WORLD_WIDTH / 2f;
     // Virtual Height of the Game World in meters.
-    public static final float WORLD_HEIGHT = 1280f;
+    private static final float WORLD_HEIGHT = 1280f;
     public static final float HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2f;
     public static final float WORLD_DIAGONAL = (float) Math.sqrt(WORLD_WIDTH * WORLD_WIDTH + WORLD_HEIGHT * WORLD_HEIGHT);
     // Desired FPS of the main.

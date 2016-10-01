@@ -24,20 +24,15 @@ public class Ship extends Entity {
 
     }
 
-    //    static final float VELOCITY_IMPULSE = 8f;
-    static final float THRUST_SPEED = 24f;
-    static final Vector2 THRUST_VELOCITY = new Vector2(0, THRUST_SPEED);
-    private static final float MAX_SPEED = 64f;
-    private static final float MAX_SPEED2 = MAX_SPEED * MAX_SPEED;
-    static final float ANGULAR_IMPULSE = 16f;
-
     private static final float LINEAR_DAMPING = 1f;
     private static final float ANGULAR_DAMPING = 4f;
+
+    Vector2 thrustVelocity;
 
     private Vector2 bulletPosition;
     private short bulletsFired;
 
-    public Ship(Level level, Ship.Type type, float x, float y) {
+    Ship(Level level, Ship.Type type, float x, float y) {
 
         this.level = level;
 
@@ -59,9 +54,10 @@ public class Ship extends Entity {
 
         update();
 
+        thrustVelocity = new Vector2(0, 0);
         bulletPosition = new Vector2(0, 0);
         bulletsFired = 0;
-        health = definition.health;
+        health = definition.maxHealth;
 
     }
 
@@ -81,22 +77,11 @@ public class Ship extends Entity {
     }
 
     @Override
-    public void drawHealth(SpriteBatch spriteBatch) {
-        Vector2 bodyPosition = body.getPosition();
-        spriteBatch.draw(level.healthBackgroundTexture,
-                bodyPosition.x - 3f, bodyPosition.y + 3f,
-                6f, 0.5f);
-        spriteBatch.draw(level.healthForegroundTexture,
-                bodyPosition.x - 3f, bodyPosition.y + 3f,
-                6f * (health / 200f), 0.5f);
-    }
-
-    @Override
     public void update() {
         Vector2 linearVelocity = body.getLinearVelocity();
         float speed2 = linearVelocity.len2();
-        if (speed2 > MAX_SPEED2) {
-            body.setLinearVelocity(linearVelocity.scl(MAX_SPEED2 / speed2));
+        if (speed2 > definition.maxSpeed2) {
+            body.setLinearVelocity(linearVelocity.scl(definition.maxSpeed2 / speed2));
         }
         Vector2 spritePosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(spritePosition.x, spritePosition.y);
@@ -104,10 +89,26 @@ public class Ship extends Entity {
     }
 
     @Override
-    public boolean inFrustum(Frustum frustum) {
+    public void draw(SpriteBatch spriteBatch, Frustum frustum) {
+
         Vector2 bodyPosition = body.getPosition();
-        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
-                definition.halfWidth, definition.halfHeight, 0);
+
+        if (frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
+                definition.halfWidth, definition.halfHeight, 0)) {
+
+            super.draw(spriteBatch);
+
+            float percentageHealth = health / definition.maxHealth;
+
+            spriteBatch.draw(level.healthBackgroundTexture,
+                    bodyPosition.x - 3f, bodyPosition.y + 3f,
+                    definition.width, 0.5f);
+            spriteBatch.draw(level.healthForegroundTexture,
+                    bodyPosition.x - 3f, bodyPosition.y + 3f,
+                    definition.width * percentageHealth, 0.5f);
+
+        }
+
     }
 
     @Override

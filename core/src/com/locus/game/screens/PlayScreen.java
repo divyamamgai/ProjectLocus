@@ -1,6 +1,7 @@
 package com.locus.game.screens;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -11,6 +12,7 @@ import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Divya Mamgai on 9/6/2016.
@@ -40,7 +42,12 @@ public class PlayScreen implements Screen {
 
         this.main = main;
 
-        level = new Level(Planet.Type.Gas, Moon.Type.Organic, 1);
+        ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
+        moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
+        moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
+        moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, Main.PI_BY_TWO));
+
+        level = new Level(Planet.Type.Gas, moonPropertyList, 1);
 
         timer = new Timer();
 

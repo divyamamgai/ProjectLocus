@@ -8,8 +8,10 @@
       "restitution": 0.2,
       "width": 6.86,
       "height": 6,
-      "speed": 150,
-      "health": 200,
+      "thrustSpeed": 24,
+      "rotationSpeed": 16,
+      "maxSpeed": 50,
+      "maxHealth": 200,
       "mass": 5000,
       "weaponPosition": [
         {
@@ -32,8 +34,10 @@
       "restitution": 0.2,
       "width": 7.25,
       "height": 6,
-      "speed": 150,
-      "health": 200,
+      "thrustSpeed": 24,
+      "rotationSpeed": 16,
+      "maxSpeed": 50,
+      "maxHealth": 200,
       "mass": 5000,
       "weaponPosition": [
         {
@@ -107,7 +111,7 @@
       "radius": 15,
       "mass": 1500000,
       "angularVelocity": 0.075,
-      "orbitalVelocity": 2
+      "orbitalVelocity": 16
     },
     {
       "type": 2,
@@ -118,7 +122,7 @@
       "radius": 20,
       "mass": 2000000,
       "angularVelocity": 0.075,
-      "orbitalVelocity": 2
+      "orbitalVelocity": 12
     },
     {
       "type": 2,
@@ -128,8 +132,8 @@
       "restitution": 0.1,
       "radius": 18,
       "mass": 1800000,
-      "angularVelocity": 0.05,
-      "orbitalVelocity": 2
+      "angularVelocity": 0.075,
+      "orbitalVelocity": 14
     },
     {
       "type": 2,
@@ -140,7 +144,7 @@
       "radius": 10,
       "mass": 1000000,
       "angularVelocity": 0.075,
-      "orbitalVelocity": 2
+      "orbitalVelocity": 18
     },
     {
       "type": 2,

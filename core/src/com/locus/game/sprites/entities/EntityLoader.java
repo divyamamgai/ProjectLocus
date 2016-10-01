@@ -38,7 +38,7 @@ public class EntityLoader implements Disposable {
         FixtureDef fixtureDef;
         Texture texture;
         float width, halfWidth, height, halfHeight, radius, mass, gravitationalMass,
-                health, orbitalVelocity;
+                thrustSpeed, rotationSpeed, maxSpeed, maxSpeed2, maxHealth, orbitalVelocity;
         Vector2 bodyOrigin;
         HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
         CircleShape circleShape;
@@ -83,7 +83,11 @@ public class EntityLoader implements Disposable {
                     width = entityJson.getFloat("width");
                     height = entityJson.getFloat("height");
 
-                    health = entityJson.getFloat("health");
+                    thrustSpeed = entityJson.getFloat("thrustSpeed");
+                    rotationSpeed = entityJson.getFloat("rotationSpeed");
+                    maxSpeed = entityJson.getFloat("maxSpeed");
+                    maxSpeed2 = maxSpeed * maxSpeed;
+                    maxHealth = entityJson.getFloat("maxHealth");
 
                     bodyOrigin = physicsLoader.getOrigin(path, width).cpy();
 
@@ -129,7 +133,7 @@ public class EntityLoader implements Disposable {
                     width = entityJson.getFloat("width");
                     height = entityJson.getFloat("height");
 
-                    health = entityJson.getFloat("health");
+                    maxHealth = entityJson.getFloat("maxHealth");
 
                     bodyOrigin = physicsLoader.getOrigin(path, width);
 

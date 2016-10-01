@@ -18,7 +18,7 @@ public class Player extends Ship implements InputController.InputCallBack {
 
     @Override
     public void applyRotation(boolean isClockwise) {
-        body.applyAngularImpulse((isClockwise ? -1 : 1) * ANGULAR_IMPULSE, true);
+        body.applyAngularImpulse((isClockwise ? -1 : 1) * definition.rotationSpeed, true);
     }
 
     @Override
@@ -26,11 +26,11 @@ public class Player extends Ship implements InputController.InputCallBack {
         Vector2 playerPosition = body.getPosition();
         float angleRad = body.getAngle();
         if (isForward) {
-            body.applyLinearImpulse(THRUST_VELOCITY.set(0, THRUST_SPEED).rotateRad(angleRad),
-                    playerPosition, true);
+            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                    .rotateRad(angleRad), playerPosition, true);
         } else {
-            body.applyLinearImpulse(THRUST_VELOCITY.set(0, THRUST_SPEED).rotateRad(angleRad).scl(-1f),
-                    playerPosition, true);
+            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                    .rotateRad(angleRad).scl(-1f), playerPosition, true);
         }
     }
 
@@ -38,23 +38,5 @@ public class Player extends Ship implements InputController.InputCallBack {
     public void fire() {
         fireBullet(Bullet.Type.Small);
     }
-
-//    public void handleInput() {
-//        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-//            applyThrust(true);
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-//            applyThrust(false);
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-//            applyRotation(false);
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-//            applyRotation(true);
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-//            fireBullet(Bullet.Type.Small);
-//        }
-//    }
 
 }

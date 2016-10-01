@@ -61,11 +61,9 @@ public abstract class Entity extends Sprite {
 //        super(sprite);
 //    }
 
-    public abstract void drawHealth(SpriteBatch spriteBatch);
-
     public abstract void update();
 
-    public abstract boolean inFrustum(Frustum frustum);
+    public abstract void draw(SpriteBatch spriteBatch, Frustum frustum);
 
     public abstract void kill();
 

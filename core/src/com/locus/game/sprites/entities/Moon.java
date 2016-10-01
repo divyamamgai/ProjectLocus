@@ -1,14 +1,11 @@
 package com.locus.game.sprites.entities;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.locus.game.Main;
 import com.locus.game.levels.Level;
-import com.locus.game.screens.PlayScreen;
 
 /**
  * Created by Divya Mamgai on 9/27/2016.
@@ -31,15 +28,27 @@ public class Moon extends Entity {
 
     }
 
+    public static class Property {
+
+        public Moon.Type type;
+        float orbitRadius, orbitAngle;
+
+        public Property(Moon.Type type, float orbitRadius, float orbitAngle) {
+            this.type = type;
+            this.orbitRadius = orbitRadius;
+            this.orbitAngle = orbitAngle;
+        }
+
+    }
+
     private Circle gravityCircle;
     private Vector2 planetPosition, orbitalVelocity;
 
-    public Moon(Level level, Moon.Type type, float planetX, float planetY,
-                float orbitRadius, float orbitalAngle) {
+    public Moon(Level level, float planetX, float planetY, Moon.Property moonProperty) {
 
         this.level = level;
 
-        definition = level.entityLoader.get(Entity.Type.Moon, type.ordinal());
+        definition = level.entityLoader.get(Entity.Type.Moon, moonProperty.type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
@@ -47,7 +56,8 @@ public class Moon extends Entity {
 
         body = level.world.createBody(definition.bodyDef);
 
-        Vector2 moonPosition = (new Vector2(orbitRadius, 0)).rotate(orbitalAngle)
+        Vector2 moonPosition = (new Vector2(moonProperty.orbitRadius, 0))
+                .rotate(moonProperty.orbitAngle)
                 .add(planetX, planetY);
 
         body.setTransform(moonPosition.x, moonPosition.y, 0);
@@ -75,11 +85,6 @@ public class Moon extends Entity {
     }
 
     @Override
-    public void drawHealth(SpriteBatch spriteBatch) {
-
-    }
-
-    @Override
     public void update() {
 
         float angleRad = body.getPosition().sub(planetPosition).angleRad();
@@ -99,10 +104,12 @@ public class Moon extends Entity {
     }
 
     @Override
-    public boolean inFrustum(Frustum frustum) {
+    public void draw(SpriteBatch spriteBatch, Frustum frustum) {
         Vector2 bodyPosition = body.getPosition();
-        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
-                definition.halfWidth, definition.halfHeight, 0);
+        if (frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
+                definition.halfWidth, definition.halfHeight, 0)) {
+            super.draw(spriteBatch);
+        }
     }
 
     @Override
@@ -116,7 +123,7 @@ public class Moon extends Entity {
     @Override
     public void destroy() {
         level.world.destroyBody(body);
-        level.entityList.remove(this);
+        level.moonList.remove(this);
     }
 
 }

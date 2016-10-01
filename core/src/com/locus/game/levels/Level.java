@@ -11,7 +11,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
@@ -41,11 +40,11 @@ public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 2f;
 
-    private float aspectRatio = (float) Gdx.graphics.getWidth() / (float) Gdx.graphics.getHeight();
-    private float cameraHeight = 100f;
-    private float cameraHalfHeight = cameraHeight / 2f;
-    private float cameraWidth = cameraHeight * aspectRatio;
-    private float cameraHalfWidth = cameraWidth / 2f;
+    private static float aspectRatio = (float) Gdx.graphics.getWidth() / (float) Gdx.graphics.getHeight();
+    private static float cameraHeight = 100f;
+    private static float cameraHalfHeight = cameraHeight / 2f;
+    private static float cameraWidth = cameraHeight * aspectRatio;
+    private static float cameraHalfWidth = cameraWidth / 2f;
 
     private InputController inputController;
     private OrthographicCamera camera;
@@ -59,7 +58,7 @@ public class Level implements Disposable {
     public Stack<Bullet> destroyBulletStack;
     private Player player;
     private Planet planet;
-    private Moon moon;
+    public ArrayList<Moon> moonList;
     private TiledMapRenderer tiledMapRenderer;
     public Texture healthBackgroundTexture, healthForegroundTexture;
 
@@ -68,7 +67,8 @@ public class Level implements Disposable {
     private OrthographicCamera fpsCamera;
     private BitmapFont fpsFont;
 
-    public Level(Planet.Type planetType, Moon.Type moonType, int backgroundType) {
+    public Level(Planet.Type planetType, ArrayList<Moon.Property> moonPropertyList,
+                 int backgroundType) {
 
         camera = new OrthographicCamera(cameraWidth, cameraHeight);
 
@@ -87,15 +87,16 @@ public class Level implements Disposable {
         bulletList = new ArrayList<Bullet>();
         destroyBulletStack = new Stack<Bullet>();
 
-        player = new Player(this, Ship.Type.Human, Main.HALF_WORLD_WIDTH + 200f, Main.HALF_WORLD_HEIGHT);
-
-        entityList.add(player);
-        entityList.add(new Ship(this, Ship.Type.Alien, Main.HALF_WORLD_WIDTH - 200f, Main.HALF_WORLD_HEIGHT));
+        entityList.add(player = new Player(this, Ship.Type.Human,
+                Main.HALF_WORLD_WIDTH + 250f, Main.HALF_WORLD_HEIGHT));
 
         planet = new Planet(this, planetType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
 
-        moon = new Moon(this, moonType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT,
-                planet.getRadius() * 4f, 0);
+        moonList = new ArrayList<Moon>();
+        for (Moon.Property moonProperty : moonPropertyList) {
+            moonList.add(new Moon(this, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT,
+                    moonProperty));
+        }
 
         TiledMap tiledMap = new TmxMapLoader().load("backgrounds/" + backgroundType + ".tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 0.15f);
@@ -133,12 +134,17 @@ public class Level implements Disposable {
         }
 
         planet.update();
-        moon.update();
+
+        for (Moon moon : moonList) {
+            moon.update();
+        }
 
         for (Entity entity : entityList) {
-            planet.applyGravitationalForce(entity);
-            moon.applyGravitationalForce(entity);
             entity.update();
+            planet.applyGravitationalForce(entity);
+            for (Moon moon : moonList) {
+                moon.applyGravitationalForce(entity);
+            }
         }
 
         for (Bullet bullet : bulletList) {
@@ -157,35 +163,29 @@ public class Level implements Disposable {
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
 
-        if (planet.inFrustum(camera.frustum)) {
-            planet.draw(spriteBatch);
-        }
+        planet.draw(spriteBatch, camera.frustum);
 
-        if (moon.inFrustum(camera.frustum)) {
-            moon.draw(spriteBatch);
+        for (Moon moon : moonList) {
+            moon.draw(spriteBatch, camera.frustum);
         }
 
         for (Entity entity : entityList) {
-            if (entity.inFrustum(camera.frustum)) {
-                entity.draw(spriteBatch);
-                entity.drawHealth(spriteBatch);
-            }
+            entity.draw(spriteBatch, camera.frustum);
         }
 
         for (Bullet bullet : bulletList) {
-            if (bullet.inFrustum(camera.frustum)) {
-                bullet.draw(spriteBatch);
-            }
+            bullet.draw(spriteBatch, camera.frustum);
         }
 
         spriteBatch.end();
 
         // Debugging
-        box2DDebugRenderer.render(world, camera.combined);
+//        box2DDebugRenderer.render(world, camera.combined);
 
         spriteBatch.setProjectionMatrix(fpsCamera.combined);
         spriteBatch.begin();
-        fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()), cameraHalfWidth - 5f, cameraHalfHeight - 2f);
+        fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
+                cameraHalfWidth - 5f, cameraHalfHeight - 2f);
         spriteBatch.end();
 
     }
@@ -199,9 +199,9 @@ public class Level implements Disposable {
         cameraHalfWidth = cameraWidth / 2f;
     }
 
-    public boolean isInLevel(Vector2 spritePosition) {
-        return LEVEL_CIRCLE.contains(spritePosition);
-    }
+//    public boolean isInLevel(Vector2 position) {
+//        return LEVEL_CIRCLE.contains(position);
+//    }
 
     @Override
     public void dispose() {

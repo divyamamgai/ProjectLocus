@@ -69,11 +69,6 @@ public class Planet extends Entity {
     }
 
     @Override
-    public void drawHealth(SpriteBatch spriteBatch) {
-
-    }
-
-    @Override
     public void update() {
         Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(bodyPosition.x, bodyPosition.y);
@@ -81,24 +76,20 @@ public class Planet extends Entity {
     }
 
     @Override
-    public boolean inFrustum(Frustum frustum) {
+    public void draw(SpriteBatch spriteBatch, Frustum frustum) {
         Vector2 bodyPosition = body.getPosition();
-        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
-                definition.halfWidth, definition.halfHeight, 0);
-    }
-
-    @Override
-    public void kill() {
-        if (isAlive) {
-            isAlive = false;
-            level.destroyEntityStack.push(this);
+        if (frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
+                definition.halfWidth, definition.halfHeight, 0)) {
+            super.draw(spriteBatch);
         }
     }
 
     @Override
+    public void kill() {
+    }
+
+    @Override
     public void destroy() {
-        level.world.destroyBody(body);
-        level.entityList.remove(this);
     }
 
 }

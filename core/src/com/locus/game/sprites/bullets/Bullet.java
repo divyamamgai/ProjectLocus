@@ -1,6 +1,7 @@
 package com.locus.game.sprites.bullets;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -67,9 +68,12 @@ public class Bullet extends Sprite {
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
-    public boolean inFrustum(Frustum frustum) {
+    public void draw(SpriteBatch spriteBatch, Frustum frustum) {
         Vector2 bodyPosition = body.getPosition();
-        return frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0, definition.halfWidth, definition.halfHeight, 0);
+        if (frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
+                definition.halfWidth, definition.halfHeight, 0)) {
+            super.draw(spriteBatch);
+        }
     }
 
     public void kill() {
