@@ -6,12 +6,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.bullets.Bullet;
+import com.locus.game.tools.InputController;
 
 /**
  * Created by Divya Mamgai on 9/11/2016.
  * Ship
  */
-public class Ship extends Entity {
+public class Ship extends Entity implements InputController.InputCallBack {
 
     public enum Type {
 
@@ -27,12 +28,11 @@ public class Ship extends Entity {
     private static final float LINEAR_DAMPING = 1f;
     private static final float ANGULAR_DAMPING = 4f;
 
-    Vector2 thrustVelocity;
-
+    private Vector2 thrustVelocity;
     private Vector2 bulletPosition;
     private short bulletsFired;
 
-    Ship(Level level, Ship.Type type, float x, float y) {
+    public Ship(Level level, Ship.Type type, float x, float y) {
 
         this.level = level;
 
@@ -61,7 +61,7 @@ public class Ship extends Entity {
 
     }
 
-    void fireBullet(Bullet.Type type) {
+    private void fireBullet(Bullet.Type type) {
         if (bulletsFired <= 2) {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
@@ -123,6 +123,29 @@ public class Ship extends Entity {
     public void destroy() {
         level.world.destroyBody(body);
         level.entityList.remove(this);
+    }
+
+    @Override
+    public void applyRotation(boolean isClockwise) {
+        body.applyAngularImpulse((isClockwise ? -1 : 1) * definition.rotationSpeed, true);
+    }
+
+    @Override
+    public void applyThrust(boolean isForward) {
+        Vector2 playerPosition = body.getPosition();
+        float angleRad = body.getAngle();
+        if (isForward) {
+            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                    .rotateRad(angleRad), playerPosition, true);
+        } else {
+            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                    .rotateRad(angleRad).scl(-1f), playerPosition, true);
+        }
+    }
+
+    @Override
+    public void fire() {
+        fireBullet(Bullet.Type.Small);
     }
 
 }

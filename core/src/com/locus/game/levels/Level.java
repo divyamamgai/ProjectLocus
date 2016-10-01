@@ -22,7 +22,6 @@ import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
-import com.locus.game.sprites.entities.Player;
 import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.InputController;
 
@@ -56,7 +55,7 @@ public class Level implements Disposable {
     public Stack<Entity> destroyEntityStack;
     public ArrayList<Bullet> bulletList;
     public Stack<Bullet> destroyBulletStack;
-    private Player player;
+    private Ship player;
     private Planet planet;
     public ArrayList<Moon> moonList;
     private TiledMapRenderer tiledMapRenderer;
@@ -87,7 +86,7 @@ public class Level implements Disposable {
         bulletList = new ArrayList<Bullet>();
         destroyBulletStack = new Stack<Bullet>();
 
-        entityList.add(player = new Player(this, Ship.Type.Human,
+        entityList.add(player = new Ship(this, Ship.Type.Human,
                 Main.HALF_WORLD_WIDTH + 250f, Main.HALF_WORLD_HEIGHT));
 
         planet = new Planet(this, planetType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
