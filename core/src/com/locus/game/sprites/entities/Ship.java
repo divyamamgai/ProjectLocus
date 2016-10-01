@@ -1,9 +1,10 @@
 package com.locus.game.sprites.entities;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.locus.game.screens.PlayScreen;
+import com.locus.game.levels.Level;
 import com.locus.game.sprites.bullets.Bullet;
 
 /**
@@ -36,17 +37,17 @@ public class Ship extends Entity {
     private Vector2 bulletPosition;
     private short bulletsFired;
 
-    public Ship(PlayScreen playScreen, Ship.Type type, float x, float y) {
+    public Ship(Level level, Ship.Type type, float x, float y) {
 
-        this.playScreen = playScreen;
+        this.level = level;
 
-        definition = playScreen.entityLoader.get(Entity.Type.Ship, type.ordinal());
+        definition = level.entityLoader.get(Entity.Type.Ship, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
         setSize(definition.width, definition.height);
 
-        body = playScreen.gameWorld.createBody(definition.bodyDef);
+        body = level.world.createBody(definition.bodyDef);
 
         body.setTransform(x, y, 0);
         body.setLinearDamping(LINEAR_DAMPING);
@@ -64,12 +65,12 @@ public class Ship extends Entity {
 
     }
 
-    void launchBullet(Bullet.Type type) {
+    void fireBullet(Bullet.Type type) {
         if (bulletsFired <= 2) {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                playScreen.bulletList.add(new Bullet(playScreen, type, this,
+                level.bulletList.add(new Bullet(level, type, this,
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad));
             }
@@ -80,10 +81,14 @@ public class Ship extends Entity {
     }
 
     @Override
-    public void drawHealth() {
+    public void drawHealth(SpriteBatch spriteBatch) {
         Vector2 bodyPosition = body.getPosition();
-        playScreen.game.spriteBatch.draw(playScreen.healthBackgroundTexture, bodyPosition.x - 3f, bodyPosition.y + 3f, 6f, 0.5f);
-        playScreen.game.spriteBatch.draw(playScreen.healthForegroundTexture, bodyPosition.x - 3f, bodyPosition.y + 3f, 6f * (health / 200f), 0.5f);
+        spriteBatch.draw(level.healthBackgroundTexture,
+                bodyPosition.x - 3f, bodyPosition.y + 3f,
+                6f, 0.5f);
+        spriteBatch.draw(level.healthForegroundTexture,
+                bodyPosition.x - 3f, bodyPosition.y + 3f,
+                6f * (health / 200f), 0.5f);
     }
 
     @Override
@@ -109,14 +114,14 @@ public class Ship extends Entity {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            playScreen.destroyEntityStack.push(this);
+            level.destroyEntityStack.push(this);
         }
     }
 
     @Override
     public void destroy() {
-        playScreen.gameWorld.destroyBody(body);
-        playScreen.entityList.remove(this);
+        level.world.destroyBody(body);
+        level.entityList.remove(this);
     }
 
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.locus.game.levels.Level;
 import com.locus.game.screens.PlayScreen;
 import com.locus.game.sprites.entities.Ship;
 
@@ -26,18 +27,18 @@ public class Bullet extends Sprite {
 
     }
 
-    private PlayScreen playScreen;
+    private Level level;
     public Ship ship;
     public Body body;
     public BulletLoader.Definition definition;
     private boolean isAlive = true;
 
-    public Bullet(PlayScreen playScreen, Type type, Ship ship, Vector2 position, float angleRad) {
+    public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
 
-        this.playScreen = playScreen;
+        this.level = level;
         this.ship = ship;
 
-        definition = playScreen.bulletLoader.get(type);
+        definition = level.bulletLoader.get(type);
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
@@ -47,7 +48,7 @@ public class Bullet extends Sprite {
         definition.bodyDef.angle = angleRad;
         definition.bodyDef.linearVelocity.set(0, definition.speed).rotateRad(angleRad);
 
-        body = playScreen.gameWorld.createBody(definition.bodyDef);
+        body = level.world.createBody(definition.bodyDef);
         body.setUserData(this);
         body.applyLinearImpulse(ship.body.getLinearVelocity(), position, true);
         definition.attachFixture(body);
@@ -56,7 +57,7 @@ public class Bullet extends Sprite {
 
         update();
 
-        playScreen.timer.scheduleTask(new BulletDieTask(this), definition.life);
+        PlayScreen.timer.scheduleTask(new BulletDieTask(this), definition.life);
 
     }
 
@@ -74,13 +75,13 @@ public class Bullet extends Sprite {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            playScreen.destroyBulletStack.push(this);
+            level.destroyBulletStack.push(this);
         }
     }
 
     public void destroy() {
-        playScreen.gameWorld.destroyBody(body);
-        playScreen.bulletList.remove(this);
+        level.world.destroyBody(body);
+        level.bulletList.remove(this);
     }
 
 }

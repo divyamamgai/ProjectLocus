@@ -20,7 +20,7 @@ public class Main extends Game implements Disposable {
     public static final float WORLD_HEIGHT = 1280f;
     public static final float HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2f;
     public static final float WORLD_DIAGONAL = (float) Math.sqrt(WORLD_WIDTH * WORLD_WIDTH + WORLD_HEIGHT * WORLD_HEIGHT);
-    // Desired FPS of the game.
+    // Desired FPS of the main.
     public static final float FPS = 1 / 60f;
     public static final int VELOCITY_ITERATIONS = 6;
     public static final int POSITION_ITERATIONS = 2;

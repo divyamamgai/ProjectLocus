@@ -1,9 +1,10 @@
 package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.locus.game.screens.PlayScreen;
+import com.locus.game.levels.Level;
 
 /**
  * Created by Divya Mamgai on 9/20/2016.
@@ -24,7 +25,7 @@ public abstract class Entity extends Sprite {
 
     }
 
-    PlayScreen playScreen;
+    Level level;
     public Body body;
     public EntityLoader.Definition definition;
     public float health;
@@ -60,7 +61,7 @@ public abstract class Entity extends Sprite {
 //        super(sprite);
 //    }
 
-    public abstract void drawHealth();
+    public abstract void drawHealth(SpriteBatch spriteBatch);
 
     public abstract void update();
 

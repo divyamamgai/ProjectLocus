@@ -1,11 +1,13 @@
 package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.Main;
+import com.locus.game.levels.Level;
 import com.locus.game.screens.PlayScreen;
 
 /**
@@ -32,18 +34,18 @@ public class Moon extends Entity {
     private Circle gravityCircle;
     private Vector2 planetPosition, orbitalVelocity;
 
-    public Moon(PlayScreen playScreen, Moon.Type type, float planetX, float planetY,
+    public Moon(Level level, Moon.Type type, float planetX, float planetY,
                 float orbitRadius, float orbitalAngle) {
 
-        this.playScreen = playScreen;
+        this.level = level;
 
-        definition = playScreen.entityLoader.get(Entity.Type.Moon, type.ordinal());
+        definition = level.entityLoader.get(Entity.Type.Moon, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
         setSize(definition.width, definition.height);
 
-        body = playScreen.gameWorld.createBody(definition.bodyDef);
+        body = level.world.createBody(definition.bodyDef);
 
         Vector2 moonPosition = (new Vector2(orbitRadius, 0)).rotate(orbitalAngle)
                 .add(planetX, planetY);
@@ -73,7 +75,7 @@ public class Moon extends Entity {
     }
 
     @Override
-    public void drawHealth() {
+    public void drawHealth(SpriteBatch spriteBatch) {
 
     }
 
@@ -107,14 +109,14 @@ public class Moon extends Entity {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            playScreen.destroyEntityStack.push(this);
+            level.destroyEntityStack.push(this);
         }
     }
 
     @Override
     public void destroy() {
-        playScreen.gameWorld.destroyBody(body);
-        playScreen.entityList.remove(this);
+        level.world.destroyBody(body);
+        level.entityList.remove(this);
     }
 
 }

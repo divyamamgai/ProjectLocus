@@ -64,7 +64,7 @@ public class BodyEditorLoader {
      * Also, saved shapes are normalized. As shown in the tool, the width of
      * the image is considered to be always 1 meter. Thus, you need to provide
      * a scale factor so the polygons get resized according to your needs (not
-     * every body is 1 meter large in your game, I guess).
+     * every body is 1 meter large in your main, I guess).
      *
      * @param body  The Box2d body you want to attach the fixture to.
      * @param name  The name of the fixture you want to load.
@@ -132,7 +132,7 @@ public class BodyEditorLoader {
 
         // Changes done by - Divya Mamgai
         // Slight modification to be done to reduce the precession of the positions which are
-        // causing some weird bug in the game like Ship's actual position not matching up with
+        // causing some weird bug in the main like Ship's actual position not matching up with
         // that of the Box2D body.;
         vec.set(rbModel.origin).scl(scale);
         vec.set(Math.round(vec.x * 100f) / 100f, Math.round(vec.y * 100f) / 100f);

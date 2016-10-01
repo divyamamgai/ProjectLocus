@@ -1,11 +1,11 @@
 package com.locus.game.sprites.entities;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.locus.game.screens.PlayScreen;
+import com.locus.game.levels.Level;
 
 /**
  * Created by Divya Mamgai on 9/23/2016.
@@ -30,17 +30,17 @@ public class Planet extends Entity {
 
     private Circle gravityCircle;
 
-    public Planet(PlayScreen playScreen, Planet.Type type, float x, float y) {
+    public Planet(Level level, Planet.Type type, float x, float y) {
 
-        this.playScreen = playScreen;
+        this.level = level;
 
-        definition = playScreen.entityLoader.get(Entity.Type.Planet, type.ordinal());
+        definition = level.entityLoader.get(Entity.Type.Planet, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
         setSize(definition.width, definition.height);
 
-        body = playScreen.gameWorld.createBody(definition.bodyDef);
+        body = level.world.createBody(definition.bodyDef);
 
         body.setTransform(x, y, 0);
         body.setUserData(this);
@@ -69,7 +69,7 @@ public class Planet extends Entity {
     }
 
     @Override
-    public void drawHealth() {
+    public void drawHealth(SpriteBatch spriteBatch) {
 
     }
 
@@ -91,14 +91,14 @@ public class Planet extends Entity {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            playScreen.destroyEntityStack.push(this);
+            level.destroyEntityStack.push(this);
         }
     }
 
     @Override
     public void destroy() {
-        playScreen.gameWorld.destroyBody(body);
-        playScreen.entityList.remove(this);
+        level.world.destroyBody(body);
+        level.entityList.remove(this);
     }
 
 }

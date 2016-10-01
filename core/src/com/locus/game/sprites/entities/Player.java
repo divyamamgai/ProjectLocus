@@ -1,9 +1,7 @@
 package com.locus.game.sprites.entities;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
-import com.locus.game.screens.PlayScreen;
+import com.locus.game.levels.Level;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.tools.InputController;
 
@@ -14,8 +12,8 @@ import com.locus.game.tools.InputController;
 
 public class Player extends Ship implements InputController.InputCallBack {
 
-    public Player(PlayScreen playScreen, Ship.Type shipType, float x, float y) {
-        super(playScreen, shipType, x, y);
+    public Player(Level level, Ship.Type shipType, float x, float y) {
+        super(level, shipType, x, y);
     }
 
     @Override
@@ -38,30 +36,25 @@ public class Player extends Ship implements InputController.InputCallBack {
 
     @Override
     public void fire() {
-        launchBullet(Bullet.Type.Small);
+        fireBullet(Bullet.Type.Small);
     }
 
-    public void handleInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            applyThrust(true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            applyThrust(false);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            applyRotation(false);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            applyRotation(true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            launchBullet(Bullet.Type.Small);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        playScreen.gameWorld.destroyBody(body);
-    }
+//    public void handleInput() {
+//        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+//            applyThrust(true);
+//        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+//            applyThrust(false);
+//        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+//            applyRotation(false);
+//        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+//            applyRotation(true);
+//        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+//            fireBullet(Bullet.Type.Small);
+//        }
+//    }
 
 }
