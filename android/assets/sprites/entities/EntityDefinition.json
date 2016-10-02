@@ -8,8 +8,8 @@
       "restitution": 0.2,
       "width": 6.86,
       "height": 6,
-      "thrustSpeed": 30,
-      "rotationSpeed": 20,
+      "thrustSpeed": 38,
+      "rotationSpeed": 24,
       "maxSpeed": 64,
       "maxHealth": 2100,
       "mass": 5000,
@@ -35,7 +35,7 @@
       "width": 7.25,
       "height": 6,
       "thrustSpeed": 48,
-      "rotationSpeed": 28,
+      "rotationSpeed": 32,
       "maxSpeed": 72,
       "maxHealth": 1800,
       "mass": 3500,
@@ -60,20 +60,20 @@
       "restitution": 0.2,
       "width": 9.1,
       "height": 6.6,
-      "thrustSpeed": 24,
-      "rotationSpeed": 16,
-      "maxSpeed": 50,
+      "thrustSpeed": 48,
+      "rotationSpeed": 32,
+      "maxSpeed": 60,
       "maxHealth": 3000,
       "mass": 7000,
       "weaponPosition": [
         {
           "bulletType": 0,
-          "x": 2,
+          "x": 2.2,
           "y": 4
         },
         {
           "bulletType": 0,
-          "x": -2,
+          "x": -2.2,
           "y": 4
         }
       ]

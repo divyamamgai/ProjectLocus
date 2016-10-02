@@ -1,6 +1,7 @@
 package com.locus.game;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -18,7 +19,7 @@ import com.locus.game.sprites.entities.Ship;
 
 import java.util.ArrayList;
 
-public class Main extends Game implements Disposable {
+public class ProjectLocus extends Game implements Disposable {
 
     // GRAVITY in metres/seconds^2
     public static final Vector2 GRAVITY = new Vector2(0, 0);
@@ -28,13 +29,13 @@ public class Main extends Game implements Disposable {
 
     // Virtual Width of the Game World in meters.
     private static final float WORLD_WIDTH = 2048f;
-    public static final float HALF_WORLD_WIDTH = WORLD_WIDTH / 2f;
+    public static final float WORLD_HALF_WIDTH = WORLD_WIDTH / 2f;
     // Virtual Height of the Game World in meters.
     private static final float WORLD_HEIGHT = 2048f;
-    public static final float HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2f;
+    public static final float WORLD_HALF_HEIGHT = WORLD_HEIGHT / 2f;
     public static final float WORLD_DIAGONAL = (float) Math.sqrt(WORLD_WIDTH * WORLD_WIDTH + WORLD_HEIGHT * WORLD_HEIGHT);
 
-    // Desired FPS of the main and Box2D configuration variables.
+    // Desired FPS of the projectLocus and Box2D configuration variables.
     public static final float FPS = 1 / 60f;
     public static final int VELOCITY_ITERATIONS = 6;
     public static final int POSITION_ITERATIONS = 2;
@@ -46,20 +47,20 @@ public class Main extends Game implements Disposable {
     public SpriteBatch spriteBatch;
 
     private static float aspectRatio = 1f;
-    public static float cameraHeight = 100f;
-    public static float cameraHalfHeight = cameraHeight / 2f;
-    public static float cameraWidth = cameraHeight * aspectRatio;
-    public static float cameraHalfWidth = cameraWidth / 2f;
-
-    public static void resizeCamera(int width, int height) {
-        aspectRatio = (float) width / (float) height;
-        cameraWidth = cameraHeight * aspectRatio;
-        cameraHalfWidth = cameraWidth / 2f;
-    }
+    public static int screenCameraWidth = 854;
+    public static int screenCameraHalfWidth = screenCameraWidth / 2;
+    public static int screenCameraHeight = 480;
+    public static int screenCameraHalfHeight = screenCameraHeight / 2;
+    public static float worldCameraHeight = 100f;
+    public static float worldCameraHalfHeight = worldCameraHeight / 2f;
+    public static float worldCameraWidth = worldCameraHeight * aspectRatio;
+    public static float worldCameraHalfWidth = worldCameraWidth / 2f;
 
     // Common Assets, for now we will cache everything since it is all very small.
-    public BitmapFont font1, font2, font3;
-    public BitmapFont font1Selected, font2Selected, font3Selected;
+    public AssetManager assetManager;
+    public BitmapFont font24, font32;
+    public BitmapFont font24Selected, font32Selected;
+    public static Color fontSelectedColor = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);
     public GlyphLayout glyphLayout;
     public ArrayList<TiledMap> tiledMapList;
     public TextureAtlas uiTextureAtlas;
@@ -69,8 +70,7 @@ public class Main extends Game implements Disposable {
     public TextureAtlas moonTextureAtlas;
     public BulletLoader bulletLoader;
     public EntityLoader entityLoader;
-    public Color playerColor;
-    public Ship.Type playerShipType;
+    public Ship.Property playerShipProperty;
 
     @Override
     public void create() {
@@ -81,10 +81,10 @@ public class Main extends Game implements Disposable {
         Box2D.init();
 
         spriteBatch = new SpriteBatch();
-
+        assetManager = new AssetManager();
         tiledMapList = new ArrayList<TiledMap>();
-
         glyphLayout = new GlyphLayout();
+        playerShipProperty = new Ship.Property();
 
         setScreen(new LoadingScreen(this));
 
@@ -95,17 +95,18 @@ public class Main extends Game implements Disposable {
         super.render();
     }
 
+    public static void resizeCamera(int width, int height) {
+        aspectRatio = (float) width / (float) height;
+        screenCameraWidth = (int) (screenCameraHeight * aspectRatio);
+        screenCameraHalfWidth = screenCameraWidth / 2;
+        worldCameraWidth = worldCameraHeight * aspectRatio;
+        worldCameraHalfWidth = worldCameraWidth / 2f;
+    }
+
     @Override
     public void dispose() {
-        font1.dispose();
-        font2.dispose();
-        font3.dispose();
-        uiTextureAtlas.dispose();
-        bulletTextureAtlas.dispose();
-        shipTextureAtlas.dispose();
-        planetTextureAtlas.dispose();
-        moonTextureAtlas.dispose();
-        bulletLoader.dispose();
+        assetManager.clear();
+        assetManager.dispose();
         entityLoader.dispose();
         spriteBatch.dispose();
     }

@@ -16,7 +16,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 
 import java.util.ArrayList;
 
@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * Multi Player Select Screen
  */
 
-class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+class SelectScreenMode implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private static final float CAMERA_MOVEMENT_SPEED = 0.05f;
     private static final float CAMERA_MOVEMENT_RADIUS = 512f;
@@ -71,14 +71,14 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
         }
 
         public void position() {
-            x = Main.cameraHalfWidth - halfWidth;
+            x = ProjectLocus.screenCameraHalfWidth - halfWidth;
             y = menuStartPositionY + dy;
         }
 
     }
 
-    private Main main;
-    private PlayerSelectScreen playerSelectScreen;
+    private ProjectLocus projectLocus;
+    private SelectScreenPlayer selectScreenPlayer;
     private OrthographicCamera foregroundCamera, backgroundCamera;
     private TiledMapRenderer tiledMapRenderer;
     private Sprite logo;
@@ -86,33 +86,39 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
     private int selectedMenuOption;
     private InputMultiplexer inputMultiplexer;
 
-    MultiPlayerSelectScreen(Main main, PlayerSelectScreen playerSelectScreen) {
+    SelectScreenMode(ProjectLocus projectLocus, SelectScreenPlayer selectScreenPlayer) {
 
-        this.main = main;
-        this.playerSelectScreen = playerSelectScreen;
-        backgroundMovementAngleRad = playerSelectScreen.backgroundMovementAngleRad;
+        this.projectLocus = projectLocus;
+        this.selectScreenPlayer = selectScreenPlayer;
+        backgroundMovementAngleRad = selectScreenPlayer.backgroundMovementAngleRad;
 
-        foregroundCamera = new OrthographicCamera(Main.cameraWidth, Main.cameraHeight);
-        foregroundCamera.setToOrtho(false, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraHalfWidth,
+                ProjectLocus.screenCameraHalfHeight);
         foregroundCamera.update();
 
-        backgroundCamera = new OrthographicCamera(Main.cameraWidth, Main.cameraHeight);
-        backgroundCamera.setToOrtho(false, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
+        backgroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH,
+                ProjectLocus.WORLD_HALF_HEIGHT);
         backgroundCamera.update();
 
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(main.tiledMapList.get(0),
-                Main.TILED_MAP_SCALE);
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
+                ProjectLocus.TILED_MAP_SCALE);
 
-        logo = main.uiTextureAtlas.createSprite("logo");
-        logo.setSize(71.31f, 25f);
+        logo = projectLocus.uiTextureAtlas.createSprite("logo");
+        logo.setSize(366, 128);
 
         menuOptionList = new ArrayList<MenuOption>();
-        menuOptionList.add(new MenuOption(main.font1, main.font1Selected, main.glyphLayout,
-                "Host", 0));
-        menuOptionList.add(new MenuOption(main.font1, main.font1Selected, main.glyphLayout,
-                "Join", -10f));
-        menuOptionList.add(new MenuOption(main.font1, main.font1Selected, main.glyphLayout,
-                "Back", -20f));
+        menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
+                projectLocus.glyphLayout, "Host", 0));
+        menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
+                projectLocus.glyphLayout, "Join", -48f));
+        menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
+                projectLocus.glyphLayout, "Practice", -96f));
+        menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
+                projectLocus.glyphLayout, "Back", -144f));
 
         selectedMenuOption = 0;
         menuOptionList.get(selectedMenuOption).isSelected = true;
@@ -125,10 +131,10 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
 
     private void positionUI() {
 
-        logo.setPosition(Main.cameraHalfWidth - logo.getWidth() / 2,
-                Main.cameraHeight - logo.getHeight() - 10f);
+        logo.setPosition(ProjectLocus.screenCameraHalfWidth - logo.getWidth() / 2,
+                ProjectLocus.screenCameraHeight - logo.getHeight() - 24f);
 
-        menuStartPositionY = Main.cameraHeight - logo.getHeight() - 28f;
+        menuStartPositionY = ProjectLocus.screenCameraHeight - logo.getHeight() - 96f;
 
         for (MenuOption menuOption : menuOptionList) {
             menuOption.position();
@@ -148,33 +154,35 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
 
         backgroundMovementAngleRad += delta * CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
-                Main.HALF_WORLD_WIDTH +
+                ProjectLocus.WORLD_HALF_WIDTH +
                         CAMERA_MOVEMENT_RADIUS * MathUtils.cos(backgroundMovementAngleRad),
-                Main.HALF_WORLD_HEIGHT +
+                ProjectLocus.WORLD_HALF_HEIGHT +
                         CAMERA_MOVEMENT_RADIUS * MathUtils.sin(backgroundMovementAngleRad), 0);
         backgroundCamera.update();
 
         tiledMapRenderer.setView(backgroundCamera);
         tiledMapRenderer.render();
 
-        main.spriteBatch.setProjectionMatrix(foregroundCamera.combined);
-        main.spriteBatch.begin();
+        projectLocus.spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+        projectLocus.spriteBatch.begin();
 
-        logo.draw(main.spriteBatch);
+        logo.draw(projectLocus.spriteBatch);
 
         for (MenuOption menuOption : menuOptionList) {
-            menuOption.draw(main.spriteBatch);
+            menuOption.draw(projectLocus.spriteBatch);
         }
 
-        main.spriteBatch.end();
+        projectLocus.spriteBatch.end();
 
     }
 
     @Override
     public void resize(int width, int height) {
-        Main.resizeCamera(width, height);
-        foregroundCamera.setToOrtho(false, Main.cameraWidth, Main.cameraHeight);
-        backgroundCamera.setToOrtho(false, Main.cameraWidth, Main.cameraHeight);
+        ProjectLocus.resizeCamera(width, height);
+        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+        backgroundCamera.setToOrtho(false, ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
         positionUI();
     }
 
@@ -223,8 +231,11 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
             case 1:
                 break;
             case 2:
-                playerSelectScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
-                main.setScreen(playerSelectScreen);
+                projectLocus.setScreen(new PlayScreenPractice(projectLocus, this));
+                break;
+            case 3:
+                selectScreenPlayer.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                projectLocus.setScreen(selectScreenPlayer);
                 break;
         }
     }

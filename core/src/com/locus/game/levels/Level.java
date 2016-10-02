@@ -3,22 +3,20 @@ package com.locus.game.levels;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
-import com.locus.game.Main;
+import com.badlogic.gdx.utils.Timer;
+import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
-import com.locus.game.sprites.bullets.BulletLoader;
 import com.locus.game.sprites.entities.Entity;
-import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
@@ -33,28 +31,23 @@ import java.util.Stack;
  */
 public class Level implements Disposable {
 
-//    private static final Circle LEVEL_CIRCLE = new Circle(Main.HALF_WORLD_WIDTH,
-//            Main.HALF_WORLD_HEIGHT, 512f);
+//    private static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
+//            ProjectLocus.WORLD_HALF_HEIGHT, 512f);
 
-    private static final float CAMERA_FOLLOW_SPEED = 2f;
-
-    private static float aspectRatio = (float) Gdx.graphics.getWidth() / (float) Gdx.graphics.getHeight();
-    private static float cameraHeight = 100f;
-    private static float cameraHalfHeight = cameraHeight / 2f;
-    private static float cameraWidth = cameraHeight * aspectRatio;
-    private static float cameraHalfWidth = cameraWidth / 2f;
+    private static final float CAMERA_FOLLOW_SPEED = 3f;
 
     private InputController inputController;
     private OrthographicCamera camera;
 
-    public Main main;
+    public ProjectLocus projectLocus;
+    public Timer timer;
     public World world;
     public ArrayList<Bullet> bulletList;
     public Stack<Bullet> destroyBulletStack;
     public ArrayList<Entity> entityList;
     public Stack<Entity> destroyEntityStack;
     public ArrayList<Moon> moonList;
-    public Texture barBackgroundTexture, barForegroundTexture;
+    public TextureRegion barBackgroundTexture, barForegroundTexture;
 
     private Ship player;
     private Planet planet;
@@ -65,15 +58,17 @@ public class Level implements Disposable {
     private OrthographicCamera fpsCamera;
     private BitmapFont fpsFont;
 
-    public Level(Main main, Planet.Type planetType, ArrayList<Moon.Property> moonPropertyList,
-                 int backgroundType) {
+    public Level(ProjectLocus projectLocus, Planet.Type planetType,
+                 ArrayList<Moon.Property> moonPropertyList, int backgroundType) {
 
-        this.main = main;
+        this.projectLocus = projectLocus;
 
-        camera = new OrthographicCamera(cameraWidth, cameraHeight);
+        timer = new Timer();
+
+        camera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
 
         // Box2D Variables
-        world = new World(Main.GRAVITY, true);
+        world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
         bulletList = new ArrayList<Bullet>();
@@ -81,29 +76,30 @@ public class Level implements Disposable {
         entityList = new ArrayList<Entity>();
         destroyEntityStack = new Stack<Entity>();
 
-        entityList.add(player = new Ship(this, Ship.Type.Fighter,
-                Main.HALF_WORLD_WIDTH + 250f, Main.HALF_WORLD_HEIGHT));
+        entityList.add(player = new Ship(this, projectLocus.playerShipProperty,
+                ProjectLocus.WORLD_HALF_WIDTH + 250f, ProjectLocus.WORLD_HALF_HEIGHT));
 
-        planet = new Planet(this, planetType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+        planet = new Planet(this, planetType, ProjectLocus.WORLD_HALF_WIDTH,
+                ProjectLocus.WORLD_HALF_HEIGHT);
 
         moonList = new ArrayList<Moon>();
         for (Moon.Property moonProperty : moonPropertyList) {
-            moonList.add(new Moon(this, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT,
-                    moonProperty));
+            moonList.add(new Moon(this, ProjectLocus.WORLD_HALF_WIDTH,
+                    ProjectLocus.WORLD_HALF_HEIGHT, moonProperty));
         }
 
-        TiledMap tiledMap = new TmxMapLoader().load("backgrounds/" + backgroundType + ".tmx");
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 0.125f);
+        TiledMap tiledMap = projectLocus.tiledMapList.get(backgroundType);
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, ProjectLocus.TILED_MAP_SCALE);
+
+        barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
+        barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
         inputController = new InputController(player);
         Gdx.input.setInputProcessor(inputController);
 
-        barBackgroundTexture = new Texture(Gdx.files.internal("ui/bar/background.png"));
-        barForegroundTexture = new Texture(Gdx.files.internal("ui/bar/foreground.png"));
-
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
-        fpsCamera = new OrthographicCamera(cameraWidth, cameraHeight);
+        fpsCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
         fpsFont = new BitmapFont();
         fpsFont.getData().setScale(0.25f);
         fpsFont.setColor(Color.YELLOW);
@@ -145,7 +141,8 @@ public class Level implements Disposable {
             bullet.update();
         }
 
-        world.step(Main.FPS, Main.VELOCITY_ITERATIONS, Main.POSITION_ITERATIONS);
+        world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
+                ProjectLocus.POSITION_ITERATIONS);
 
     }
 
@@ -179,18 +176,14 @@ public class Level implements Disposable {
         spriteBatch.setProjectionMatrix(fpsCamera.combined);
         spriteBatch.begin();
         fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
-                cameraHalfWidth - 5f, cameraHalfHeight - 2f);
+                ProjectLocus.worldCameraWidth - 5f, ProjectLocus.worldCameraHeight - 2f);
         spriteBatch.end();
 
     }
 
-    public void resize(int width, int height) {
-        aspectRatio = (float) width / (float) height;
-        camera.setToOrtho(
-                false,
-                (cameraWidth = (cameraHeight * aspectRatio)),
-                cameraHeight);
-        cameraHalfWidth = cameraWidth / 2f;
+    public void resize() {
+        camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
+        fpsCamera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
     }
 
 //    public boolean isInLevel(Vector2 positionUI) {
@@ -199,11 +192,8 @@ public class Level implements Disposable {
 
     @Override
     public void dispose() {
+        timer.clear();
         world.dispose();
-
-        barForegroundTexture.dispose();
-        barBackgroundTexture.dispose();
-
         box2DDebugRenderer.dispose();
     }
 }

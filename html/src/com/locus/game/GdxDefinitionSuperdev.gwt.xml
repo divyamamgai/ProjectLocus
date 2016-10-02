@@ -8,7 +8,7 @@
 	<inherits name='com.badlogic.ashley_gwt' />
 	<inherits name='Box2DLights' />
 
-    <inherits name='com.locus.main.GdxDefinition' />
+    <inherits name='com.locus.projectLocus.GdxDefinition' />
     
     <collapse-all-properties />
     

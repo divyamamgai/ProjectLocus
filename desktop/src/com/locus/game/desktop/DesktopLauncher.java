@@ -2,7 +2,7 @@ package com.locus.game.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 
 public class DesktopLauncher {
     public static void main(String[] arg) {
@@ -13,6 +13,6 @@ public class DesktopLauncher {
         config.vSyncEnabled = true;
         config.foregroundFPS = 60;
         config.backgroundFPS = 60;
-        new LwjglApplication(new Main(), config);
+        new LwjglApplication(new ProjectLocus(), config);
     }
 }

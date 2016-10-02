@@ -15,7 +15,7 @@ android {
         instrumentTest.setRoot('tests')
     }
     defaultConfig {
-        applicationId "com.locus.main"
+        applicationId "com.locus.projectLocus"
         minSdkVersion 8
         targetSdkVersion 23
     }
@@ -68,7 +68,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.locus.main/com.locus.main.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.locus.projectLocus/com.locus.projectLocus.AndroidLauncher'
 }
 
 // sets up the Android Eclipse project, using the old Ant based build.

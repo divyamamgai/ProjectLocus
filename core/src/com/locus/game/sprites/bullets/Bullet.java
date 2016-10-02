@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.locus.game.levels.Level;
-import com.locus.game.screens.MultiPlayerPlayScreen;
 import com.locus.game.sprites.entities.Ship;
 
 /**
@@ -39,10 +38,9 @@ public class Bullet extends Sprite {
         this.level = level;
         this.ship = ship;
 
-        definition = level.main.bulletLoader.get(type);
+        definition = level.projectLocus.bulletLoader.get(type);
 
-        setTexture(definition.texture);
-        setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
+        setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
 
         definition.bodyDef.position.set(position);
@@ -58,7 +56,7 @@ public class Bullet extends Sprite {
 
         update();
 
-        MultiPlayerPlayScreen.timer.scheduleTask(new BulletDieTask(this), definition.life);
+        level.timer.scheduleTask(new BulletDieTask(this), definition.life);
 
     }
 

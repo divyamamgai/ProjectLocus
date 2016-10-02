@@ -2,6 +2,7 @@ package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.locus.game.levels.Level;
@@ -37,21 +38,22 @@ public abstract class Entity extends Sprite {
         super();
     }
 
-//    Entity(Texture texture) {
-//        super(texture);
+    //    Entity(Texture textureRegion) {
+//        super(textureRegion);
+//    }
+//    public Entity(Texture textureRegion, int srcWidth, int srcHeight) {
+//        super(textureRegion, srcWidth, srcHeight);
 //    }
 //
-//    public Entity(Texture texture, int srcWidth, int srcHeight) {
-//        super(texture, srcWidth, srcHeight);
+//    public Entity(Texture textureRegion, int srcX, int srcY, int srcWidth, int srcHeight) {
+//        super(textureRegion, srcX, srcY, srcWidth, srcHeight);
 //    }
 //
-//    public Entity(Texture texture, int srcX, int srcY, int srcWidth, int srcHeight) {
-//        super(texture, srcX, srcY, srcWidth, srcHeight);
-//    }
-//
-//    public Entity(TextureRegion region) {
-//        super(region);
-//    }
+
+    public Entity(TextureRegion region) {
+        super(region);
+    }
+
 //
 //    public Entity(TextureRegion region, int srcX, int srcY, int srcWidth, int srcHeight) {
 //        super(region, srcX, srcY, srcWidth, srcHeight);

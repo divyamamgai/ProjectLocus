@@ -1,16 +1,15 @@
 package com.locus.game.sprites.bullets;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.tools.BodyEditorLoader;
 
@@ -21,16 +20,16 @@ import java.util.HashMap;
  * BulletLoader
  */
 
-public class BulletLoader implements Disposable {
+public class BulletLoader {
 
     private static BodyEditorLoader physicsLoader;
 
-    public static class Definition implements Disposable {
+    public static class Definition {
 
         public Bullet.Type type;
         BodyDef bodyDef;
         FixtureDef fixtureDef;
-        Texture texture;
+        TextureRegion textureRegion;
         float width, halfWidth, height, halfHeight, speed;
         Vector2 bodyOrigin;
         int life;
@@ -53,7 +52,7 @@ public class BulletLoader implements Disposable {
             fixtureDef.filter.maskBits = CollisionDetector.MASK_BULLET;
             fixtureDef.density = bulletJson.getFloat("density");
 
-            texture = bulletTextureAtlas.findRegion(typeString).getTexture();
+            textureRegion = bulletTextureAtlas.findRegion(typeString);
 
             width = bulletJson.getFloat("width");
             halfWidth = width / 2f;
@@ -66,7 +65,7 @@ public class BulletLoader implements Disposable {
             speed = bulletJson.getFloat("speed");
 
             // Set the life of the Bullets till they can travel across the World.
-            life = (int) Math.ceil(Main.WORLD_DIAGONAL / speed);
+            life = (int) Math.ceil(ProjectLocus.WORLD_DIAGONAL / speed);
 
             damage = bulletJson.getFloat("damage");
 
@@ -74,11 +73,6 @@ public class BulletLoader implements Disposable {
 
         void attachFixture(Body body) {
             physicsLoader.attachFixture(body, type.toString(), fixtureDef, width);
-        }
-
-        @Override
-        public void dispose() {
-            texture.dispose();
         }
 
     }
@@ -109,13 +103,6 @@ public class BulletLoader implements Disposable {
 
     public Definition get(Bullet.Type type) {
         return definitionMap.get(type);
-    }
-
-    @Override
-    public void dispose() {
-        for (Bullet.Type bulletType : Bullet.Type.values()) {
-            definitionMap.get(bulletType).dispose();
-        }
     }
 
 }

@@ -9,7 +9,7 @@
 	<inherits name='Box2DLights' />
 
 	<inherits name='ProjectLocus' />
-	<entry-point class='com.locus.main.client.HtmlLauncher' />
+	<entry-point class='com.locus.projectLocus.client.HtmlLauncher' />
 	
 	<set-configuration-property name="gdx.assetpath" value="../android/assets" />
 </module>

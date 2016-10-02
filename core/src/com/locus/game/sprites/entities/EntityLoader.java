@@ -1,7 +1,7 @@
 package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.tools.BodyEditorLoader;
@@ -36,7 +36,7 @@ public class EntityLoader implements Disposable {
         String path;
         BodyDef bodyDef;
         FixtureDef fixtureDef;
-        Texture texture;
+        TextureRegion textureRegion;
         public float width, height, halfWidth, halfHeight, maxSpeed, maxHealth;
         public int maxDamage;
         float radius, mass, gravitationalMass, thrustSpeed, rotationSpeed, maxSpeed2,
@@ -45,7 +45,7 @@ public class EntityLoader implements Disposable {
         HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
         CircleShape circleShape;
 
-        Definition(Main main, Entity.Type type, int secondaryType, JsonValue entityJson) {
+        Definition(ProjectLocus projectLocus, Entity.Type type, int secondaryType, JsonValue entityJson) {
 
             this.type = type;
             this.secondaryType = secondaryType;
@@ -80,7 +80,7 @@ public class EntityLoader implements Disposable {
                         weaponPositionMap.get(bulletType).add(new Vector2(
                                 weaponPositionJson.getFloat("x"),
                                 weaponPositionJson.getFloat("y")));
-                        maxDamage += main.bulletLoader.get(bulletType).damage;
+                        maxDamage += projectLocus.bulletLoader.get(bulletType).damage;
                     }
 
                     width = entityJson.getFloat("width");
@@ -94,8 +94,8 @@ public class EntityLoader implements Disposable {
 
                     bodyOrigin = physicsLoader.getOrigin(path, width).cpy();
 
-                    texture = main.shipTextureAtlas.findRegion(String.valueOf(secondaryType))
-                            .getTexture();
+                    textureRegion = projectLocus.shipTextureAtlas
+                            .findRegion(String.valueOf(secondaryType));
 
                     break;
                 case Planet:
@@ -111,8 +111,8 @@ public class EntityLoader implements Disposable {
                         fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
                         fixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
 
-                        texture = main.planetTextureAtlas.findRegion(String.valueOf(secondaryType))
-                                .getTexture();
+                        textureRegion = projectLocus.planetTextureAtlas
+                                .findRegion(String.valueOf(secondaryType));
 
                     } else {
 
@@ -121,8 +121,8 @@ public class EntityLoader implements Disposable {
 
                         orbitalVelocity = entityJson.getFloat("orbitalVelocity");
 
-                        texture = main.moonTextureAtlas.findRegion(String.valueOf(secondaryType))
-                                .getTexture();
+                        textureRegion = projectLocus
+                                .moonTextureAtlas.findRegion(String.valueOf(secondaryType));
 
                     }
 
@@ -154,7 +154,7 @@ public class EntityLoader implements Disposable {
                     Gdx.app.log("EntityLoader.Definition", "Type is invalid for - " + path);
             }
             mass = entityJson.getFloat("mass");
-            gravitationalMass = mass * Main.GRAVITATIONAL_CONSTANT;
+            gravitationalMass = mass * ProjectLocus.GRAVITATIONAL_CONSTANT;
             halfWidth = width / 2f;
             halfHeight = height / 2f;
         }
@@ -164,7 +164,6 @@ public class EntityLoader implements Disposable {
                 case Planet:
                 case Moon:
                     body.createFixture(fixtureDef);
-                    circleShape.dispose();
                     break;
                 default:
                     physicsLoader.attachFixture(body, path, fixtureDef, width);
@@ -173,14 +172,15 @@ public class EntityLoader implements Disposable {
 
         @Override
         public void dispose() {
-            texture.dispose();
+            if (circleShape != null)
+                circleShape.dispose();
         }
 
     }
 
     private HashMap<Entity.Type, ArrayList<Definition>> definitionMap;
 
-    public EntityLoader(Main main) {
+    public EntityLoader(ProjectLocus projectLocus) {
 
         physicsLoader = new BodyEditorLoader(
                 Gdx.files.internal("sprites/entities/EntityPhysicsDefinition.json"));
@@ -204,7 +204,7 @@ public class EntityLoader implements Disposable {
             }
 
             definitionMap.get(entityType).add(
-                    new Definition(main, entityType, secondaryType, entityJson));
+                    new Definition(projectLocus, entityType, secondaryType, entityJson));
 
         }
 

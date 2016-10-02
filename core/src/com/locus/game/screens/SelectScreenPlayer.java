@@ -9,13 +9,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Ship;
@@ -27,16 +27,16 @@ import java.util.HashMap;
  * Player Select Screen
  */
 
-class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+class SelectScreenPlayer implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private static final float CAMERA_MOVEMENT_SPEED = 0.05f;
     private static final float CAMERA_MOVEMENT_RADIUS = 512f;
-    private static final float SHIP_SPRITE_SCALE = 2f;
+    private static final float SHIP_SPRITE_SCALE = 10f;
 
     float backgroundMovementAngleRad;
     private float statPositionX, statPositionY;
 
-    private Main main;
+    private ProjectLocus projectLocus;
     private OrthographicCamera foregroundCamera, backgroundCamera;
     private TiledMapRenderer tiledMapRenderer;
     private Sprite logo, arrowLeft, arrowRight, arrowUp, arrowDown;
@@ -54,36 +54,41 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
             Color.VIOLET
     };
     private InputMultiplexer inputMultiplexer;
+    private TextureRegion barBackgroundTexture, barForegroundTexture;
+    private EntityLoader.Definition selectedDefinition;
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
-    PlayerSelectScreen(Main main, float backgroundMovementAngleRad) {
+    SelectScreenPlayer(ProjectLocus projectLocus, float backgroundMovementAngleRad) {
 
-        this.main = main;
+        this.projectLocus = projectLocus;
         this.backgroundMovementAngleRad = backgroundMovementAngleRad;
 
-        foregroundCamera = new OrthographicCamera(Main.cameraWidth, Main.cameraHeight);
-        foregroundCamera.setToOrtho(false, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+        foregroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
+        foregroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
         foregroundCamera.update();
 
-        backgroundCamera = new OrthographicCamera(Main.cameraWidth, Main.cameraHeight);
-        backgroundCamera.setToOrtho(false, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
+        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
+        backgroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
         backgroundCamera.update();
 
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(main.tiledMapList.get(0),
-                Main.TILED_MAP_SCALE);
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
+                ProjectLocus.TILED_MAP_SCALE);
 
-        logo = main.uiTextureAtlas.createSprite("logo");
-        logo.setSize(71.31f, 25f);
+        logo = projectLocus.uiTextureAtlas.createSprite("logo");
+        logo.setSize(366, 128);
 
-        arrowLeft = main.uiTextureAtlas.createSprite("arrowLeft");
-        arrowLeft.setSize(6f, 6f);
-        arrowRight = main.uiTextureAtlas.createSprite("arrowRight");
-        arrowRight.setSize(6f, 6f);
-        arrowUp = main.uiTextureAtlas.createSprite("arrowUp");
-        arrowUp.setSize(4f, 4f);
-        arrowDown = main.uiTextureAtlas.createSprite("arrowDown");
-        arrowDown.setSize(4f, 4f);
+        arrowLeft = projectLocus.uiTextureAtlas.createSprite("arrowLeft");
+        arrowLeft.setSize(16f, 32f);
+        arrowRight = projectLocus.uiTextureAtlas.createSprite("arrowRight");
+        arrowRight.setSize(16f, 32f);
+        arrowUp = projectLocus.uiTextureAtlas.createSprite("arrowUp");
+        arrowUp.setSize(16f, 8f);
+        arrowDown = projectLocus.uiTextureAtlas.createSprite("arrowDown");
+        arrowDown.setSize(16f, 8f);
+
+        barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
+        barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
         shipMap = new HashMap<Ship.Type, Sprite>();
         shipDefinitionMap = new HashMap<Ship.Type, EntityLoader.Definition>();
@@ -91,8 +96,8 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
         Sprite sprite;
         EntityLoader.Definition definition;
         for (Ship.Type shipType : shipTypeArray) {
-            sprite = main.shipTextureAtlas.createSprite(shipType.toString());
-            definition = main.entityLoader.get(Entity.Type.Ship, shipType.ordinal());
+            sprite = projectLocus.shipTextureAtlas.createSprite(shipType.toString());
+            definition = projectLocus.entityLoader.get(Entity.Type.Ship, shipType.ordinal());
             sprite.setSize(definition.width * SHIP_SPRITE_SCALE,
                     definition.height * SHIP_SPRITE_SCALE);
             shipMap.put(shipType, sprite);
@@ -100,6 +105,7 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
         }
 
         selectedShipTypeIndex = selectedShipColorIndex = 0;
+        selectedDefinition = shipDefinitionMap.get(shipTypeArray[selectedShipTypeIndex]);
 
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
@@ -109,24 +115,28 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private void positionUI() {
 
-        logo.setPosition(Main.cameraHalfWidth - logo.getWidth() / 2,
-                Main.cameraHeight - logo.getHeight() - 10f);
+        logo.setPosition(ProjectLocus.screenCameraHalfWidth - logo.getWidth() / 2,
+                ProjectLocus.screenCameraHeight - logo.getHeight() - 24f);
 
-        arrowLeft.setPosition(Main.cameraHalfWidth - 20f, Main.cameraHalfHeight - 8f);
-        arrowRight.setPosition(Main.cameraHalfWidth + 14f, Main.cameraHalfHeight - 8f);
-        arrowUp.setPosition(Main.cameraHalfWidth - 2f, Main.cameraHalfHeight + 5f);
-        arrowDown.setPosition(Main.cameraHalfWidth - 2f, Main.cameraHalfHeight - 19f);
+        arrowLeft.setPosition(ProjectLocus.screenCameraHalfWidth - 96f - arrowLeft.getWidth(),
+                ProjectLocus.screenCameraHalfHeight - arrowLeft.getHeight() / 2 - 16f);
+        arrowRight.setPosition(ProjectLocus.screenCameraHalfWidth + 96f,
+                ProjectLocus.screenCameraHalfHeight - arrowRight.getHeight() / 2 - 16f);
+        arrowUp.setPosition(ProjectLocus.screenCameraHalfWidth - arrowDown.getWidth() / 2,
+                ProjectLocus.screenCameraHalfHeight + 32f);
+        arrowDown.setPosition(ProjectLocus.screenCameraHalfWidth - arrowDown.getWidth() / 2,
+                ProjectLocus.screenCameraHalfHeight - 72f - arrowDown.getHeight());
 
         EntityLoader.Definition definition;
         for (Ship.Type shipType : shipTypeArray) {
-            definition = main.entityLoader.get(Entity.Type.Ship, shipType.ordinal());
+            definition = projectLocus.entityLoader.get(Entity.Type.Ship, shipType.ordinal());
             shipMap.get(shipType).setPosition(
-                    Main.cameraHalfWidth - definition.halfWidth * SHIP_SPRITE_SCALE,
-                    Main.cameraHalfHeight - definition.halfHeight * SHIP_SPRITE_SCALE - 5f);
+                    ProjectLocus.screenCameraHalfWidth - definition.halfWidth * SHIP_SPRITE_SCALE,
+                    ProjectLocus.screenCameraHalfHeight - definition.halfHeight * SHIP_SPRITE_SCALE - 18f);
         }
 
-        statPositionX = Main.cameraHalfWidth - 40f;
-        statPositionY = Main.cameraHalfHeight - 24f;
+        statPositionX = ProjectLocus.screenCameraHalfWidth - 168f;
+        statPositionY = ProjectLocus.screenCameraHalfHeight - 128f;
 
     }
 
@@ -142,64 +152,62 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         backgroundMovementAngleRad += delta * CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
-                Main.HALF_WORLD_WIDTH +
+                ProjectLocus.WORLD_HALF_WIDTH +
                         CAMERA_MOVEMENT_RADIUS * MathUtils.cos(backgroundMovementAngleRad),
-                Main.HALF_WORLD_HEIGHT +
+                ProjectLocus.WORLD_HALF_HEIGHT +
                         CAMERA_MOVEMENT_RADIUS * MathUtils.sin(backgroundMovementAngleRad), 0);
         backgroundCamera.update();
 
         tiledMapRenderer.setView(backgroundCamera);
         tiledMapRenderer.render();
 
-        main.spriteBatch.setProjectionMatrix(foregroundCamera.combined);
-        main.spriteBatch.begin();
+        projectLocus.spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+        projectLocus.spriteBatch.begin();
 
-        logo.draw(main.spriteBatch);
+        logo.draw(projectLocus.spriteBatch);
 
-        shipMap.get(shipTypeArray[selectedShipTypeIndex]).draw(main.spriteBatch);
+        shipMap.get(shipTypeArray[selectedShipTypeIndex]).draw(projectLocus.spriteBatch);
 
-        arrowLeft.draw(main.spriteBatch);
-        arrowRight.draw(main.spriteBatch);
-        arrowUp.draw(main.spriteBatch);
-        arrowDown.draw(main.spriteBatch);
+        arrowLeft.draw(projectLocus.spriteBatch);
+        arrowRight.draw(projectLocus.spriteBatch);
+        arrowUp.draw(projectLocus.spriteBatch);
+        arrowDown.draw(projectLocus.spriteBatch);
 
-        EntityLoader.Definition definition = shipDefinitionMap.get(shipTypeArray[selectedShipTypeIndex]);
-        main.font1.draw(main.spriteBatch, "Health", statPositionX, statPositionY);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barBackground"),
-                statPositionX + 29.5f, statPositionY - 3f,
-                33f, 3f);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barForeground"),
-                statPositionX + 30f, statPositionY - 2.5f,
-                32f * (definition.maxHealth / 3000f),
-                2f);
+        projectLocus.font24.draw(projectLocus.spriteBatch, "Health", statPositionX, statPositionY + 8f);
+        projectLocus.spriteBatch.draw(barBackgroundTexture,
+                statPositionX + 124f, statPositionY - 12f,
+                208f, 24f);
+        projectLocus.spriteBatch.draw(barForegroundTexture,
+                statPositionX + 128f, statPositionY - 8f,
+                200f * (selectedDefinition.maxHealth / 3000f), 16f);
 
-        main.font1.draw(main.spriteBatch, "Speed", statPositionX, statPositionY - 6f);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barBackground"),
-                statPositionX + 29.5f, statPositionY - 9f,
-                33f, 3f);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barForeground"),
-                statPositionX + 30f, statPositionY - 8.5f,
-                32f * (definition.maxSpeed / 72f),
-                2f);
+        projectLocus.font24.draw(projectLocus.spriteBatch, "Speed", statPositionX, statPositionY - 24f);
+        projectLocus.spriteBatch.draw(barBackgroundTexture,
+                statPositionX + 124f, statPositionY - 44f,
+                208f, 24f);
+        projectLocus.spriteBatch.draw(barForegroundTexture,
+                statPositionX + 128f, statPositionY - 40f,
+                200f * (selectedDefinition.maxSpeed / 72f), 16f);
 
-        main.font1.draw(main.spriteBatch, "Power", statPositionX, statPositionY - 12f);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barBackground"),
-                statPositionX + 29.5f, statPositionY - 15f,
-                33f, 3f);
-        main.spriteBatch.draw(main.uiTextureAtlas.findRegion("barForeground"),
-                statPositionX + 30f, statPositionY - 14.5f,
-                32f * (definition.maxDamage / 2f),
-                2f);
+        projectLocus.font24.draw(projectLocus.spriteBatch, "Power", statPositionX, statPositionY - 56f);
+        projectLocus.spriteBatch.draw(barBackgroundTexture,
+                statPositionX + 124f, statPositionY - 76f,
+                208f, 24f);
+        projectLocus.spriteBatch.draw(barForegroundTexture,
+                statPositionX + 128f, statPositionY - 72f,
+                200f * (selectedDefinition.maxDamage / 2f), 16f);
 
-        main.spriteBatch.end();
+        projectLocus.spriteBatch.end();
 
     }
 
     @Override
     public void resize(int width, int height) {
-        Main.resizeCamera(width, height);
-        foregroundCamera.setToOrtho(false, Main.cameraWidth, Main.cameraHeight);
-        backgroundCamera.setToOrtho(false, Main.cameraWidth, Main.cameraHeight);
+        ProjectLocus.resizeCamera(width, height);
+        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+        backgroundCamera.setToOrtho(false, ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
         positionUI();
     }
 
@@ -230,6 +238,7 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
         }
         shipMap.get(shipTypeArray[selectedShipTypeIndex])
                 .setColor(shipColorArray[selectedShipColorIndex]);
+        selectedDefinition = shipDefinitionMap.get(shipTypeArray[selectedShipTypeIndex]);
     }
 
     private void previousShip() {
@@ -239,6 +248,7 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
         }
         shipMap.get(shipTypeArray[selectedShipTypeIndex])
                 .setColor(shipColorArray[selectedShipColorIndex]);
+        selectedDefinition = shipDefinitionMap.get(shipTypeArray[selectedShipTypeIndex]);
     }
 
     private void nextShipColor() {
@@ -260,9 +270,9 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void submit() {
-        main.playerColor = shipColorArray[selectedShipColorIndex];
-        main.playerShipType = shipTypeArray[selectedShipTypeIndex];
-        main.setScreen(new MultiPlayerSelectScreen(main, this));
+        projectLocus.playerShipProperty.color = shipColorArray[selectedShipColorIndex];
+        projectLocus.playerShipProperty.type = shipTypeArray[selectedShipTypeIndex];
+        projectLocus.setScreen(new SelectScreenMode(projectLocus, this));
     }
 
     @Override
@@ -299,17 +309,17 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Vector3 touchPoint = new Vector3(screenX, screenY, 0);
-        foregroundCamera.unproject(touchPoint);
-        if (arrowLeft.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-            previousShip();
-        } else if (arrowRight.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-            nextShip();
-        } else if (arrowUp.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-            previousShipColor();
-        } else if (arrowDown.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-            nextShipColor();
-        }
+//        Vector3 touchPoint = new Vector3(screenX, screenY, 0);
+//        foregroundCamera.unproject(touchPoint);
+//        if (arrowLeft.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+//            previousShip();
+//        } else if (arrowRight.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+//            nextShip();
+//        } else if (arrowUp.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+//            previousShipColor();
+//        } else if (arrowDown.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+//            nextShipColor();
+//        }
         return false;
     }
 

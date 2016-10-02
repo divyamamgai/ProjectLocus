@@ -1,5 +1,6 @@
 package com.locus.game.sprites.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
@@ -26,6 +27,11 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     }
 
+    public static class Property {
+        public Ship.Type type;
+        public Color color;
+    }
+
     private static final float LINEAR_DAMPING = 1f;
     private static final float ANGULAR_DAMPING = 4f;
 
@@ -33,15 +39,15 @@ public class Ship extends Entity implements InputController.InputCallBack {
     private Vector2 bulletPosition;
     private short bulletsFired;
 
-    public Ship(Level level, Ship.Type type, float x, float y) {
+    public Ship(Level level, Ship.Property property, float x, float y) {
 
         this.level = level;
 
-        definition = level.main.entityLoader.get(Entity.Type.Ship, type.ordinal());
+        definition = level.projectLocus.entityLoader.get(Entity.Type.Ship, property.type.ordinal());
 
-        setTexture(definition.texture);
-        setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
+        setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
+        setColor(property.color);
 
         body = level.world.createBody(definition.bodyDef);
 
@@ -102,10 +108,10 @@ public class Ship extends Entity implements InputController.InputCallBack {
             float percentageHealth = health / definition.maxHealth;
 
             spriteBatch.draw(level.barBackgroundTexture,
-                    bodyPosition.x - 3f, bodyPosition.y + 3f,
+                    bodyPosition.x - definition.halfWidth, bodyPosition.y + 3f,
                     definition.width, 0.5f);
             spriteBatch.draw(level.barForegroundTexture,
-                    bodyPosition.x - 3f, bodyPosition.y + 3f,
+                    bodyPosition.x - definition.halfWidth, bodyPosition.y + 3f,
                     definition.width * percentageHealth, 0.5f);
 
         }

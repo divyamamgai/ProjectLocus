@@ -5,50 +5,50 @@ filter: Nearest,Nearest
 repeat: none
 logo
   rotate: false
-  xy: 1, 583
+  xy: 4, 76
   size: 1024, 359
   orig: 1024, 359
   offset: 0, 0
   index: -1
 barBackground
   rotate: false
-  xy: 1, 517
+  xy: 4, 4
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 barForeground
   rotate: false
-  xy: 1027, 878
+  xy: 1036, 371
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 arrowDown
   rotate: false
-  xy: 1, 259
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-arrowLeft
-  rotate: false
-  xy: 1027, 620
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-arrowRight
-  rotate: false
-  xy: 1, 1
-  size: 256, 256
-  orig: 256, 256
+  xy: 1036, 235
+  size: 256, 128
+  orig: 256, 128
   offset: 0, 0
   index: -1
 arrowUp
   rotate: false
-  xy: 259, 259
-  size: 256, 256
-  orig: 256, 256
+  xy: 1036, 99
+  size: 256, 128
+  orig: 256, 128
+  offset: 0, 0
+  index: -1
+arrowLeft
+  rotate: false
+  xy: 1300, 107
+  size: 128, 256
+  orig: 128, 256
+  offset: 0, 0
+  index: -1
+arrowRight
+  rotate: false
+  xy: 1436, 107
+  size: 128, 256
+  orig: 128, 256
   offset: 0, 0
   index: -1

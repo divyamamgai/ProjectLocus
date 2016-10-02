@@ -2,11 +2,10 @@ package com.locus.game.screens;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.locus.game.Main;
+import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
@@ -18,16 +17,16 @@ import java.util.ArrayList;
  * Created by Divya Mamgai on 9/6/2016.
  * Multi Player Play Screen
  */
-public class MultiPlayerPlayScreen implements Screen {
+public class PlayScreenMultiPlayer implements Screen {
 
-    public static Timer timer;
-
-    public Main main;
+    public ProjectLocus projectLocus;
+    private SelectScreenMode selectScreenMode;
     private Level level;
 
-    public MultiPlayerPlayScreen(Main main) {
-        
-        this.main = main;
+    public PlayScreenMultiPlayer(ProjectLocus projectLocus, SelectScreenMode selectScreenMode) {
+
+        this.projectLocus = projectLocus;
+        this.selectScreenMode = selectScreenMode;
 
         Server server = new Server();
         server.addListener(new Listener() {
@@ -45,11 +44,9 @@ public class MultiPlayerPlayScreen implements Screen {
         ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
         moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
         moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
-        moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, Main.PI_BY_TWO));
+        moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
 
-        level = new Level(main, Planet.Type.Gas, moonPropertyList, 1);
-
-        timer = new Timer();
+        level = new Level(projectLocus, Planet.Type.Gas, moonPropertyList, 1);
 
     }
 
@@ -62,13 +59,14 @@ public class MultiPlayerPlayScreen implements Screen {
     public void render(float delta) {
 
         level.update(delta);
-        level.render(main.spriteBatch);
+        level.render(projectLocus.spriteBatch);
 
     }
 
     @Override
     public void resize(int width, int height) {
-        level.resize(width, height);
+        ProjectLocus.resizeCamera(width, height);
+        level.resize();
     }
 
     @Override
