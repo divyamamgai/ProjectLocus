@@ -3,13 +3,15 @@ package com.locus.game.tools;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
  * Created by Rohit Yadav on 26-Sep-16.
  * Input Controller
  */
-public class InputController implements InputProcessor {
+public class InputController implements InputProcessor, GestureDetector.GestureListener {
 
     public interface InputCallBack {
 
@@ -21,12 +23,13 @@ public class InputController implements InputProcessor {
 
     }
 
-    private float initialXCoordinateRotation, initialYCoordinateThrust;
+    private float initialXCoordinateRotation, initialYCoordinateThrust, tapXCoordinate, tapYCoordinate;
     private OrthographicCamera camera;
     private InputCallBack inputCallBack;
     private static boolean isRotationEnabled, isThrustEnabled, isFireEnabled,
-            isRotationClockwise, isThrustForward, isSetRotationPointer, isSetThrustPointer;
-    private static int thrustPointerID, rotationPointerID;
+            isRotationClockwise, isThrustForward, isSetRotationPointer, isSetThrustPointer,
+            isPrimaryBulletEnabled, isSecondaryBulletEnabled;
+    private static int thrustPointerID, rotationPointerID, firingPointerID;
 
     public InputController(InputCallBack inputCallBack) {
         this.inputCallBack = inputCallBack;
@@ -34,7 +37,7 @@ public class InputController implements InputProcessor {
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         isRotationEnabled = isThrustEnabled = isFireEnabled = false;
         isRotationClockwise = isThrustForward = false;
-        rotationPointerID = thrustPointerID = -1;
+        rotationPointerID = thrustPointerID = firingPointerID = -1;
         isSetRotationPointer = isSetThrustPointer = false;
     }
 
@@ -101,7 +104,17 @@ public class InputController implements InputProcessor {
             isSetRotationPointer = true;
             initialXCoordinateRotation = touchPosition.x;
         }
-        return true;
+        if (firingPointerID == pointer) {
+            if (isPrimaryBulletEnabled) {
+                isFireEnabled = (Math.abs(screenX - tapXCoordinate) < 20) && (Math.abs(screenY - tapYCoordinate) < 20);
+                isPrimaryBulletEnabled = false;
+            }
+            if (isSecondaryBulletEnabled) {
+                isFireEnabled = (Math.abs(screenX - tapXCoordinate) < 20) && (Math.abs(screenY - tapYCoordinate) < 20);
+                isSecondaryBulletEnabled = false;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -109,14 +122,15 @@ public class InputController implements InputProcessor {
         if ((rotationPointerID == pointer) && (isSetRotationPointer)) {
             isRotationEnabled = false;
             isSetRotationPointer = false;
-            rotationPointerID = -1;
         }
         if ((thrustPointerID == pointer) && (isSetThrustPointer)) {
             isThrustEnabled = false;
             isSetThrustPointer = false;
-            thrustPointerID = -1;
         }
-        return true;
+        if (firingPointerID == pointer) {
+            isFireEnabled = false;
+        }
+        return false;
     }
 
     @Override
@@ -147,7 +161,7 @@ public class InputController implements InputProcessor {
                 isRotationEnabled = false;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -157,6 +171,72 @@ public class InputController implements InputProcessor {
 
     @Override
     public boolean scrolled(int amount) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(float x, float y, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+        Vector3 touchPosition = new Vector3(x, y, 0);
+        camera.unproject(touchPosition);
+        if (count == 1) {
+            tapXCoordinate = x;
+            tapYCoordinate = y;
+            isPrimaryBulletEnabled = true;
+            isSecondaryBulletEnabled = false;
+            if (touchPosition.x > 0) {
+                firingPointerID = thrustPointerID;
+            } else {
+                firingPointerID = rotationPointerID;
+            }
+        } else if (count == 2) {
+            tapXCoordinate = x;
+            tapYCoordinate = y;
+            isSecondaryBulletEnabled = true;
+            isPrimaryBulletEnabled = false;
+            if (touchPosition.x > 0) {
+                firingPointerID = thrustPointerID;
+            } else {
+                firingPointerID = rotationPointerID;
+            }
+        } else {
+            isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
+            isFireEnabled = false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean longPress(float x, float y) {
+        return false;
+    }
+
+    @Override
+    public boolean fling(float velocityX, float velocityY, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean pan(float x, float y, float deltaX, float deltaY) {
+        return false;
+    }
+
+    @Override
+    public boolean panStop(float x, float y, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean zoom(float initialDistance, float distance) {
+        return false;
+    }
+
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
         return false;
     }
 

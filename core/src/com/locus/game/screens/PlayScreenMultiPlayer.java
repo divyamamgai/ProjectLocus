@@ -9,6 +9,7 @@ import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
+import com.locus.game.tools.Hud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class PlayScreenMultiPlayer implements Screen {
     public ProjectLocus projectLocus;
     private SelectScreenMode selectScreenMode;
     private Level level;
+    private Hud hud;
 
     public PlayScreenMultiPlayer(ProjectLocus projectLocus, SelectScreenMode selectScreenMode) {
 
@@ -48,6 +50,8 @@ public class PlayScreenMultiPlayer implements Screen {
 
         level = new Level(projectLocus, Planet.Type.Gas, moonPropertyList, 1);
 
+        hud = new Hud(projectLocus.spriteBatch, Hud.Type.Survival);
+
     }
 
     @Override
@@ -61,6 +65,8 @@ public class PlayScreenMultiPlayer implements Screen {
         level.update(delta);
         level.render(projectLocus.spriteBatch);
 
+        hud.update(delta);
+        hud.draw();
     }
 
     @Override

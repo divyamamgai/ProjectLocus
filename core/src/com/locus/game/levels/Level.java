@@ -1,11 +1,13 @@
 package com.locus.game.levels;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -95,7 +97,10 @@ public class Level implements Disposable {
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
         inputController = new InputController(player);
-        Gdx.input.setInputProcessor(inputController);
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(inputController);
+        inputMultiplexer.addProcessor(new GestureDetector(inputController));
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
