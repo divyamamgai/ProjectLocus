@@ -48,7 +48,7 @@ public class Moon extends Entity {
 
         this.level = level;
 
-        definition = level.entityLoader.get(Entity.Type.Moon, moonProperty.type.ordinal());
+        definition = level.main.entityLoader.get(Entity.Type.Moon, moonProperty.type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());

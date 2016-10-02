@@ -54,10 +54,10 @@ public class BodyEditorLoader {
      * <p>
      * The body reference point (the red cross in the tool) is by default
      * located at the bottom left corner of the image. This reference point
-     * will be put right over the BodyDef position point. Therefore, you should
+     * will be put right over the BodyDef positionUI point. Therefore, you should
      * place this reference point carefully to let you place your body in your
-     * world easily with its BodyDef.position point. Note that to draw an image
-     * at the position of your body, you will need to know this reference point
+     * world easily with its BodyDef.positionUI point. Note that to draw an image
+     * at the positionUI of your body, you will need to know this reference point
      * (see {@link #getOrigin(java.lang.String, float)}.
      * <br/><br/>
      * <p>
@@ -132,7 +132,7 @@ public class BodyEditorLoader {
 
         // Changes done by - Divya Mamgai
         // Slight modification to be done to reduce the precession of the positions which are
-        // causing some weird bug in the main like Ship's actual position not matching up with
+        // causing some weird bug in the main like Ship's actual positionUI not matching up with
         // that of the Box2D body.;
         vec.set(rbModel.origin).scl(scale);
         vec.set(Math.round(vec.x * 100f) / 100f, Math.round(vec.y * 100f) / 100f);

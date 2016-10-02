@@ -10,7 +10,6 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
@@ -34,8 +33,8 @@ import java.util.Stack;
  */
 public class Level implements Disposable {
 
-    private static final Circle LEVEL_CIRCLE = new Circle(Main.HALF_WORLD_WIDTH,
-            Main.HALF_WORLD_HEIGHT, 400f);
+//    private static final Circle LEVEL_CIRCLE = new Circle(Main.HALF_WORLD_WIDTH,
+//            Main.HALF_WORLD_HEIGHT, 512f);
 
     private static final float CAMERA_FOLLOW_SPEED = 2f;
 
@@ -47,27 +46,29 @@ public class Level implements Disposable {
 
     private InputController inputController;
     private OrthographicCamera camera;
-    public World world;
 
-    public BulletLoader bulletLoader;
-    public EntityLoader entityLoader;
-    public ArrayList<Entity> entityList;
-    public Stack<Entity> destroyEntityStack;
+    public Main main;
+    public World world;
     public ArrayList<Bullet> bulletList;
     public Stack<Bullet> destroyBulletStack;
+    public ArrayList<Entity> entityList;
+    public Stack<Entity> destroyEntityStack;
+    public ArrayList<Moon> moonList;
+    public Texture barBackgroundTexture, barForegroundTexture;
+
     private Ship player;
     private Planet planet;
-    public ArrayList<Moon> moonList;
     private TiledMapRenderer tiledMapRenderer;
-    public Texture healthBackgroundTexture, healthForegroundTexture;
 
     // Debugging
     private Box2DDebugRenderer box2DDebugRenderer;
     private OrthographicCamera fpsCamera;
     private BitmapFont fpsFont;
 
-    public Level(Planet.Type planetType, ArrayList<Moon.Property> moonPropertyList,
+    public Level(Main main, Planet.Type planetType, ArrayList<Moon.Property> moonPropertyList,
                  int backgroundType) {
+
+        this.main = main;
 
         camera = new OrthographicCamera(cameraWidth, cameraHeight);
 
@@ -75,18 +76,12 @@ public class Level implements Disposable {
         world = new World(Main.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
-        // Can load BulletLoader and EntityLoader only after World has been loaded.
-        // This is because without Box2D initialization we cannot get access to the Shapes
-        // and its other sub-classes.
-        bulletLoader = new BulletLoader();
-        entityLoader = new EntityLoader();
-
-        entityList = new ArrayList<Entity>();
-        destroyEntityStack = new Stack<Entity>();
         bulletList = new ArrayList<Bullet>();
         destroyBulletStack = new Stack<Bullet>();
+        entityList = new ArrayList<Entity>();
+        destroyEntityStack = new Stack<Entity>();
 
-        entityList.add(player = new Ship(this, Ship.Type.Human,
+        entityList.add(player = new Ship(this, Ship.Type.Fighter,
                 Main.HALF_WORLD_WIDTH + 250f, Main.HALF_WORLD_HEIGHT));
 
         planet = new Planet(this, planetType, Main.HALF_WORLD_WIDTH, Main.HALF_WORLD_HEIGHT);
@@ -98,13 +93,13 @@ public class Level implements Disposable {
         }
 
         TiledMap tiledMap = new TmxMapLoader().load("backgrounds/" + backgroundType + ".tmx");
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 0.15f);
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, 0.125f);
 
         inputController = new InputController(player);
         Gdx.input.setInputProcessor(inputController);
 
-        healthBackgroundTexture = new Texture(Gdx.files.internal("ui/health/background.png"));
-        healthForegroundTexture = new Texture(Gdx.files.internal("ui/health/foreground.png"));
+        barBackgroundTexture = new Texture(Gdx.files.internal("ui/bar/background.png"));
+        barForegroundTexture = new Texture(Gdx.files.internal("ui/bar/foreground.png"));
 
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
@@ -198,16 +193,16 @@ public class Level implements Disposable {
         cameraHalfWidth = cameraWidth / 2f;
     }
 
-//    public boolean isInLevel(Vector2 position) {
-//        return LEVEL_CIRCLE.contains(position);
+//    public boolean isInLevel(Vector2 positionUI) {
+//        return LEVEL_CIRCLE.contains(positionUI);
 //    }
 
     @Override
     public void dispose() {
         world.dispose();
 
-        healthForegroundTexture.dispose();
-        healthBackgroundTexture.dispose();
+        barForegroundTexture.dispose();
+        barBackgroundTexture.dispose();
 
         box2DDebugRenderer.dispose();
     }

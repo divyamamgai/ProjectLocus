@@ -9,7 +9,7 @@ public class DesktopLauncher {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.setFromDisplayMode(LwjglApplicationConfiguration.getDesktopDisplayMode());
         config.resizable = false;
-        config.samples = 4;
+        config.samples = 2;
         config.vSyncEnabled = true;
         config.foregroundFPS = 60;
         config.backgroundFPS = 60;

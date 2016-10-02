@@ -16,8 +16,9 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     public enum Type {
 
-        Human,
-        Alien;
+        Fighter,
+        SuperSonic,
+        Bomber;
 
         public String toString() {
             return String.valueOf(ordinal());
@@ -36,7 +37,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         this.level = level;
 
-        definition = level.entityLoader.get(Entity.Type.Ship, type.ordinal());
+        definition = level.main.entityLoader.get(Entity.Type.Ship, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());
@@ -100,10 +101,10 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
             float percentageHealth = health / definition.maxHealth;
 
-            spriteBatch.draw(level.healthBackgroundTexture,
+            spriteBatch.draw(level.barBackgroundTexture,
                     bodyPosition.x - 3f, bodyPosition.y + 3f,
                     definition.width, 0.5f);
-            spriteBatch.draw(level.healthForegroundTexture,
+            spriteBatch.draw(level.barForegroundTexture,
                     bodyPosition.x - 3f, bodyPosition.y + 3f,
                     definition.width * percentageHealth, 0.5f);
 
@@ -145,7 +146,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     @Override
     public void fire() {
-        fireBullet(Bullet.Type.Small);
+        fireBullet(Bullet.Type.Normal);
     }
 
 }

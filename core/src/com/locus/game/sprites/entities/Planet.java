@@ -34,7 +34,7 @@ public class Planet extends Entity {
 
         this.level = level;
 
-        definition = level.entityLoader.get(Entity.Type.Planet, type.ordinal());
+        definition = level.main.entityLoader.get(Entity.Type.Planet, type.ordinal());
 
         setTexture(definition.texture);
         setRegion(0, 0, definition.texture.getWidth(), definition.texture.getHeight());

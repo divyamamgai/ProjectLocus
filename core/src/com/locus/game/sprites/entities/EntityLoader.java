@@ -29,7 +29,7 @@ public class EntityLoader implements Disposable {
     private static Entity.Type[] entityTypeArray = Entity.Type.values();
     private static Bullet.Type[] bulletTypeArray = Bullet.Type.values();
 
-    public class Definition implements Disposable {
+    public static class Definition implements Disposable {
 
         public Entity.Type type;
         int secondaryType;
@@ -37,13 +37,15 @@ public class EntityLoader implements Disposable {
         BodyDef bodyDef;
         FixtureDef fixtureDef;
         Texture texture;
-        float width, halfWidth, height, halfHeight, radius, mass, gravitationalMass,
-                thrustSpeed, rotationSpeed, maxSpeed, maxSpeed2, maxHealth, orbitalVelocity;
+        public float width, height, halfWidth, halfHeight, maxSpeed, maxHealth;
+        public int maxDamage;
+        float radius, mass, gravitationalMass, thrustSpeed, rotationSpeed, maxSpeed2,
+                orbitalVelocity;
         Vector2 bodyOrigin;
         HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
         CircleShape circleShape;
 
-        Definition(Entity.Type type, int secondaryType, JsonValue entityJson) {
+        Definition(Main main, Entity.Type type, int secondaryType, JsonValue entityJson) {
 
             this.type = type;
             this.secondaryType = secondaryType;
@@ -78,6 +80,7 @@ public class EntityLoader implements Disposable {
                         weaponPositionMap.get(bulletType).add(new Vector2(
                                 weaponPositionJson.getFloat("x"),
                                 weaponPositionJson.getFloat("y")));
+                        maxDamage += main.bulletLoader.get(bulletType).damage;
                     }
 
                     width = entityJson.getFloat("width");
@@ -90,6 +93,9 @@ public class EntityLoader implements Disposable {
                     maxHealth = entityJson.getFloat("maxHealth");
 
                     bodyOrigin = physicsLoader.getOrigin(path, width).cpy();
+
+                    texture = main.shipTextureAtlas.findRegion(String.valueOf(secondaryType))
+                            .getTexture();
 
                     break;
                 case Planet:
@@ -105,12 +111,18 @@ public class EntityLoader implements Disposable {
                         fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_PLANET;
                         fixtureDef.filter.maskBits = CollisionDetector.MASK_PLANET;
 
+                        texture = main.planetTextureAtlas.findRegion(String.valueOf(secondaryType))
+                                .getTexture();
+
                     } else {
 
                         fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_MOON;
                         fixtureDef.filter.maskBits = CollisionDetector.MASK_MOON;
 
                         orbitalVelocity = entityJson.getFloat("orbitalVelocity");
+
+                        texture = main.moonTextureAtlas.findRegion(String.valueOf(secondaryType))
+                                .getTexture();
 
                     }
 
@@ -141,7 +153,6 @@ public class EntityLoader implements Disposable {
                 default:
                     Gdx.app.log("EntityLoader.Definition", "Type is invalid for - " + path);
             }
-            texture = new Texture("sprites/entities/" + path + ".png");
             mass = entityJson.getFloat("mass");
             gravitationalMass = mass * Main.GRAVITATIONAL_CONSTANT;
             halfWidth = width / 2f;
@@ -169,24 +180,34 @@ public class EntityLoader implements Disposable {
 
     private HashMap<Entity.Type, ArrayList<Definition>> definitionMap;
 
-    public EntityLoader() {
+    public EntityLoader(Main main) {
+
         physicsLoader = new BodyEditorLoader(
                 Gdx.files.internal("sprites/entities/EntityPhysicsDefinition.json"));
+
         definitionMap = new HashMap<Entity.Type, ArrayList<Definition>>();
+
         JsonValue entityJsonArray = new JsonReader()
                 .parse(Gdx.files.internal("sprites/entities/EntityDefinition.json").readString())
                 .get("entities");
+
         Entity.Type entityType;
         int secondaryType;
+
         for (JsonValue entityJson : entityJsonArray.iterator()) {
+
             entityType = entityTypeArray[entityJson.getInt("type")];
             secondaryType = entityJson.getInt("secondaryType");
+
             if (!definitionMap.containsKey(entityType)) {
                 definitionMap.put(entityType, new ArrayList<Definition>());
             }
+
             definitionMap.get(entityType).add(
-                    new Definition(entityType, secondaryType, entityJson));
+                    new Definition(main, entityType, secondaryType, entityJson));
+
         }
+
     }
 
     public Definition get(Entity.Type type, int secondaryType) {
