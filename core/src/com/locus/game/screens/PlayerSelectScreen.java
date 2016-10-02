@@ -53,6 +53,7 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
             Color.CORAL,
             Color.VIOLET
     };
+    private InputMultiplexer inputMultiplexer;
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
@@ -100,10 +101,9 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         selectedShipTypeIndex = selectedShipColorIndex = 0;
 
-        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);
-        Gdx.input.setInputProcessor(inputMultiplexer);
 
     }
 
@@ -132,7 +132,7 @@ class PlayerSelectScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override

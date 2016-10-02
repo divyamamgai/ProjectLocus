@@ -84,6 +84,7 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
     private Sprite logo;
     private ArrayList<MenuOption> menuOptionList;
     private int selectedMenuOption;
+    private InputMultiplexer inputMultiplexer;
 
     MultiPlayerSelectScreen(Main main, PlayerSelectScreen playerSelectScreen) {
 
@@ -116,10 +117,9 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
         selectedMenuOption = 0;
         menuOptionList.get(selectedMenuOption).isSelected = true;
 
-        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);
-        Gdx.input.setInputProcessor(inputMultiplexer);
 
     }
 
@@ -138,7 +138,7 @@ class MultiPlayerSelectScreen implements Screen, InputProcessor, GestureDetector
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
