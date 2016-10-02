@@ -17,6 +17,7 @@ import com.locus.game.ProjectLocus;
  */
 
 public class Hud {
+    
     private Stage stage;
 
     private int[] playersNumber, playersScore;

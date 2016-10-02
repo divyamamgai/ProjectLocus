@@ -29,9 +29,6 @@ import com.locus.game.sprites.entities.EntityLoader;
 
 public class LoadingScreen implements Screen {
 
-    private static final float CAMERA_MOVEMENT_SPEED = 0.05f;
-    private static final float CAMERA_MOVEMENT_RADIUS = 512f;
-
     private float backgroundMovementAngleRad = 0;
     private ProjectLocus projectLocus;
     private OrthographicCamera foregroundCamera, backgroundCamera;
@@ -114,12 +111,12 @@ public class LoadingScreen implements Screen {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        backgroundMovementAngleRad += delta * CAMERA_MOVEMENT_SPEED;
+        backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
-                ProjectLocus.WORLD_HALF_WIDTH +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.cos(backgroundMovementAngleRad),
-                ProjectLocus.WORLD_HALF_HEIGHT +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.sin(backgroundMovementAngleRad), 0);
+                ProjectLocus.WORLD_HALF_WIDTH + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.cos(backgroundMovementAngleRad),
+                ProjectLocus.WORLD_HALF_HEIGHT + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.sin(backgroundMovementAngleRad), 0);
         backgroundCamera.update();
 
         tiledMapRenderer.setView(backgroundCamera);
@@ -175,7 +172,7 @@ public class LoadingScreen implements Screen {
 
             projectLocus.entityLoader = new EntityLoader(projectLocus);
 
-            projectLocus.setScreen(new SelectScreenPlayer(projectLocus, backgroundMovementAngleRad));
+            projectLocus.setScreen(new SelectPlayerScreen(projectLocus, backgroundMovementAngleRad));
 
         } else {
 

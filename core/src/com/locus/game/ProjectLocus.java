@@ -41,6 +41,9 @@ public class ProjectLocus extends Game implements Disposable {
     public static final int POSITION_ITERATIONS = 2;
 
     public static final float TILED_MAP_SCALE = 0.125f;
+    public static final float SCREEN_CAMERA_MOVEMENT_SPEED = 0.05f;
+    public static final float SCREEN_CAMERA_MOVEMENT_RADIUS = 512f;
+
 
     public static final float PI_BY_TWO = MathUtils.PI / 2f;
 

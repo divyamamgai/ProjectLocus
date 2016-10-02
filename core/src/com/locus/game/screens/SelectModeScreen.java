@@ -25,13 +25,7 @@ import java.util.ArrayList;
  * Multi Player Select Screen
  */
 
-class SelectScreenMode implements Screen, InputProcessor, GestureDetector.GestureListener {
-
-    private static final float CAMERA_MOVEMENT_SPEED = 0.05f;
-    private static final float CAMERA_MOVEMENT_RADIUS = 512f;
-
-    private float backgroundMovementAngleRad;
-    private float menuStartPositionY;
+class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private class MenuOption {
 
@@ -77,8 +71,11 @@ class SelectScreenMode implements Screen, InputProcessor, GestureDetector.Gestur
 
     }
 
+    float backgroundMovementAngleRad;
+    private float menuStartPositionY;
+
     private ProjectLocus projectLocus;
-    private SelectScreenPlayer selectScreenPlayer;
+    private SelectPlayerScreen selectPlayerScreen;
     private OrthographicCamera foregroundCamera, backgroundCamera;
     private TiledMapRenderer tiledMapRenderer;
     private Sprite logo;
@@ -86,11 +83,11 @@ class SelectScreenMode implements Screen, InputProcessor, GestureDetector.Gestur
     private int selectedMenuOption;
     private InputMultiplexer inputMultiplexer;
 
-    SelectScreenMode(ProjectLocus projectLocus, SelectScreenPlayer selectScreenPlayer) {
+    SelectModeScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
 
         this.projectLocus = projectLocus;
-        this.selectScreenPlayer = selectScreenPlayer;
-        backgroundMovementAngleRad = selectScreenPlayer.backgroundMovementAngleRad;
+        this.selectPlayerScreen = selectPlayerScreen;
+        backgroundMovementAngleRad = selectPlayerScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -152,12 +149,12 @@ class SelectScreenMode implements Screen, InputProcessor, GestureDetector.Gestur
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        backgroundMovementAngleRad += delta * CAMERA_MOVEMENT_SPEED;
+        backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
-                ProjectLocus.WORLD_HALF_WIDTH +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.cos(backgroundMovementAngleRad),
-                ProjectLocus.WORLD_HALF_HEIGHT +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.sin(backgroundMovementAngleRad), 0);
+                ProjectLocus.WORLD_HALF_WIDTH + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.cos(backgroundMovementAngleRad),
+                ProjectLocus.WORLD_HALF_HEIGHT + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.sin(backgroundMovementAngleRad), 0);
         backgroundCamera.update();
 
         tiledMapRenderer.setView(backgroundCamera);
@@ -227,15 +224,17 @@ class SelectScreenMode implements Screen, InputProcessor, GestureDetector.Gestur
     private void submit() {
         switch (selectedMenuOption) {
             case 0:
+                projectLocus.setScreen(new LobbyHostScreen(projectLocus, this));
                 break;
             case 1:
+                projectLocus.setScreen(new LobbyJoinScreen(projectLocus, this));
                 break;
             case 2:
-                projectLocus.setScreen(new PlayScreenPractice(projectLocus, this));
+                projectLocus.setScreen(new PracticePlayScreen(projectLocus, this));
                 break;
             case 3:
-                selectScreenPlayer.backgroundMovementAngleRad = backgroundMovementAngleRad;
-                projectLocus.setScreen(selectScreenPlayer);
+                selectPlayerScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                projectLocus.setScreen(selectPlayerScreen);
                 break;
         }
     }

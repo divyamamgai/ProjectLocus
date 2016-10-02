@@ -27,10 +27,8 @@ import java.util.HashMap;
  * Player Select Screen
  */
 
-class SelectScreenPlayer implements Screen, InputProcessor, GestureDetector.GestureListener {
+class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
-    private static final float CAMERA_MOVEMENT_SPEED = 0.05f;
-    private static final float CAMERA_MOVEMENT_RADIUS = 512f;
     private static final float SHIP_SPRITE_SCALE = 10f;
 
     float backgroundMovementAngleRad;
@@ -59,7 +57,7 @@ class SelectScreenPlayer implements Screen, InputProcessor, GestureDetector.Gest
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
-    SelectScreenPlayer(ProjectLocus projectLocus, float backgroundMovementAngleRad) {
+    SelectPlayerScreen(ProjectLocus projectLocus, float backgroundMovementAngleRad) {
 
         this.projectLocus = projectLocus;
         this.backgroundMovementAngleRad = backgroundMovementAngleRad;
@@ -150,12 +148,12 @@ class SelectScreenPlayer implements Screen, InputProcessor, GestureDetector.Gest
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        backgroundMovementAngleRad += delta * CAMERA_MOVEMENT_SPEED;
+        backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
-                ProjectLocus.WORLD_HALF_WIDTH +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.cos(backgroundMovementAngleRad),
-                ProjectLocus.WORLD_HALF_HEIGHT +
-                        CAMERA_MOVEMENT_RADIUS * MathUtils.sin(backgroundMovementAngleRad), 0);
+                ProjectLocus.WORLD_HALF_WIDTH + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.cos(backgroundMovementAngleRad),
+                ProjectLocus.WORLD_HALF_HEIGHT + ProjectLocus.SCREEN_CAMERA_MOVEMENT_RADIUS *
+                        MathUtils.sin(backgroundMovementAngleRad), 0);
         backgroundCamera.update();
 
         tiledMapRenderer.setView(backgroundCamera);
@@ -272,7 +270,7 @@ class SelectScreenPlayer implements Screen, InputProcessor, GestureDetector.Gest
     private void submit() {
         projectLocus.playerShipProperty.color = shipColorArray[selectedShipColorIndex];
         projectLocus.playerShipProperty.type = shipTypeArray[selectedShipTypeIndex];
-        projectLocus.setScreen(new SelectScreenMode(projectLocus, this));
+        projectLocus.setScreen(new SelectModeScreen(projectLocus, this));
     }
 
     @Override
