@@ -8,12 +8,16 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
+import com.locus.game.network.Player;
+
+import java.util.ArrayList;
 
 /**
  * Created by Divya Mamgai on 10/2/2016.
@@ -37,8 +41,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private float backgroundMovementAngleRad;
-    private float startingFontHalfWidth, startedFontHalfWidth, failedFontHalfWidth,
-            searchingFontHalfWidth, connectingFontHalfWidth, connectedFontHalfWidth;
+    private float startingFontHalfWidth, failedFontHalfWidth, searchingFontHalfWidth,
+            connectingFontHalfWidth;
 
     private ProjectLocus projectLocus;
     private SelectModeScreen selectModeScreen;
@@ -77,14 +81,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         GlyphLayout glyphLayout = new GlyphLayout();
         glyphLayout.setText(projectLocus.font32, "Starting...");
         startingFontHalfWidth = glyphLayout.width / 2f;
-        glyphLayout.setText(projectLocus.font32, "Started");
-        startedFontHalfWidth = glyphLayout.width / 2f;
         glyphLayout.setText(projectLocus.font32, "Searching...");
         searchingFontHalfWidth = glyphLayout.width / 2f;
         glyphLayout.setText(projectLocus.font32, "Connecting...");
         connectingFontHalfWidth = glyphLayout.width / 2f;
-        glyphLayout.setText(projectLocus.font32, "Connected");
-        connectedFontHalfWidth = glyphLayout.width / 2f;
         glyphLayout.setText(projectLocus.font32, "Failed");
         failedFontHalfWidth = glyphLayout.width / 2f;
 
@@ -143,9 +143,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                                 ProjectLocus.screenCameraHalfHeight + 16f);
                         break;
                     case Started:
-                        projectLocus.font32.draw(projectLocus.spriteBatch, "Started",
-                                ProjectLocus.screenCameraHalfWidth - startedFontHalfWidth,
-                                ProjectLocus.screenCameraHalfHeight + 16f);
+                        drawLobby(projectLocus.spriteBatch);
                         break;
                     case Failed:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Failed",
@@ -167,9 +165,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                                 ProjectLocus.screenCameraHalfHeight + 16f);
                         break;
                     case Connected:
-                        projectLocus.font32.draw(projectLocus.spriteBatch, "Connected",
-                                ProjectLocus.screenCameraHalfWidth - connectedFontHalfWidth,
-                                ProjectLocus.screenCameraHalfHeight + 16f);
+                        drawLobby(projectLocus.spriteBatch);
                         break;
                     case Failed:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Failed",
@@ -182,6 +178,13 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         projectLocus.spriteBatch.end();
 
+    }
+
+    public void updateLobby(ArrayList<Player> playerList) {
+
+    }
+
+    public void drawLobby(SpriteBatch spriteBatch) {
     }
 
     @Override

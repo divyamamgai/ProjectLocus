@@ -25,7 +25,7 @@ class Network {
         kryo.register(Ship.Type.class);
         kryo.register(Color.class);
         kryo.register(Ship.Property.class);
-        kryo.register(PlayerJoinResponse.class);
+        kryo.register(UpdateLobby.class);
         kryo.register(ArrayList.class);
         kryo.register(Player.class);
         kryo.register(PlayerJoinRequestRejected.class);
@@ -45,15 +45,15 @@ class Network {
 
     }
 
-    static class PlayerJoinResponse {
+    static class UpdateLobby {
 
         ArrayList<Player> playerList;
 
-        PlayerJoinResponse() {
+        UpdateLobby() {
 
         }
 
-        PlayerJoinResponse(ArrayList<Player> playerList) {
+        UpdateLobby(ArrayList<Player> playerList) {
             this.playerList = playerList;
         }
 
@@ -64,7 +64,7 @@ class Network {
         String reason;
 
         PlayerJoinRequestRejected() {
-            
+
         }
 
         PlayerJoinRequestRejected(String reason) {

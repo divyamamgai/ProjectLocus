@@ -73,7 +73,8 @@ public class GameServer {
             } else {
                 playerList.add(
                         new Player(connection.getID(), playerJoinRequest.property, false));
-                connection.sendTCP(new Network.PlayerJoinResponse(playerList));
+                connection.sendTCP(new Network.UpdateLobby(playerList));
+                lobbyScreen.updateLobby(playerList);
             }
         }
     }

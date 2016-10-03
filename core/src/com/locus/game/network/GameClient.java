@@ -94,9 +94,10 @@ public class GameClient {
     }
 
     void onReceived(Connection connection, Object object) {
-        if (object instanceof Network.PlayerJoinResponse) {
-            Network.PlayerJoinResponse playerJoinResponse = (Network.PlayerJoinResponse) object;
-            playerList = playerJoinResponse.playerList;
+        if (object instanceof Network.UpdateLobby) {
+            Network.UpdateLobby updateLobby = (Network.UpdateLobby) object;
+            playerList = updateLobby.playerList;
+            lobbyScreen.updateLobby(playerList);
             Gdx.app.log("Client", "Accepted Player Count : " + String.valueOf(playerList.size()));
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
             Network.PlayerJoinRequestRejected playerJoinRequestRejected =

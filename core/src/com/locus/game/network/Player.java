@@ -7,14 +7,14 @@ import com.locus.game.sprites.entities.Ship;
  * Player
  */
 
-class Player {
+public class Player {
 
     int connectionID;
     Ship.Property property;
     boolean isReady;
 
     Player() {
-        
+
     }
 
     Player(int connectionID, Ship.Property property, boolean isReady) {
