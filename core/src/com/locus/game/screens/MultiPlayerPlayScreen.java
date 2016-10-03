@@ -30,19 +30,6 @@ public class MultiPlayerPlayScreen implements Screen {
         this.projectLocus = projectLocus;
         this.selectModeScreen = selectModeScreen;
 
-        Server server = new Server();
-        server.addListener(new Listener() {
-            public void received(Connection connection, Object object) {
-
-            }
-        });
-        server.start();
-        try {
-            server.bind(54555, 54777);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
         moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
         moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));

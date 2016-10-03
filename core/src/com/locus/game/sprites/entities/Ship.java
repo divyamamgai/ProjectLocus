@@ -73,9 +73,10 @@ public class Ship extends Entity implements InputController.InputCallBack {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                level.bulletList.add(new Bullet(level, type, this,
+                // Create a new Bullet at the desired position and add it to the Level.
+                new Bullet(level, type, this,
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                        angleRad));
+                        angleRad).addToLevel();
             }
         } else if (bulletsFired >= 6) {
             bulletsFired = -1;

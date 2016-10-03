@@ -32,6 +32,7 @@ public class Bullet extends Sprite {
     public Body body;
     public BulletLoader.Definition definition;
     private boolean isAlive = true;
+    private Integer bulletMapKey;
 
     public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
 
@@ -58,6 +59,14 @@ public class Bullet extends Sprite {
 
         level.timer.scheduleTask(new BulletDieTask(this), definition.life);
 
+        // Initialize with default negative value, this will denote whether the Bullet has been
+        // added to the level or not.
+        bulletMapKey = -1;
+
+    }
+
+    public void addToLevel() {
+        level.bulletMap.put((bulletMapKey = Level.nextBulletKey++), this);
     }
 
     public void update() {
@@ -83,7 +92,7 @@ public class Bullet extends Sprite {
 
     public void destroy() {
         level.world.destroyBody(body);
-        level.bulletList.remove(this);
+        level.bulletMap.remove(bulletMapKey);
     }
 
 }

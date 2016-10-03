@@ -224,10 +224,11 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     private void submit() {
         switch (selectedMenuOption) {
             case 0:
-                projectLocus.setScreen(new LobbyHostScreen(projectLocus, this));
+                projectLocus.setScreen(new LobbyScreen(projectLocus, this, LobbyScreen.Type.Host));
                 break;
             case 1:
-                projectLocus.setScreen(new LobbyJoinScreen(projectLocus, this));
+                projectLocus.setScreen(new LobbyScreen(projectLocus, this,
+                        LobbyScreen.Type.Client));
                 break;
             case 2:
                 projectLocus.setScreen(new PracticePlayScreen(projectLocus, this));

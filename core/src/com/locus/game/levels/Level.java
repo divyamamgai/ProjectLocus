@@ -25,6 +25,7 @@ import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.InputController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 /**
@@ -38,13 +39,16 @@ public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 3f;
 
+    // Does not denote count of the bullets or entities.
+    public static Integer nextBulletKey, nextEntityKey;
+
     private InputController inputController;
     private OrthographicCamera camera;
 
     public ProjectLocus projectLocus;
     public Timer timer;
     public World world;
-    public ArrayList<Bullet> bulletList;
+    public HashMap<Integer, Bullet> bulletMap;
     public Stack<Bullet> destroyBulletStack;
     public ArrayList<Entity> entityList;
     public Stack<Entity> destroyEntityStack;
@@ -63,6 +67,10 @@ public class Level implements Disposable {
     public Level(ProjectLocus projectLocus, Planet.Type planetType,
                  ArrayList<Moon.Property> moonPropertyList, int backgroundType) {
 
+        // Reset the nextBulletKey when a new instance is created.
+        Level.nextBulletKey = 0;
+        Level.nextEntityKey = 0;
+
         this.projectLocus = projectLocus;
 
         timer = new Timer();
@@ -73,7 +81,7 @@ public class Level implements Disposable {
         world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
-        bulletList = new ArrayList<Bullet>();
+        bulletMap = new HashMap<Integer, Bullet>();
         destroyBulletStack = new Stack<Bullet>();
         entityList = new ArrayList<Entity>();
         destroyEntityStack = new Stack<Entity>();
@@ -142,8 +150,8 @@ public class Level implements Disposable {
             }
         }
 
-        for (Bullet bullet : bulletList) {
-            bullet.update();
+        for (Integer bulletKey : bulletMap.keySet()) {
+            bulletMap.get(bulletKey).update();
         }
 
         world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
@@ -169,11 +177,78 @@ public class Level implements Disposable {
             entity.draw(spriteBatch, camera.frustum);
         }
 
-        for (Bullet bullet : bulletList) {
+        for (Integer bulletKey : bulletMap.keySet()) {
+            bulletMap.get(bulletKey).draw(spriteBatch, camera.frustum);
+        }
+
+        spriteBatch.end();
+
+        // Debugging
+//        box2DDebugRenderer.render(world, camera.combined);
+
+        spriteBatch.setProjectionMatrix(fpsCamera.combined);
+        spriteBatch.begin();
+        fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
+                ProjectLocus.worldCameraWidth - 5f, ProjectLocus.worldCameraHeight - 2f);
+        spriteBatch.end();
+
+    }
+
+    public void render(SpriteBatch spriteBatch, float delta) {
+
+        world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
+                ProjectLocus.POSITION_ITERATIONS);
+
+        if (player != null && player.isAlive) {
+            inputController.update();
+            camera.position.x += (player.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
+            camera.position.y += (player.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
+            camera.update();
+        }
+
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
+
+        spriteBatch.totalRenderCalls = 0;
+
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+
+        planet.update();
+        planet.draw(spriteBatch, camera.frustum);
+
+        for (Moon moon : moonList) {
+            moon.update();
+            moon.draw(spriteBatch, camera.frustum);
+        }
+
+        for (Entity entity : entityList) {
+            planet.applyGravitationalForce(entity);
+            for (Moon moon : moonList) {
+                moon.applyGravitationalForce(entity);
+            }
+            entity.update();
+            entity.draw(spriteBatch, camera.frustum);
+        }
+
+        Bullet bullet;
+        for (Integer bulletKey : bulletMap.keySet()) {
+            bullet = bulletMap.get(bulletKey);
+            bullet.update();
             bullet.draw(spriteBatch, camera.frustum);
         }
 
         spriteBatch.end();
+
+        Gdx.app.log("Draw Calls", String.valueOf(spriteBatch.totalRenderCalls));
+
+        while (destroyEntityStack.size() > 0) {
+            destroyEntityStack.pop().destroy();
+        }
+
+        while (destroyBulletStack.size() > 0) {
+            destroyBulletStack.pop().destroy();
+        }
 
         // Debugging
 //        box2DDebugRenderer.render(world, camera.combined);

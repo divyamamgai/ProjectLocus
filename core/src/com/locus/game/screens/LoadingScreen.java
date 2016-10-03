@@ -144,12 +144,12 @@ public class LoadingScreen implements Screen {
             projectLocus.font24 = assetManager.get("fonts/font24.fnt", BitmapFont.class);
             projectLocus.font24Selected = assetManager.get("fonts/font24Selected.fnt",
                     BitmapFont.class);
-            projectLocus.font24Selected.setColor(ProjectLocus.fontSelectedColor);
+            projectLocus.font24Selected.setColor(ProjectLocus.FONT_SELECTED_COLOR);
 
             projectLocus.font32 = assetManager.get("fonts/font32.fnt", BitmapFont.class);
             projectLocus.font32Selected = assetManager.get("fonts/font32Selected.fnt",
                     BitmapFont.class);
-            projectLocus.font32Selected.setColor(ProjectLocus.fontSelectedColor);
+            projectLocus.font32Selected.setColor(ProjectLocus.FONT_SELECTED_COLOR);
 
             for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
                 projectLocus.tiledMapList.add(assetManager.get("backgrounds/" +

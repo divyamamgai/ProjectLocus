@@ -94,8 +94,6 @@ public class CollisionDetector implements ContactListener {
                                 entityA.kill();
                             }
                             break;
-                        case Asteroid:
-                            break;
                     }
                     break;
                 case Planet:
@@ -106,8 +104,6 @@ public class CollisionDetector implements ContactListener {
                             break;
                         case Moon:
                             break;
-                        case Asteroid:
-                            break;
                     }
                     break;
                 case Moon:
@@ -117,20 +113,6 @@ public class CollisionDetector implements ContactListener {
                         case Planet:
                             break;
                         case Moon:
-                            break;
-                        case Asteroid:
-                            break;
-                    }
-                    break;
-                case Asteroid:
-                    switch (entityB.definition.type) {
-                        case Ship:
-                            break;
-                        case Planet:
-                            break;
-                        case Moon:
-                            break;
-                        case Asteroid:
                             break;
                     }
                     break;

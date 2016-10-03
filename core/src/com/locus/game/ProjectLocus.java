@@ -12,6 +12,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.utils.Disposable;
+import com.locus.game.network.GameClient;
+import com.locus.game.network.GameServer;
 import com.locus.game.screens.LoadingScreen;
 import com.locus.game.sprites.bullets.BulletLoader;
 import com.locus.game.sprites.entities.EntityLoader;
@@ -33,7 +35,8 @@ public class ProjectLocus extends Game implements Disposable {
     // Virtual Height of the Game World in meters.
     private static final float WORLD_HEIGHT = 2048f;
     public static final float WORLD_HALF_HEIGHT = WORLD_HEIGHT / 2f;
-    public static final float WORLD_DIAGONAL = (float) Math.sqrt(WORLD_WIDTH * WORLD_WIDTH + WORLD_HEIGHT * WORLD_HEIGHT);
+    public static final float WORLD_DIAGONAL = (float) Math.sqrt(WORLD_WIDTH * WORLD_WIDTH +
+            WORLD_HEIGHT * WORLD_HEIGHT);
 
     // Desired FPS of the projectLocus and Box2D configuration variables.
     public static final float FPS = 1 / 60f;
@@ -44,10 +47,9 @@ public class ProjectLocus extends Game implements Disposable {
     public static final float SCREEN_CAMERA_MOVEMENT_SPEED = 0.05f;
     public static final float SCREEN_CAMERA_MOVEMENT_RADIUS = 512f;
 
-
     public static final float PI_BY_TWO = MathUtils.PI / 2f;
 
-    public SpriteBatch spriteBatch;
+    public static final Color FONT_SELECTED_COLOR = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);
 
     private static float aspectRatio = 1f;
     public static int screenCameraWidth = 854;
@@ -57,13 +59,13 @@ public class ProjectLocus extends Game implements Disposable {
     public static float worldCameraHeight = 100f;
     public static float worldCameraHalfHeight = worldCameraHeight / 2f;
     public static float worldCameraWidth = worldCameraHeight * aspectRatio;
-    public static float worldCameraHalfWidth = worldCameraWidth / 2f;
+    private static float worldCameraHalfWidth = worldCameraWidth / 2f;
 
+    public SpriteBatch spriteBatch;
     // Common Assets, for now we will cache everything since it is all very small.
     public AssetManager assetManager;
     public BitmapFont font24, font32;
     public BitmapFont font24Selected, font32Selected;
-    public static Color fontSelectedColor = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);
     public GlyphLayout glyphLayout;
     public ArrayList<TiledMap> tiledMapList;
     public TextureAtlas uiTextureAtlas;
@@ -74,6 +76,8 @@ public class ProjectLocus extends Game implements Disposable {
     public BulletLoader bulletLoader;
     public EntityLoader entityLoader;
     public Ship.Property playerShipProperty;
+    public GameServer gameServer;
+    public GameClient gameClient;
 
     @Override
     public void create() {
@@ -88,6 +92,8 @@ public class ProjectLocus extends Game implements Disposable {
         tiledMapList = new ArrayList<TiledMap>();
         glyphLayout = new GlyphLayout();
         playerShipProperty = new Ship.Property();
+        gameServer = new GameServer(this);
+        gameClient = new GameClient(this);
 
         setScreen(new LoadingScreen(this));
 
@@ -112,6 +118,8 @@ public class ProjectLocus extends Game implements Disposable {
         assetManager.dispose();
         entityLoader.dispose();
         spriteBatch.dispose();
+        gameServer.stop();
+        gameClient.stop();
     }
 
 }
