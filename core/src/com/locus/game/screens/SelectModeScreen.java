@@ -108,14 +108,15 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
         logo.setSize(366, 128);
 
         menuOptionList = new ArrayList<MenuOption>();
+        GlyphLayout glyphLayout = new GlyphLayout();
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                projectLocus.glyphLayout, "Host", 0));
+                glyphLayout, "Host", 0));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                projectLocus.glyphLayout, "Join", -48f));
+                glyphLayout, "Join", -48f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                projectLocus.glyphLayout, "Practice", -96f));
+                glyphLayout, "Practice", -96f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                projectLocus.glyphLayout, "Back", -144f));
+                glyphLayout, "Back", -144f));
 
         selectedMenuOption = 0;
         menuOptionList.get(selectedMenuOption).isSelected = true;

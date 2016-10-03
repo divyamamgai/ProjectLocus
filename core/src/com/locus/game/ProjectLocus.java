@@ -66,7 +66,6 @@ public class ProjectLocus extends Game implements Disposable {
     public AssetManager assetManager;
     public BitmapFont font24, font32;
     public BitmapFont font24Selected, font32Selected;
-    public GlyphLayout glyphLayout;
     public ArrayList<TiledMap> tiledMapList;
     public TextureAtlas uiTextureAtlas;
     public TextureAtlas bulletTextureAtlas;
@@ -90,7 +89,6 @@ public class ProjectLocus extends Game implements Disposable {
         spriteBatch = new SpriteBatch();
         assetManager = new AssetManager();
         tiledMapList = new ArrayList<TiledMap>();
-        glyphLayout = new GlyphLayout();
         playerShipProperty = new Ship.Property();
         gameServer = new GameServer(this);
         gameClient = new GameClient(this);

@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -72,18 +73,20 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
                 ProjectLocus.TILED_MAP_SCALE);
 
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Starting...");
-        startingFontHalfWidth = projectLocus.glyphLayout.width / 2f;
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Started");
-        startedFontHalfWidth = projectLocus.glyphLayout.width / 2f;
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Searching...");
-        searchingFontHalfWidth = projectLocus.glyphLayout.width / 2f;
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Connecting...");
-        connectingFontHalfWidth = projectLocus.glyphLayout.width / 2f;
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Connected");
-        connectedFontHalfWidth = projectLocus.glyphLayout.width / 2f;
-        projectLocus.glyphLayout.setText(projectLocus.font32, "Failed");
-        failedFontHalfWidth = projectLocus.glyphLayout.width / 2f;
+
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(projectLocus.font32, "Starting...");
+        startingFontHalfWidth = glyphLayout.width / 2f;
+        glyphLayout.setText(projectLocus.font32, "Started");
+        startedFontHalfWidth = glyphLayout.width / 2f;
+        glyphLayout.setText(projectLocus.font32, "Searching...");
+        searchingFontHalfWidth = glyphLayout.width / 2f;
+        glyphLayout.setText(projectLocus.font32, "Connecting...");
+        connectingFontHalfWidth = glyphLayout.width / 2f;
+        glyphLayout.setText(projectLocus.font32, "Connected");
+        connectedFontHalfWidth = glyphLayout.width / 2f;
+        glyphLayout.setText(projectLocus.font32, "Failed");
+        failedFontHalfWidth = glyphLayout.width / 2f;
 
         switch (type) {
             case Host:
