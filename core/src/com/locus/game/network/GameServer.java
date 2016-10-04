@@ -1,13 +1,14 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 import com.locus.game.ProjectLocus;
 import com.locus.game.screens.LobbyScreen;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -21,6 +22,7 @@ public class GameServer {
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
     private HashMap<Integer, Player> playerMap;
+    private Timer timer;
 
     public GameServer(ProjectLocus projectLocus) {
 
@@ -30,7 +32,9 @@ public class GameServer {
         Network.registerClasses(server);
 
         playerMap = new HashMap<Integer, Player>();
-        playerMap.put(0, new Player(projectLocus.playerShipProperty, false));
+        playerMap.put(0, new Player(projectLocus.playerShipProperty, true));
+
+        timer = new Timer();
 
     }
 
@@ -41,12 +45,18 @@ public class GameServer {
         server.addListener(new HostListener(this));
 
         try {
+
             server.bind(Network.SERVER_TCP_PORT, Network.SERVER_UDP_PORT);
             server.start();
+
             lobbyScreen.state = LobbyScreen.State.Started;
+
             Gdx.app.log("Lobby Host", "Server Started @ TCP : " + Network.SERVER_TCP_PORT +
                     " UDP : " + Network.SERVER_UDP_PORT);
-            lobbyScreen.updateLobby(playerMap);
+
+            lobbyScreen.playerMap = playerMap;
+            lobbyScreen.isLobbyToBeUpdated = true;
+
         } catch (IOException e) {
             lobbyScreen.state = LobbyScreen.State.Failed;
             e.printStackTrace();
@@ -59,16 +69,61 @@ public class GameServer {
     }
 
     void onReceived(Connection connection, Object object) {
+        int connectionID = connection.getID();
         if (object instanceof Network.PlayerJoinRequest) {
             Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
-            int connectionID = connection.getID();
             if (playerMap.containsKey(connectionID)) {
                 connection.sendTCP(new Network.PlayerJoinRequestRejected(
                         "Already Existing Client With ID : " + connectionID));
             } else {
+
                 playerMap.put(connectionID, new Player(playerJoinRequest.property, false));
+
                 server.sendToAllTCP(new Network.UpdateLobby(playerMap));
-                lobbyScreen.updateLobby(playerMap);
+
+                lobbyScreen.playerMap = playerMap;
+                lobbyScreen.isLobbyToBeUpdated = true;
+
+                connection.sendTCP(
+                        new Network.LevelProperty(
+                                lobbyScreen.multiPlayerPlayScreen.level.property));
+
+            }
+        } else if (object instanceof Network.PlayerReadyRequest) {
+            Network.PlayerReadyRequest playerReadyRequest = (Network.PlayerReadyRequest) object;
+            if (playerMap.containsKey(connectionID)) {
+
+                playerMap.get(connectionID).isReady = playerReadyRequest.isReady;
+
+                server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+
+                lobbyScreen.playerMap = playerMap;
+                lobbyScreen.isLobbyToBeUpdated = true;
+
+                Gdx.app.log("Host", "Player #" + connectionID + " Is Ready");
+
+                boolean areAllReady = true;
+                for (Integer playerConnectionID : playerMap.keySet()) {
+                    if (!playerMap.get(playerConnectionID).isReady) {
+                        areAllReady = false;
+                        break;
+                    }
+                }
+
+                if (areAllReady) {
+                    server.sendToAllTCP(new Network.StartGame(TimeUtils.millis(), 10f));
+//                    Gdx.app.log("Host", "All Ready, Starting Game In 10...");
+//                    timer.scheduleTask(new Timer.Task() {
+//                        @Override
+//                        public void run() {
+//                            Gdx.app.log("Host", "Switching...");
+//                            projectLocus.setScreen(lobbyScreen.multiPlayerPlayScreen);
+//                        }
+//                    }, 10f);
+                }
+
+            } else {
+                connection.sendTCP(new Network.Error("Player Not Found"));
             }
         }
     }
@@ -76,9 +131,14 @@ public class GameServer {
     void onDisconnected(Connection connection) {
         int connectionID = connection.getID();
         if (playerMap.containsKey(connectionID)) {
+
             playerMap.remove(connectionID);
+
             server.sendToAllTCP(new Network.UpdateLobby(playerMap));
-            lobbyScreen.updateLobby(playerMap);
+
+            lobbyScreen.playerMap = playerMap;
+            lobbyScreen.isLobbyToBeUpdated = true;
+
         }
     }
 

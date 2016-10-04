@@ -1,6 +1,8 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
@@ -25,6 +27,7 @@ public class GameClient {
     private int connectionID;
     private String hostAddress;
     private HashMap<Integer, Player> playerMap;
+    private Timer timer;
 
     private class GameClientConnectRunnable implements Runnable {
 
@@ -67,8 +70,12 @@ public class GameClient {
     public GameClient(ProjectLocus projectLocus) {
 
         this.projectLocus = projectLocus;
+
         client = new Client();
         Network.registerClasses(client);
+
+        timer = new Timer();
+
         playerMap = new HashMap<Integer, Player>();
 
     }
@@ -95,18 +102,40 @@ public class GameClient {
     void onReceived(Connection connection, Object object) {
         if (object instanceof Network.UpdateLobby) {
             Network.UpdateLobby updateLobby = (Network.UpdateLobby) object;
-            playerMap = updateLobby.playerMap;
-            lobbyScreen.updateLobby(playerMap);
+            lobbyScreen.playerMap = playerMap = updateLobby.playerMap;
+            lobbyScreen.isLobbyToBeUpdated = true;
             Gdx.app.log("Client", "Accepted Player Count : " + String.valueOf(playerMap.size()));
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
             Network.PlayerJoinRequestRejected playerJoinRequestRejected =
                     (Network.PlayerJoinRequestRejected) object;
             Gdx.app.log("Client", playerJoinRequestRejected.reason);
+        } else if (object instanceof Network.LevelProperty) {
+            lobbyScreen.levelProperty = ((Network.LevelProperty) object).levelProperty;
+            lobbyScreen.initializePlayScreen = true;
+            ready();
+            Gdx.app.log("Client", "Received Level Property");
+        } else if (object instanceof Network.StartGame) {
+            Network.StartGame startGame = (Network.StartGame) object;
+//            float timeout = startGame.timeout -
+//                    ((float) (TimeUtils.millis() - startGame.serverStartTime) / 1000f);
+//            Gdx.app.log("Client", "Received Start Game, Starting Game In " + timeout);
+//            timer.scheduleTask(new Timer.Task() {
+//                @Override
+//                public void run() {
+//                    Gdx.app.log("Client", "Switching...");
+//                    projectLocus.setScreen(lobbyScreen.multiPlayerPlayScreen);
+//                }
+//            }, 10f);
         }
     }
 
     void onDisconnected(Connection connection) {
 
+    }
+
+    private void ready() {
+        client.sendTCP(new Network.PlayerReadyRequest(true));
+        client.updateReturnTripTime();
     }
 
     public void stop() {

@@ -228,7 +228,8 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                         LobbyScreen.Type.Client));
                 break;
             case 2:
-                projectLocus.setScreen(new PracticePlayScreen(projectLocus, this));
+                PracticePlayScreen practicePlayScreen = new PracticePlayScreen(projectLocus, this);
+                projectLocus.setScreen(practicePlayScreen);
                 break;
             case 3:
                 selectPlayerScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;

@@ -15,8 +15,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
+import com.locus.game.levels.Level;
 import com.locus.game.network.Player;
+import com.locus.game.sprites.entities.Moon;
+import com.locus.game.sprites.entities.Planet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -53,6 +57,14 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private Type type;
     public State state = State.Starting;
 
+    public MultiPlayerPlayScreen multiPlayerPlayScreen;
+    public Level.Property levelProperty;
+    public HashMap<Integer, Player> playerMap;
+
+    public boolean initializePlayScreen;
+    private boolean isInitializedPlayScreen;
+    public boolean isLobbyToBeUpdated;
+
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
                 LobbyScreen.Type type) {
 
@@ -77,7 +89,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
                 ProjectLocus.TILED_MAP_SCALE);
 
-
         GlyphLayout glyphLayout = new GlyphLayout();
         glyphLayout.setText(projectLocus.font32, "Starting...");
         startingFontHalfWidth = glyphLayout.width / 2f;
@@ -88,14 +99,32 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         glyphLayout.setText(projectLocus.font32, "Failed");
         failedFontHalfWidth = glyphLayout.width / 2f;
 
+        initializePlayScreen = false;
+        isLobbyToBeUpdated = false;
+
         switch (type) {
             case Host:
+
+                ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
+                moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
+                moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
+                moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
+
+                levelProperty = new Level.Property(Planet.Type.Gas, moonPropertyList, 1);
+                multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
+                isInitializedPlayScreen = true;
+
                 state = State.Starting;
                 projectLocus.gameServer.start(this);
+
                 break;
             case Client:
+
+                isInitializedPlayScreen = false;
+
                 state = State.Searching;
                 projectLocus.gameClient.start(this);
+
                 break;
         }
 
@@ -107,6 +136,23 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private void positionUI() {
 
+    }
+
+    public void updateLobby() {
+        if (isLobbyToBeUpdated) {
+
+            Player player;
+            for (Integer connectionID : playerMap.keySet()) {
+                player = playerMap.get(connectionID);
+                Gdx.app.log("Player Connection ID", String.valueOf(connectionID));
+                Gdx.app.log("Player Type", player.property.type.toString());
+            }
+
+            isLobbyToBeUpdated = false;
+        }
+    }
+
+    private void drawLobby(SpriteBatch spriteBatch) {
     }
 
     @Override
@@ -165,6 +211,13 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                         break;
                     case Connected:
                         drawLobby(projectLocus.spriteBatch);
+                        // Cannot be called from the GameClient cause that is not a Screen and is
+                        // on a separate thread.
+                        if (initializePlayScreen &&
+                                !isInitializedPlayScreen) {
+                            multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
+                            isInitializedPlayScreen = true;
+                        }
                         break;
                     case Failed:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Failed",
@@ -177,18 +230,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         projectLocus.spriteBatch.end();
 
-    }
-
-    public void updateLobby(HashMap<Integer, Player> playerMap) {
-        Player player;
-        for (Integer connectionID : playerMap.keySet()) {
-            player = playerMap.get(connectionID);
-            Gdx.app.log("Player Connection ID", String.valueOf(connectionID));
-            Gdx.app.log("Player Type", player.property.type.toString());
-        }
-    }
-
-    private void drawLobby(SpriteBatch spriteBatch) {
     }
 
     @Override

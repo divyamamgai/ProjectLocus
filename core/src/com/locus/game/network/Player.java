@@ -21,8 +21,4 @@ public class Player {
         this.isReady = isReady;
     }
 
-    public void setReady(boolean isReady) {
-        this.isReady = isReady;
-    }
-
 }

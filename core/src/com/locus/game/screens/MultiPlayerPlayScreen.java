@@ -1,18 +1,9 @@
 package com.locus.game.screens;
 
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.math.MathUtils;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.kryonet.Server;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
-import com.locus.game.sprites.entities.Moon;
-import com.locus.game.sprites.entities.Planet;
 import com.locus.game.tools.Hud;
-
-import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Created by Divya Mamgai on 9/6/2016.
@@ -21,21 +12,16 @@ import java.util.ArrayList;
 public class MultiPlayerPlayScreen implements Screen {
 
     public ProjectLocus projectLocus;
-    private SelectModeScreen selectModeScreen;
-    private Level level;
+    private LobbyScreen lobbyScreen;
     private Hud hud;
+    public Level level;
 
-    public MultiPlayerPlayScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen) {
+    MultiPlayerPlayScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen) {
 
         this.projectLocus = projectLocus;
-        this.selectModeScreen = selectModeScreen;
+        this.lobbyScreen = lobbyScreen;
 
-        ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
-        moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
-        moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
-        moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
-
-        level = new Level(projectLocus, Planet.Type.Gas, moonPropertyList, 1);
+        level = new Level(projectLocus, lobbyScreen.levelProperty);
 
         hud = new Hud(projectLocus.spriteBatch, Hud.Type.Survival);
 
@@ -43,7 +29,7 @@ public class MultiPlayerPlayScreen implements Screen {
 
     @Override
     public void show() {
-
+        level.bindController();
     }
 
     @Override

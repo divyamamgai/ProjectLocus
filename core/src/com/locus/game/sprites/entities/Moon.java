@@ -33,6 +33,10 @@ public class Moon extends Entity {
         public Moon.Type type;
         float orbitRadius, orbitAngle;
 
+        public Property() {
+            
+        }
+
         public Property(Moon.Type type, float orbitRadius, float orbitAngle) {
             this.type = type;
             this.orbitRadius = orbitRadius;

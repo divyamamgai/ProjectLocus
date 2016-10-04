@@ -27,7 +27,7 @@ class PracticePlayScreen implements Screen {
         moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
         moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
 
-        level = new Level(projectLocus, Planet.Type.Gas, moonPropertyList, 1);
+        level = new Level(projectLocus, new Level.Property(Planet.Type.Gas, moonPropertyList, 1));
 
     }
 

@@ -3,6 +3,9 @@ package com.locus.game.network;
 import com.badlogic.gdx.graphics.Color;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
+import com.locus.game.levels.Level;
+import com.locus.game.sprites.entities.Moon;
+import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
 
 import java.util.ArrayList;
@@ -31,7 +34,19 @@ class Network {
         kryo.register(Integer.class);
         kryo.register(HashMap.class);
         kryo.register(Player.class);
+        kryo.register(String.class);
         kryo.register(PlayerJoinRequestRejected.class);
+        kryo.register(PlayerReadyRequest.class);
+        kryo.register(Error.class);
+        kryo.register(Planet.class);
+        kryo.register(Planet.Type.class);
+        kryo.register(Moon.class);
+        kryo.register(Moon.Type.class);
+        kryo.register(Moon.Property.class);
+        kryo.register(Level.class);
+        kryo.register(Level.Property.class);
+        kryo.register(LevelProperty.class);
+        kryo.register(StartGame.class);
     }
 
     static class PlayerJoinRequest {
@@ -72,6 +87,66 @@ class Network {
 
         PlayerJoinRequestRejected(String reason) {
             this.reason = reason;
+        }
+
+    }
+
+    static class PlayerReadyRequest {
+
+        boolean isReady;
+
+        PlayerReadyRequest() {
+
+        }
+
+        PlayerReadyRequest(boolean isReady) {
+
+            this.isReady = isReady;
+
+        }
+
+    }
+
+    static class Error {
+
+        String message;
+
+        Error() {
+
+        }
+
+        Error(String message) {
+            this.message = message;
+        }
+
+    }
+
+    static class LevelProperty {
+
+        Level.Property levelProperty;
+
+        LevelProperty() {
+
+        }
+
+        LevelProperty(Level.Property levelProperty) {
+            this.levelProperty = levelProperty;
+        }
+
+    }
+
+    static class StartGame {
+
+        long serverStartTime;
+        float timeout;
+
+        StartGame() {
+
+        }
+
+        StartGame(long serverStartTime, float timeout) {
+            this.serverStartTime = serverStartTime;
+            this.timeout = timeout;
         }
 
     }

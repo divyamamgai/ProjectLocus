@@ -35,6 +35,24 @@ public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
 
+    public static class Property {
+
+        Planet.Type planetType;
+        ArrayList<Moon.Property> moonPropertyList;
+        int backgroundType;
+
+        public Property() {
+        }
+
+        public Property(Planet.Type planetType, ArrayList<Moon.Property> moonPropertyList,
+                        int backgroundType) {
+            this.planetType = planetType;
+            this.moonPropertyList = moonPropertyList;
+            this.backgroundType = backgroundType;
+        }
+
+    }
+
     private InputController inputController;
     private OrthographicCamera camera;
 
@@ -52,15 +70,18 @@ public class Level implements Disposable {
     private Ship player;
     private Planet planet;
     private TiledMapRenderer tiledMapRenderer;
+    private InputMultiplexer inputMultiplexer;
+
+    public Level.Property property;
 
     // Debugging
     private Box2DDebugRenderer box2DDebugRenderer;
     private OrthographicCamera fpsCamera;
 
-    public Level(ProjectLocus projectLocus, Planet.Type planetType,
-                 ArrayList<Moon.Property> moonPropertyList, int backgroundType) {
+    public Level(ProjectLocus projectLocus, Property property) {
 
         this.projectLocus = projectLocus;
+        this.property = property;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
 
@@ -76,26 +97,25 @@ public class Level implements Disposable {
         entityAliveList.add(player = new Ship(this, projectLocus.playerShipProperty,
                 ProjectLocus.WORLD_HALF_WIDTH + 250f, ProjectLocus.WORLD_HALF_HEIGHT));
 
-        planet = new Planet(this, planetType, ProjectLocus.WORLD_HALF_WIDTH,
+        planet = new Planet(this, property.planetType, ProjectLocus.WORLD_HALF_WIDTH,
                 ProjectLocus.WORLD_HALF_HEIGHT);
 
         moonList = new ArrayList<Moon>();
-        for (Moon.Property moonProperty : moonPropertyList) {
+        for (Moon.Property moonProperty : property.moonPropertyList) {
             moonList.add(new Moon(this, ProjectLocus.WORLD_HALF_WIDTH,
                     ProjectLocus.WORLD_HALF_HEIGHT, moonProperty));
         }
 
-        TiledMap tiledMap = projectLocus.tiledMapList.get(backgroundType);
+        TiledMap tiledMap = projectLocus.tiledMapList.get(property.backgroundType);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, ProjectLocus.TILED_MAP_SCALE);
 
         barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
         inputController = new InputController(player);
-        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(inputController);
         inputMultiplexer.addProcessor(new GestureDetector(inputController));
-        Gdx.input.setInputProcessor(inputMultiplexer);
 
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
@@ -103,6 +123,10 @@ public class Level implements Disposable {
                 ProjectLocus.worldCameraHeight);
         projectLocus.font24.getData().setScale(0.2f);
 
+    }
+
+    public void bindController() {
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     public void update(float delta) {

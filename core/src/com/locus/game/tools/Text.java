@@ -53,6 +53,7 @@ public class Text {
 
         this.text = text;
 
+        glyphLayout.reset();
         glyphLayout.setText(font, text);
         width = glyphLayout.width;
         halfWidth = width / 2f;
