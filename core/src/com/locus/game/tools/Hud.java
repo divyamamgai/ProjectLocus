@@ -17,7 +17,7 @@ import com.locus.game.ProjectLocus;
  */
 
 public class Hud {
-    
+
     private Stage stage;
 
     private int[] playersNumber, playersScore;
@@ -34,7 +34,7 @@ public class Hud {
 
     private Type type;
 
-    public Hud(SpriteBatch spriteBatch, Type type) {
+    public Hud(ProjectLocus projectLocus, Type type) {
         playerCount = 8;
         this.type = type;
 
@@ -54,25 +54,25 @@ public class Hud {
 
         Viewport viewport = new FitViewport(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight, new OrthographicCamera());
-        stage = new Stage(viewport, spriteBatch);
+        stage = new Stage(viewport, projectLocus.spriteBatch);
 
         Table table = new Table();
         table.top();
         table.setFillParent(true);
 
-        Label scoreLabel = new Label("SCORE", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        Label scoreLabel = new Label("SCORE", new Label.LabelStyle(projectLocus.font24, Color.WHITE));
         scoreCountLabel = new Label(String.format("%04d", score),
-                new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+                new Label.LabelStyle(projectLocus.font24, Color.WHITE));
         for (int i = 0; i < playerCount; i++) {
             playersLabel[i] = new Label(String.format("%01d", playersNumber[i]),
-                    new Label.LabelStyle(new BitmapFont(), Color.BLUE));
+                    new Label.LabelStyle(projectLocus.font24, Color.BLUE));
             playersScoreLabel[i] = new Label(String.format("%04d", playersScore[i]),
-                    new Label.LabelStyle(new BitmapFont(), Color.GREEN));
+                    new Label.LabelStyle(projectLocus.font24, Color.GREEN));
         }
         if (type == Type.DeathMatch) {
-            timeLabel = new Label("TIME", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+            timeLabel = new Label("TIME", new Label.LabelStyle(projectLocus.font24, Color.WHITE));
             timeCountLabel = new Label(String.format("%02d:%02d", timeMinutes, timeSeconds),
-                    new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+                    new Label.LabelStyle(projectLocus.font24, Color.WHITE));
         }
 
         table.add(scoreLabel).expandX().padTop(10);

@@ -1,8 +1,6 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.TimeUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 import com.locus.game.ProjectLocus;
@@ -22,7 +20,6 @@ public class GameServer {
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
     private HashMap<Integer, Player> playerMap;
-    private Timer timer;
 
     public GameServer(ProjectLocus projectLocus) {
 
@@ -33,8 +30,6 @@ public class GameServer {
 
         playerMap = new HashMap<Integer, Player>();
         playerMap.put(0, new Player(projectLocus.playerShipProperty, true));
-
-        timer = new Timer();
 
     }
 
@@ -111,15 +106,9 @@ public class GameServer {
                 }
 
                 if (areAllReady) {
-                    server.sendToAllTCP(new Network.StartGame(TimeUtils.millis(), 10f));
-//                    Gdx.app.log("Host", "All Ready, Starting Game In 10...");
-//                    timer.scheduleTask(new Timer.Task() {
-//                        @Override
-//                        public void run() {
-//                            Gdx.app.log("Host", "Switching...");
-//                            projectLocus.setScreen(lobbyScreen.multiPlayerPlayScreen);
-//                        }
-//                    }, 10f);
+                    server.sendToAllTCP(new Network.StartGame());
+                    Gdx.app.log("Host", "All Ready, Starting Game In 10...");
+                    lobbyScreen.isGameToBeStarted = true;
                 }
 
             } else {

@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.utils.Timer;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.network.Player;
@@ -83,9 +84,14 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     public Level.Property levelProperty;
     public HashMap<Integer, Player> playerMap;
 
+    private Timer timer;
+
     public boolean initializePlayScreen;
     private boolean isInitializedPlayScreen;
     public boolean isLobbyToBeUpdated;
+    public boolean isGameToBeStarted;
+    public float gameStartTime;
+    private boolean isGameStarted;
 
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
                 LobbyScreen.Type type) {
@@ -121,8 +127,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         glyphLayout.setText(projectLocus.font32, "Failed");
         failedFontHalfWidth = glyphLayout.width / 2f;
 
+        timer = new Timer();
+
         initializePlayScreen = false;
         isLobbyToBeUpdated = false;
+        isGameToBeStarted = false;
+        isGameStarted = false;
 
         clientLobbyText = new Text(projectLocus.font32, "Client Lobby");
         hostLobbyText = new Text(projectLocus.font32, "Host Lobby");
@@ -140,6 +150,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 levelProperty = new Level.Property(Planet.Type.Gas, moonPropertyList, 1);
                 multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
                 isInitializedPlayScreen = true;
+
+                gameStartTime = 10f;
 
                 state = State.Starting;
                 projectLocus.gameServer.start(this);
@@ -175,9 +187,33 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                     ROW_PADDING + (((row + 1) % 2) * (rowHeight + ROW_PADDING)) +
                             ((rowHeight - shipSprite.getHeight()) / 2));
         }
+        Vector3 minimumPosition = new Vector3(ProjectLocus.screenCameraWidth - COLUMN_PADDING
+                - readyText.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
+                ROW_PADDING - readyText.getHalfHeight() - 20, 0);
+        Vector3 maximumPosition = new Vector3(minimumPosition.x + readyText.getWidth() + 20,
+                minimumPosition.y + readyText.getHeight() + 20, 0);
+        boundingBox = new BoundingBox();
+        boundingBox.set(minimumPosition, maximumPosition);
     }
 
-    public void updateLobby() {
+    private void startGame() {
+        if (isGameToBeStarted && !isGameStarted) {
+
+            Gdx.app.log("Lobby", "Scheduling...");
+            timer.scheduleTask(new Timer.Task() {
+                @Override
+                public void run() {
+                    Gdx.app.log("Lobby", "Running...");
+                    projectLocus.setScreen(multiPlayerPlayScreen);
+                }
+            }, gameStartTime);
+
+            isGameStarted = true;
+            isGameToBeStarted = false;
+        }
+    }
+
+    private void updateLobby() {
         if (isLobbyToBeUpdated) {
 
             Player player;
@@ -202,6 +238,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void drawLobby(SpriteBatch spriteBatch) {
+        startGame();
         updateLobby();
         if (type == Type.Host) {
             hostLobbyText.draw(spriteBatch, COLUMN_PADDING,
@@ -223,6 +260,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                             - playerData.playerReadyText.getHalfWidth()),
                     playerData.shipSprite.getY() - SHIP_PADDING / 2);
         }
+        readyText.draw(projectLocus.spriteBatch,
+                ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
+                ProjectLocus.screenCameraHeight - MARGIN_TOP +
+                        ROW_PADDING - readyText.getHalfHeight());
     }
 
     @Override
@@ -287,6 +328,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                                 !isInitializedPlayScreen) {
                             multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
                             isInitializedPlayScreen = true;
+                            initializePlayScreen = false;
                         }
                         break;
                     case Failed:
@@ -297,19 +339,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 }
                 break;
         }
-
-        drawLobby(projectLocus.spriteBatch);
-        readyText.draw(projectLocus.spriteBatch,
-                ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
-                ProjectLocus.screenCameraHeight - MARGIN_TOP +
-                        ROW_PADDING - readyText.getHalfHeight());
-        Vector3 minimumPosition = new Vector3(ProjectLocus.screenCameraWidth - COLUMN_PADDING
-                - readyText.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
-                ROW_PADDING - readyText.getHalfHeight() - 20, 0);
-        Vector3 maximumPosition = new Vector3(minimumPosition.x + readyText.getWidth() + 20,
-                minimumPosition.y + readyText.getHeight() + 20, 0);
-        boundingBox = new BoundingBox();
-        boundingBox.set(minimumPosition, maximumPosition);
 
         projectLocus.spriteBatch.end();
 
@@ -381,6 +410,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
         if (boundingBox.contains(touchPosition)) {
+            projectLocus.gameClient.ready();
         }
         return false;
     }

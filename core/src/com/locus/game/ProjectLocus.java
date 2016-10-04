@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.locus.game.network.GameClient;
 import com.locus.game.network.GameServer;
 import com.locus.game.screens.LoadingScreen;
@@ -48,6 +49,8 @@ public class ProjectLocus extends Game implements Disposable {
     public static final float SCREEN_CAMERA_MOVEMENT_RADIUS = 512f;
 
     public static final float PI_BY_TWO = MathUtils.PI / 2f;
+
+    public static final long START_TIME = TimeUtils.millis();
 
     public static final Color FONT_SELECTED_COLOR = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);
 

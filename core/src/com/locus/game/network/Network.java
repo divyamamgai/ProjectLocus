@@ -137,16 +137,8 @@ class Network {
 
     static class StartGame {
 
-        long serverStartTime;
-        float timeout;
-
         StartGame() {
 
-        }
-
-        StartGame(long serverStartTime, float timeout) {
-            this.serverStartTime = serverStartTime;
-            this.timeout = timeout;
         }
 
     }

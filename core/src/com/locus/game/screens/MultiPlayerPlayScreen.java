@@ -23,7 +23,7 @@ public class MultiPlayerPlayScreen implements Screen {
 
         level = new Level(projectLocus, lobbyScreen.levelProperty);
 
-        hud = new Hud(projectLocus.spriteBatch, Hud.Type.Survival);
+        hud = new Hud(projectLocus, Hud.Type.Survival);
 
     }
 

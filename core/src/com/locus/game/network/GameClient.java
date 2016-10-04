@@ -1,8 +1,6 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.TimeUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
@@ -27,7 +25,6 @@ public class GameClient {
     private int connectionID;
     private String hostAddress;
     private HashMap<Integer, Player> playerMap;
-    private Timer timer;
 
     private class GameClientConnectRunnable implements Runnable {
 
@@ -74,8 +71,6 @@ public class GameClient {
         client = new Client();
         Network.registerClasses(client);
 
-        timer = new Timer();
-
         playerMap = new HashMap<Integer, Player>();
 
     }
@@ -112,20 +107,12 @@ public class GameClient {
         } else if (object instanceof Network.LevelProperty) {
             lobbyScreen.levelProperty = ((Network.LevelProperty) object).levelProperty;
             lobbyScreen.initializePlayScreen = true;
-            ready();
             Gdx.app.log("Client", "Received Level Property");
         } else if (object instanceof Network.StartGame) {
-            Network.StartGame startGame = (Network.StartGame) object;
-//            float timeout = startGame.timeout -
-//                    ((float) (TimeUtils.millis() - startGame.serverStartTime) / 1000f);
-//            Gdx.app.log("Client", "Received Start Game, Starting Game In " + timeout);
-//            timer.scheduleTask(new Timer.Task() {
-//                @Override
-//                public void run() {
-//                    Gdx.app.log("Client", "Switching...");
-//                    projectLocus.setScreen(lobbyScreen.multiPlayerPlayScreen);
-//                }
-//            }, 10f);
+            float gameStartTime = 10f - ((float) connection.getReturnTripTime() / 1000f);
+            Gdx.app.log("Client", "Received Start Game, Starting Game In " + gameStartTime);
+            lobbyScreen.gameStartTime = gameStartTime;
+            lobbyScreen.isGameToBeStarted = true;
         }
     }
 
@@ -133,7 +120,7 @@ public class GameClient {
 
     }
 
-    private void ready() {
+    public void ready() {
         client.sendTCP(new Network.PlayerReadyRequest(true));
         client.updateReturnTripTime();
     }
