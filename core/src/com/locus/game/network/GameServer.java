@@ -8,6 +8,7 @@ import com.locus.game.screens.LobbyScreen;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Divya Mamgai on 10/3/2016.
@@ -19,7 +20,7 @@ public class GameServer {
     private Server server;
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
-    private ArrayList<Player> playerList;
+    private HashMap<Integer, Player> playerMap;
 
     public GameServer(ProjectLocus projectLocus) {
 
@@ -28,8 +29,8 @@ public class GameServer {
         server = new Server();
         Network.registerClasses(server);
 
-        playerList = new ArrayList<Player>();
-        playerList.add(new Player(0, projectLocus.playerShipProperty, false));
+        playerMap = new HashMap<Integer, Player>();
+        playerMap.put(0, new Player(projectLocus.playerShipProperty, false));
 
     }
 
@@ -45,6 +46,7 @@ public class GameServer {
             lobbyScreen.state = LobbyScreen.State.Started;
             Gdx.app.log("Lobby Host", "Server Started @ TCP : " + Network.SERVER_TCP_PORT +
                     " UDP : " + Network.SERVER_UDP_PORT);
+            lobbyScreen.updateLobby(playerMap);
         } catch (IOException e) {
             lobbyScreen.state = LobbyScreen.State.Failed;
             e.printStackTrace();
@@ -59,28 +61,25 @@ public class GameServer {
     void onReceived(Connection connection, Object object) {
         if (object instanceof Network.PlayerJoinRequest) {
             Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
-            boolean isAlreadyExisting = false;
             int connectionID = connection.getID();
-            for (Player player : playerList) {
-                if (player.connectionID == connectionID) {
-                    isAlreadyExisting = true;
-                    break;
-                }
-            }
-            if (isAlreadyExisting) {
+            if (playerMap.containsKey(connectionID)) {
                 connection.sendTCP(new Network.PlayerJoinRequestRejected(
                         "Already Existing Client With ID : " + connectionID));
             } else {
-                playerList.add(
-                        new Player(connection.getID(), playerJoinRequest.property, false));
-                connection.sendTCP(new Network.UpdateLobby(playerList));
-                lobbyScreen.updateLobby(playerList);
+                playerMap.put(connectionID, new Player(playerJoinRequest.property, false));
+                server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+                lobbyScreen.updateLobby(playerMap);
             }
         }
     }
 
     void onDisconnected(Connection connection) {
-
+        int connectionID = connection.getID();
+        if (playerMap.containsKey(connectionID)) {
+            playerMap.remove(connectionID);
+            server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+            lobbyScreen.updateLobby(playerMap);
+        }
     }
 
     public void stop() {

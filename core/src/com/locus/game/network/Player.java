@@ -9,16 +9,14 @@ import com.locus.game.sprites.entities.Ship;
 
 public class Player {
 
-    int connectionID;
-    Ship.Property property;
-    boolean isReady;
+    public Ship.Property property;
+    public boolean isReady;
 
     Player() {
 
     }
 
-    Player(int connectionID, Ship.Property property, boolean isReady) {
-        this.connectionID = connectionID;
+    Player(Ship.Property property, boolean isReady) {
         this.property = property;
         this.isReady = isReady;
     }

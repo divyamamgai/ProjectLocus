@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.sprites.entities.Ship;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Divya Mamgai on 10/3/2016.
@@ -27,6 +28,8 @@ class Network {
         kryo.register(Ship.Property.class);
         kryo.register(UpdateLobby.class);
         kryo.register(ArrayList.class);
+        kryo.register(Integer.class);
+        kryo.register(HashMap.class);
         kryo.register(Player.class);
         kryo.register(PlayerJoinRequestRejected.class);
     }
@@ -47,14 +50,14 @@ class Network {
 
     static class UpdateLobby {
 
-        ArrayList<Player> playerList;
+        HashMap<Integer, Player> playerMap;
 
         UpdateLobby() {
 
         }
 
-        UpdateLobby(ArrayList<Player> playerList) {
-            this.playerList = playerList;
+        UpdateLobby(HashMap<Integer, Player> playerMap) {
+            this.playerMap = playerMap;
         }
 
     }

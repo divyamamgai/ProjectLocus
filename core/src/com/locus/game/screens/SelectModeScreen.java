@@ -8,7 +8,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
@@ -17,6 +16,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
+import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 
@@ -29,44 +29,41 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
     private class MenuOption {
 
-        private String text;
-        private float halfWidth, x, y, dy;
-        private BitmapFont font, fontSelected;
-        private GlyphLayout glyphLayout;
+        private Text text, textSelected;
+        private Vector2 textPosition, textSelectedPosition;
+        private float dy;
 
         boolean isSelected;
 
-        MenuOption(BitmapFont font, BitmapFont fontSelected, GlyphLayout glyphLayout,
-                   String text, float dy) {
+        MenuOption(BitmapFont font, BitmapFont fontSelected, String text, float dy) {
 
-            this.font = font;
-            this.fontSelected = fontSelected;
-            this.glyphLayout = glyphLayout;
             this.dy = dy;
+            this.text = new Text(font, text);
+            this.textSelected = new Text(fontSelected, text);
+
+            textPosition = new Vector2(0, 0);
+            textSelectedPosition = new Vector2(0, 0);
 
             isSelected = false;
-            setText(text);
             position();
 
         }
 
-        void setText(String text) {
-            this.text = text;
-            glyphLayout.setText(font, text);
-            halfWidth = glyphLayout.width / 2f;
-        }
-
         public void draw(SpriteBatch spriteBatch) {
             if (isSelected) {
-                fontSelected.draw(spriteBatch, text, x, y);
+                textSelected.draw(spriteBatch, textSelectedPosition.x, textSelectedPosition.y);
             } else {
-                font.draw(spriteBatch, text, x, y);
+                text.draw(spriteBatch, textPosition.x, textPosition.y);
             }
         }
 
-        public void position() {
-            x = ProjectLocus.screenCameraHalfWidth - halfWidth;
-            y = menuStartPositionY + dy;
+        void position() {
+            textPosition.set(
+                    ProjectLocus.screenCameraHalfWidth - text.getHalfWidth(),
+                    menuStartPositionY + dy);
+            textSelectedPosition.set(
+                    ProjectLocus.screenCameraHalfWidth - textSelected.getHalfWidth(),
+                    menuStartPositionY + dy);
         }
 
     }
@@ -108,15 +105,14 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
         logo.setSize(366, 128);
 
         menuOptionList = new ArrayList<MenuOption>();
-        GlyphLayout glyphLayout = new GlyphLayout();
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                glyphLayout, "Host", 0));
+                "Host", 0));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                glyphLayout, "Join", -48f));
+                "Join", -48f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                glyphLayout, "Practice", -96f));
+                "Practice", -96f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                glyphLayout, "Back", -144f));
+                "Back", -144f));
 
         selectedMenuOption = 0;
         menuOptionList.get(selectedMenuOption).isSelected = true;
@@ -251,6 +247,11 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                 nextMenuOption();
                 break;
             case Input.Keys.ENTER:
+                submit();
+                break;
+            case Input.Keys.BACK:
+                // Go back to previous Screen.
+                selectedMenuOption = 3;
                 submit();
                 break;
         }

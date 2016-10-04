@@ -1,6 +1,6 @@
 android {
     buildToolsVersion "23.0.3"
-    compileSdkVersion 16
+    compileSdkVersion 23
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -17,9 +17,13 @@ android {
     defaultConfig {
         applicationId "com.locus.projectLocus"
         minSdkVersion 8
-        targetSdkVersion 16
+        targetSdkVersion 23
     }
     productFlavors {
+        JellyBean {
+            minSdkVersion 16
+            targetSdkVersion 16
+        }
     }
 }
 // called every time gradle gets executed, takes the native dependencies of

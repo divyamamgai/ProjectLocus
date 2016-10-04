@@ -21,16 +21,11 @@ public class Text {
 
     }
 
-    Text(BitmapFont font, String text) {
+    public Text(BitmapFont font, String text) {
 
         this.font = font;
-        this.text = text;
 
-        glyphLayout.setText(font, text);
-        width = glyphLayout.width;
-        halfWidth = width / 2f;
-        height = glyphLayout.height;
-        halfHeight = height / 2f;
+        setText(text);
 
     }
 
@@ -54,8 +49,28 @@ public class Text {
         return text;
     }
 
+    public void setText(String text) {
+
+        this.text = text;
+
+        glyphLayout.setText(font, text);
+        width = glyphLayout.width;
+        halfWidth = width / 2f;
+        height = glyphLayout.height;
+        halfHeight = height / 2f;
+
+    }
+
     public BitmapFont getFont() {
         return font;
+    }
+
+    public void setFont(BitmapFont font) {
+
+        this.font = font;
+
+        setText(text);
+
     }
 
     public void draw(SpriteBatch spriteBatch, float x, float y) {

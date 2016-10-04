@@ -87,8 +87,4 @@ public class Planet extends Entity {
     public void kill() {
     }
 
-    @Override
-    public void destroy() {
-    }
-
 }

@@ -43,6 +43,7 @@ public class BulletLoader {
             bodyDef = new BodyDef();
             bodyDef.type = BodyDef.BodyType.DynamicBody;
             bodyDef.bullet = true;
+            bodyDef.fixedRotation = true;
 
             fixtureDef = new FixtureDef();
             fixtureDef.isSensor = false;

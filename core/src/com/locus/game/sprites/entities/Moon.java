@@ -113,16 +113,6 @@ public class Moon extends Entity {
 
     @Override
     public void kill() {
-        if (isAlive) {
-            isAlive = false;
-            level.destroyEntityStack.push(this);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        level.world.destroyBody(body);
-        level.moonList.remove(this);
     }
 
 }

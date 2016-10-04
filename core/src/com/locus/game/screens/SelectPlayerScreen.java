@@ -141,6 +141,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
+        Gdx.input.setCatchBackKey(true);
     }
 
     @Override

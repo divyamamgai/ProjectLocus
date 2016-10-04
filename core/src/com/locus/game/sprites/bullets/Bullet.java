@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.utils.Timer;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.entities.Ship;
 
@@ -27,52 +28,61 @@ public class Bullet extends Sprite {
 
     }
 
-    private Level level;
+    private Timer timer;
     public Ship ship;
-    public Body body;
+    private Body body;
     public BulletLoader.Definition definition;
-    private boolean isAlive = true;
-    private Integer bulletMapKey;
+    public boolean isAlive = true;
 
     public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
 
-        this.level = level;
         this.ship = ship;
+
+        timer = new Timer();
 
         definition = level.projectLocus.bulletLoader.get(type);
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
 
-        definition.bodyDef.position.set(position);
-        definition.bodyDef.angle = angleRad;
-        definition.bodyDef.linearVelocity.set(0, definition.speed).rotateRad(angleRad);
-
         body = level.world.createBody(definition.bodyDef);
+        body.setTransform(position.x, position.y, angleRad);
+        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
         body.setUserData(this);
-        body.applyLinearImpulse(ship.body.getLinearVelocity(), position, true);
         definition.attachFixture(body);
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
         update();
+        setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
-        level.timer.scheduleTask(new BulletDieTask(this), definition.life);
-
-        // Initialize with default negative value, this will denote whether the Bullet has been
-        // added to the level or not.
-        bulletMapKey = -1;
+        timer.scheduleTask(new BulletDieTask(this), definition.life);
 
     }
 
-    public void addToLevel() {
-        level.bulletMap.put((bulletMapKey = Level.nextBulletKey++), this);
+    public void resurrect(Ship ship, Vector2 position, float angleRad) {
+
+        this.ship = ship;
+
+        isAlive = true;
+
+        body.setActive(true);
+
+        setRotation(angleRad * MathUtils.radiansToDegrees);
+
+        body.setTransform(position.x, position.y, angleRad);
+        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
+
+        timer.clear();
+        timer.scheduleTask(new BulletDieTask(this), definition.life);
+
     }
 
     public void update() {
         Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(bodyPosition.x, bodyPosition.y);
-        setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+        // We do not need the bullets to rotate so why take the extra overhead.
+//        setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {
@@ -85,14 +95,14 @@ public class Bullet extends Sprite {
 
     public void kill() {
         if (isAlive) {
+            timer.clear();
             isAlive = false;
-            level.destroyBulletStack.push(this);
         }
     }
 
-    public void destroy() {
-        level.world.destroyBody(body);
-        level.bulletMap.remove(bulletMapKey);
+    public void killBody() {
+        body.setAwake(false);
+        body.setActive(false);
     }
 
 }

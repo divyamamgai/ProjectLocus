@@ -2,9 +2,7 @@ package com.locus.game.levels;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
@@ -14,7 +12,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Timer;
 import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
@@ -25,8 +22,7 @@ import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.InputController;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.Iterator;
 
 /**
  * Created by Divya Mamgai on 9/19/2016.
@@ -37,22 +33,20 @@ public class Level implements Disposable {
 //    private static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
 //            ProjectLocus.WORLD_HALF_HEIGHT, 512f);
 
-    private static final float CAMERA_FOLLOW_SPEED = 3f;
-
-    // Does not denote count of the bullets or entities.
-    public static Integer nextBulletKey, nextEntityKey;
+    private static final float CAMERA_FOLLOW_SPEED = 4f;
 
     private InputController inputController;
     private OrthographicCamera camera;
 
     public ProjectLocus projectLocus;
-    public Timer timer;
     public World world;
-    public HashMap<Integer, Bullet> bulletMap;
-    public Stack<Bullet> destroyBulletStack;
-    public ArrayList<Entity> entityList;
-    public Stack<Entity> destroyEntityStack;
-    public ArrayList<Moon> moonList;
+    public ArrayList<Bullet> bulletAliveList;
+    public ArrayList<Bullet> bulletDeadList;
+    private Iterator<Bullet> bulletIterator;
+    private ArrayList<Entity> entityAliveList;
+    private ArrayList<Entity> entityDeadList;
+    private Iterator<Entity> entityIterator;
+    private ArrayList<Moon> moonList;
     public TextureRegion barBackgroundTexture, barForegroundTexture;
 
     private Ship player;
@@ -62,18 +56,11 @@ public class Level implements Disposable {
     // Debugging
     private Box2DDebugRenderer box2DDebugRenderer;
     private OrthographicCamera fpsCamera;
-    private BitmapFont fpsFont;
 
     public Level(ProjectLocus projectLocus, Planet.Type planetType,
                  ArrayList<Moon.Property> moonPropertyList, int backgroundType) {
 
-        // Reset the nextBulletKey when a new instance is created.
-        Level.nextBulletKey = 0;
-        Level.nextEntityKey = 0;
-
         this.projectLocus = projectLocus;
-
-        timer = new Timer();
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
 
@@ -81,12 +68,12 @@ public class Level implements Disposable {
         world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
-        bulletMap = new HashMap<Integer, Bullet>();
-        destroyBulletStack = new Stack<Bullet>();
-        entityList = new ArrayList<Entity>();
-        destroyEntityStack = new Stack<Entity>();
+        bulletAliveList = new ArrayList<Bullet>();
+        bulletDeadList = new ArrayList<Bullet>();
+        entityAliveList = new ArrayList<Entity>();
+        entityDeadList = new ArrayList<Entity>();
 
-        entityList.add(player = new Ship(this, projectLocus.playerShipProperty,
+        entityAliveList.add(player = new Ship(this, projectLocus.playerShipProperty,
                 ProjectLocus.WORLD_HALF_WIDTH + 250f, ProjectLocus.WORLD_HALF_HEIGHT));
 
         planet = new Planet(this, planetType, ProjectLocus.WORLD_HALF_WIDTH,
@@ -112,22 +99,13 @@ public class Level implements Disposable {
 
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
-        fpsCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        fpsFont = new BitmapFont();
-        fpsFont.getData().setScale(0.25f);
-        fpsFont.setColor(Color.YELLOW);
+        fpsCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
+        projectLocus.font24.getData().setScale(0.2f);
 
     }
 
     public void update(float delta) {
-
-        while (destroyEntityStack.size() > 0) {
-            destroyEntityStack.pop().destroy();
-        }
-
-        while (destroyBulletStack.size() > 0) {
-            destroyBulletStack.pop().destroy();
-        }
 
         if (player != null && player.isAlive) {
             inputController.update();
@@ -142,20 +120,37 @@ public class Level implements Disposable {
             moon.update();
         }
 
-        for (Entity entity : entityList) {
-            entity.update();
-            planet.applyGravitationalForce(entity);
-            for (Moon moon : moonList) {
-                moon.applyGravitationalForce(entity);
+        entityIterator = entityAliveList.iterator();
+        while (entityIterator.hasNext()) {
+            Entity entity = entityIterator.next();
+            if (entity.isAlive) {
+                entity.update();
+                planet.applyGravitationalForce(entity);
+                for (Moon moon : moonList) {
+                    moon.applyGravitationalForce(entity);
+                }
+            } else {
+                entityDeadList.add(entity);
+                entityIterator.remove();
             }
         }
 
-        for (Integer bulletKey : bulletMap.keySet()) {
-            bulletMap.get(bulletKey).update();
+        bulletIterator = bulletAliveList.iterator();
+        while (bulletIterator.hasNext()) {
+            Bullet bullet = bulletIterator.next();
+            if (bullet.isAlive) {
+                bullet.update();
+            } else {
+                bullet.killBody();
+                bulletDeadList.add(bullet);
+                bulletIterator.remove();
+            }
         }
 
         world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
                 ProjectLocus.POSITION_ITERATIONS);
+
+//        Gdx.app.log("Bullet Count", String.valueOf(bulletAliveList.size() + bulletDeadList.size()));
 
     }
 
@@ -173,12 +168,12 @@ public class Level implements Disposable {
             moon.draw(spriteBatch, camera.frustum);
         }
 
-        for (Entity entity : entityList) {
+        for (Entity entity : entityAliveList) {
             entity.draw(spriteBatch, camera.frustum);
         }
 
-        for (Integer bulletKey : bulletMap.keySet()) {
-            bulletMap.get(bulletKey).draw(spriteBatch, camera.frustum);
+        for (Bullet bullet : bulletAliveList) {
+            bullet.draw(spriteBatch, camera.frustum);
         }
 
         spriteBatch.end();
@@ -188,8 +183,8 @@ public class Level implements Disposable {
 
         spriteBatch.setProjectionMatrix(fpsCamera.combined);
         spriteBatch.begin();
-        fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
-                ProjectLocus.worldCameraWidth - 5f, ProjectLocus.worldCameraHeight - 2f);
+        projectLocus.font24.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
+                ProjectLocus.worldCameraWidth - 8f, ProjectLocus.worldCameraHeight - 2f);
         spriteBatch.end();
 
     }
@@ -209,8 +204,6 @@ public class Level implements Disposable {
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
 
-        spriteBatch.totalRenderCalls = 0;
-
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
 
@@ -222,41 +215,44 @@ public class Level implements Disposable {
             moon.draw(spriteBatch, camera.frustum);
         }
 
-        for (Entity entity : entityList) {
-            planet.applyGravitationalForce(entity);
-            for (Moon moon : moonList) {
-                moon.applyGravitationalForce(entity);
+        entityIterator = entityAliveList.iterator();
+        while (entityIterator.hasNext()) {
+            Entity entity = entityIterator.next();
+            if (entity.isAlive) {
+                entity.update();
+                planet.applyGravitationalForce(entity);
+                for (Moon moon : moonList) {
+                    moon.applyGravitationalForce(entity);
+                }
+                entity.draw(spriteBatch);
+            } else {
+                entityDeadList.add(entity);
+                entityIterator.remove();
             }
-            entity.update();
-            entity.draw(spriteBatch, camera.frustum);
         }
 
-        Bullet bullet;
-        for (Integer bulletKey : bulletMap.keySet()) {
-            bullet = bulletMap.get(bulletKey);
-            bullet.update();
-            bullet.draw(spriteBatch, camera.frustum);
+        bulletIterator = bulletAliveList.iterator();
+        while (bulletIterator.hasNext()) {
+            Bullet bullet = bulletIterator.next();
+            if (bullet.isAlive) {
+                bullet.update();
+                bullet.draw(spriteBatch);
+            } else {
+                bullet.killBody();
+                bulletDeadList.add(bullet);
+                bulletIterator.remove();
+            }
         }
 
         spriteBatch.end();
-
-        Gdx.app.log("Draw Calls", String.valueOf(spriteBatch.totalRenderCalls));
-
-        while (destroyEntityStack.size() > 0) {
-            destroyEntityStack.pop().destroy();
-        }
-
-        while (destroyBulletStack.size() > 0) {
-            destroyBulletStack.pop().destroy();
-        }
 
         // Debugging
 //        box2DDebugRenderer.render(world, camera.combined);
 
         spriteBatch.setProjectionMatrix(fpsCamera.combined);
         spriteBatch.begin();
-        fpsFont.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
-                ProjectLocus.worldCameraWidth - 5f, ProjectLocus.worldCameraHeight - 2f);
+        projectLocus.font24.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
+                ProjectLocus.worldCameraWidth - 8f, ProjectLocus.worldCameraHeight - 2f);
         spriteBatch.end();
 
     }
@@ -272,7 +268,6 @@ public class Level implements Disposable {
 
     @Override
     public void dispose() {
-        timer.clear();
         world.dispose();
         box2DDebugRenderer.dispose();
     }

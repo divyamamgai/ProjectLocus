@@ -9,7 +9,7 @@ import com.locus.game.screens.LobbyScreen;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -24,8 +24,7 @@ public class GameClient {
     private LobbyScreen lobbyScreen;
     private int connectionID;
     private String hostAddress;
-    private int playerIndex;
-    private ArrayList<Player> playerList;
+    private HashMap<Integer, Player> playerMap;
 
     private class GameClientConnectRunnable implements Runnable {
 
@@ -70,7 +69,7 @@ public class GameClient {
         this.projectLocus = projectLocus;
         client = new Client();
         Network.registerClasses(client);
-        playerList = new ArrayList<Player>();
+        playerMap = new HashMap<Integer, Player>();
 
     }
 
@@ -96,9 +95,9 @@ public class GameClient {
     void onReceived(Connection connection, Object object) {
         if (object instanceof Network.UpdateLobby) {
             Network.UpdateLobby updateLobby = (Network.UpdateLobby) object;
-            playerList = updateLobby.playerList;
-            lobbyScreen.updateLobby(playerList);
-            Gdx.app.log("Client", "Accepted Player Count : " + String.valueOf(playerList.size()));
+            playerMap = updateLobby.playerMap;
+            lobbyScreen.updateLobby(playerMap);
+            Gdx.app.log("Client", "Accepted Player Count : " + String.valueOf(playerMap.size()));
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
             Network.PlayerJoinRequestRejected playerJoinRequestRejected =
                     (Network.PlayerJoinRequestRejected) object;

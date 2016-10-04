@@ -17,7 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
 import com.locus.game.network.Player;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Divya Mamgai on 10/2/2016.
@@ -112,7 +112,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
-        Gdx.input.setCatchBackKey(true);
     }
 
     @Override
@@ -180,11 +179,16 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     }
 
-    public void updateLobby(ArrayList<Player> playerList) {
-
+    public void updateLobby(HashMap<Integer, Player> playerMap) {
+        Player player;
+        for (Integer connectionID : playerMap.keySet()) {
+            player = playerMap.get(connectionID);
+            Gdx.app.log("Player Connection ID", String.valueOf(connectionID));
+            Gdx.app.log("Player Type", player.property.type.toString());
+        }
     }
 
-    public void drawLobby(SpriteBatch spriteBatch) {
+    private void drawLobby(SpriteBatch spriteBatch) {
     }
 
     @Override

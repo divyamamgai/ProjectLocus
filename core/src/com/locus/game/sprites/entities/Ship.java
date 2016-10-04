@@ -1,5 +1,6 @@
 package com.locus.game.sprites.entities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
@@ -69,16 +70,24 @@ public class Ship extends Entity implements InputController.InputCallBack {
     }
 
     private void fireBullet(Bullet.Type type) {
-        if (bulletsFired <= 2) {
+        if (bulletsFired == 0) {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                // Create a new Bullet at the desired position and add it to the Level.
-                new Bullet(level, type, this,
-                        bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                        angleRad).addToLevel();
+                if (level.bulletDeadList.size() > 0) {
+                    Bullet bullet = level.bulletDeadList.get(0);
+                    bullet.resurrect(this,
+                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                            angleRad);
+                    level.bulletAliveList.add(bullet);
+                    level.bulletDeadList.remove(0);
+                } else {
+                    level.bulletAliveList.add(new Bullet(level, type, this,
+                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                            angleRad));
+                }
             }
-        } else if (bulletsFired >= 6) {
+        } else if (bulletsFired >= 8) {
             bulletsFired = -1;
         }
         bulletsFired++;
@@ -109,8 +118,8 @@ public class Ship extends Entity implements InputController.InputCallBack {
             float percentageHealth = health / definition.maxHealth;
 
             spriteBatch.draw(level.barBackgroundTexture,
-                    bodyPosition.x - definition.halfWidth, bodyPosition.y + 3f,
-                    definition.width, 0.5f);
+                    bodyPosition.x - definition.halfWidth - 0.2f, bodyPosition.y + 2.8f,
+                    definition.width + 0.4f, 0.9f);
             spriteBatch.draw(level.barForegroundTexture,
                     bodyPosition.x - definition.halfWidth, bodyPosition.y + 3f,
                     definition.width * percentageHealth, 0.5f);
@@ -123,14 +132,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            level.destroyEntityStack.push(this);
         }
-    }
-
-    @Override
-    public void destroy() {
-        level.world.destroyBody(body);
-        level.entityList.remove(this);
     }
 
     @Override

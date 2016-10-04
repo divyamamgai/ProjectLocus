@@ -41,6 +41,7 @@ class PracticePlayScreen implements Screen {
 
         level.update(delta);
         level.render(projectLocus.spriteBatch);
+//        level.render(projectLocus.spriteBatch, delta);
 
     }
 

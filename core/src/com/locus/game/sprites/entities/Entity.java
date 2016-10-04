@@ -68,6 +68,4 @@ public abstract class Entity extends Sprite {
 
     public abstract void kill();
 
-    public abstract void destroy();
-
 }
