@@ -153,6 +153,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void drawLobby(SpriteBatch spriteBatch) {
+        updateLobby();
     }
 
     @Override
