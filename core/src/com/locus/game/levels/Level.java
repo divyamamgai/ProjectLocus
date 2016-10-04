@@ -121,7 +121,7 @@ public class Level implements Disposable {
         box2DDebugRenderer = new Box2DDebugRenderer();
         fpsCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
-        projectLocus.font24.getData().setScale(0.2f);
+//        projectLocus.font24.getData().setScale(0.2f);
 
     }
 

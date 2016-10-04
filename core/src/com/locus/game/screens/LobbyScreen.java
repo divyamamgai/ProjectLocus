@@ -8,17 +8,21 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.network.Player;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
+import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +48,18 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         Failed
     }
 
+    private class PlayerData {
+        private Sprite shipSprite;
+        private Text playerReadyText, playerNumberText;
+
+        PlayerData(Sprite shipSprite, Text playerReadyText, Text playerNumberText) {
+            this.shipSprite = shipSprite;
+            this.playerNumberText = playerNumberText;
+            this.playerReadyText = playerReadyText;
+        }
+
+    }
+
     private float backgroundMovementAngleRad;
     private float startingFontHalfWidth, failedFontHalfWidth, searchingFontHalfWidth,
             connectingFontHalfWidth;
@@ -56,6 +72,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private Type type;
     public State state = State.Starting;
+    private ArrayList<PlayerData> playerDataList;
+
+    private Text clientLobbyText, hostLobbyText, readyText;
+    private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
+            MARGIN_TOP = 80;
+    private BoundingBox boundingBox;
 
     public MultiPlayerPlayScreen multiPlayerPlayScreen;
     public Level.Property levelProperty;
@@ -102,6 +124,11 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         initializePlayScreen = false;
         isLobbyToBeUpdated = false;
 
+        clientLobbyText = new Text(projectLocus.font32, "Client Lobby");
+        hostLobbyText = new Text(projectLocus.font32, "Host Lobby");
+        readyText = new Text(projectLocus.font32, "READY");
+        playerDataList = new ArrayList<PlayerData>();
+
         switch (type) {
             case Host:
 
@@ -135,18 +162,40 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void positionUI() {
-
+        int row, col;
+        float colWidth = (ProjectLocus.screenCameraWidth - (5 * COLUMN_PADDING)) / 4,
+                rowHeight = ((ProjectLocus.screenCameraHeight - 80) - (3 * ROW_PADDING)) / 2;
+        Sprite shipSprite;
+        for (int i = 0; i < playerDataList.size(); i++) {
+            row = i / 4;
+            col = i % 4;
+            shipSprite = playerDataList.get(i).shipSprite;
+            playerDataList.get(i).shipSprite.setPosition(COLUMN_PADDING +
+                            (col * (colWidth + COLUMN_PADDING)) + ((colWidth - shipSprite.getWidth()) / 2),
+                    ROW_PADDING + (((row + 1) % 2) * (rowHeight + ROW_PADDING)) +
+                            ((rowHeight - shipSprite.getHeight()) / 2));
+        }
     }
 
     public void updateLobby() {
         if (isLobbyToBeUpdated) {
 
             Player player;
+            playerDataList.clear();
+            int i = 1;
             for (Integer connectionID : playerMap.keySet()) {
                 player = playerMap.get(connectionID);
                 Gdx.app.log("Player Connection ID", String.valueOf(connectionID));
                 Gdx.app.log("Player Type", player.property.type.toString());
+                Text playerNumberText = new Text(projectLocus.font24, String.format("%02d", i++)),
+                        playerReadyText = new Text(projectLocus.font24,
+                                (player.isReady ? "Ready" : "Not Ready"));
+                Sprite shipSprite =
+                        projectLocus.shipTextureAtlas.createSprite(player.property.type.toString());
+                shipSprite.setColor(player.property.color);
+                playerDataList.add(new PlayerData(shipSprite, playerReadyText, playerNumberText));
             }
+            positionUI();
 
             isLobbyToBeUpdated = false;
         }
@@ -154,6 +203,26 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private void drawLobby(SpriteBatch spriteBatch) {
         updateLobby();
+        if (type == Type.Host) {
+            hostLobbyText.draw(spriteBatch, COLUMN_PADDING,
+                    ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING
+                            - hostLobbyText.getHalfHeight());
+        } else {
+            clientLobbyText.draw(spriteBatch, COLUMN_PADDING,
+                    ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING
+                            - clientLobbyText.getHalfHeight());
+        }
+        for (PlayerData playerData : playerDataList) {
+            playerData.playerNumberText.draw(spriteBatch,
+                    playerData.shipSprite.getX() + ((playerData.shipSprite.getWidth() / 2)
+                            - playerData.playerNumberText.getHalfWidth()),
+                    playerData.shipSprite.getY() + playerData.shipSprite.getHeight() + SHIP_PADDING);
+            playerData.shipSprite.draw(spriteBatch);
+            playerData.playerReadyText.draw(spriteBatch,
+                    playerData.shipSprite.getX() + ((playerData.shipSprite.getWidth() / 2)
+                            - playerData.playerReadyText.getHalfWidth()),
+                    playerData.shipSprite.getY() - SHIP_PADDING / 2);
+        }
     }
 
     @Override
@@ -229,6 +298,19 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 break;
         }
 
+        drawLobby(projectLocus.spriteBatch);
+        readyText.draw(projectLocus.spriteBatch,
+                ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
+                ProjectLocus.screenCameraHeight - MARGIN_TOP +
+                        ROW_PADDING - readyText.getHalfHeight());
+        Vector3 minimumPosition = new Vector3(ProjectLocus.screenCameraWidth - COLUMN_PADDING
+                - readyText.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
+                ROW_PADDING - readyText.getHalfHeight() - 20, 0);
+        Vector3 maximumPosition = new Vector3(minimumPosition.x + readyText.getWidth() + 20,
+                minimumPosition.y + readyText.getHeight() + 20, 0);
+        boundingBox = new BoundingBox();
+        boundingBox.set(minimumPosition, maximumPosition);
+
         projectLocus.spriteBatch.end();
 
     }
@@ -296,6 +378,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        Vector3 touchPosition = new Vector3(screenX, screenY, 0);
+        foregroundCamera.unproject(touchPosition);
+        if (boundingBox.contains(touchPosition)) {
+        }
         return false;
     }
 
