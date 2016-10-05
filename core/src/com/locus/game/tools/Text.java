@@ -14,7 +14,7 @@ public class Text {
     private static GlyphLayout glyphLayout = new GlyphLayout();
 
     private String text;
-    private float width, halfWidth, height, halfHeight;
+    private float width, halfWidth, height, halfHeight, x, y;
     private BitmapFont font;
 
     Text() {
@@ -26,6 +26,17 @@ public class Text {
         this.font = font;
 
         setText(text);
+
+    }
+
+    public Text(BitmapFont font, String text, float x, float y) {
+
+        this.font = font;
+
+        setText(text);
+
+        this.x = x;
+        this.y = y;
 
     }
 
@@ -62,6 +73,11 @@ public class Text {
 
     }
 
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public BitmapFont getFont() {
         return font;
     }
@@ -75,6 +91,10 @@ public class Text {
     }
 
     public void draw(SpriteBatch spriteBatch, float x, float y) {
+        font.draw(spriteBatch, text, x, y);
+    }
+
+    public void draw(SpriteBatch spriteBatch) {
         font.draw(spriteBatch, text, x, y);
     }
 

@@ -199,6 +199,18 @@ public class EntityLoader implements Disposable {
         return definitionMap.get(type).get(secondaryType);
     }
 
+    public Definition getShip(int shipType) {
+        return get(Entity.Type.Ship, shipType);
+    }
+
+    public Definition getPlanet(int planetType) {
+        return get(Entity.Type.Planet, planetType);
+    }
+
+    public Definition getMoon(int moonType) {
+        return get(Entity.Type.Moon, moonType);
+    }
+
     @Override
     public void dispose() {
         for (Entity.Type entityType : entityTypeArray) {

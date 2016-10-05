@@ -33,7 +33,7 @@ class PracticePlayScreen implements Screen {
 
     @Override
     public void show() {
-
+        level.bindController();
     }
 
     @Override

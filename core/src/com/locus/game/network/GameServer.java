@@ -1,10 +1,13 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 import com.locus.game.ProjectLocus;
 import com.locus.game.screens.LobbyScreen;
+import com.locus.game.sprites.entities.EntityLoader;
+import com.locus.game.sprites.entities.Ship;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,6 +23,7 @@ public class GameServer {
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
     private HashMap<Integer, Player> playerMap;
+    private HashMap<Integer, ShipState> shipStateMap;
 
     public GameServer(ProjectLocus projectLocus) {
 
@@ -28,9 +32,28 @@ public class GameServer {
         server = new Server();
         Network.registerClasses(server);
 
-        playerMap = new HashMap<Integer, Player>();
-        playerMap.put(0, new Player(projectLocus.playerShipProperty, true));
+    }
 
+    public void initializeMap() {
+
+        playerMap = new HashMap<Integer, Player>();
+        shipStateMap = new HashMap<Integer, ShipState>();
+
+        // Add the Host itself initially.
+        playerMap.put(0, new Player(projectLocus.playerShipProperty, true));
+        shipStateMap.put(0, createShipState(projectLocus.playerShipProperty.type, 0));
+
+    }
+
+    private ShipState createShipState(Ship.Type shipType, int shipIndex) {
+        ShipState shipState = new ShipState();
+        EntityLoader.Definition playerShipDefinition = projectLocus.entityLoader
+                .getShip(shipType.ordinal());
+        shipState.health = playerShipDefinition.maxHealth;
+        shipState.angleRad = ProjectLocus.PLAYER_START_ANGLE_DELTA * shipIndex;
+        shipState.position.set(ProjectLocus.PLAYER_START_RADIUS * MathUtils.cos(shipState.angleRad),
+                ProjectLocus.PLAYER_START_RADIUS * MathUtils.sin(shipState.angleRad));
+        return shipState;
     }
 
     public void start(LobbyScreen lobbyScreen) {
@@ -52,6 +75,9 @@ public class GameServer {
             lobbyScreen.playerMap = playerMap;
             lobbyScreen.isLobbyToBeUpdated = true;
 
+            lobbyScreen.shipStateMap = shipStateMap;
+            lobbyScreen.isShipStateToBeUpdated = true;
+
         } catch (IOException e) {
             lobbyScreen.state = LobbyScreen.State.Failed;
             e.printStackTrace();
@@ -66,23 +92,34 @@ public class GameServer {
     void onReceived(Connection connection, Object object) {
         int connectionID = connection.getID();
         if (object instanceof Network.PlayerJoinRequest) {
-            Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
-            if (playerMap.containsKey(connectionID)) {
+            if (lobbyScreen.isGameStarted) {
                 connection.sendTCP(new Network.PlayerJoinRequestRejected(
-                        "Already Existing Client With ID : " + connectionID));
+                        "Game Already Started"));
             } else {
+                Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
+                if (playerMap.containsKey(connectionID)) {
+                    connection.sendTCP(new Network.PlayerJoinRequestRejected(
+                            "Already Existing Client With ID : " + connectionID));
+                } else {
 
-                playerMap.put(connectionID, new Player(playerJoinRequest.property, false));
+                    playerMap.put(connectionID, new Player(playerJoinRequest.property, false));
+                    shipStateMap.put(connectionID,
+                            createShipState(playerJoinRequest.property.type, shipStateMap.size()));
 
-                server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+                    server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+                    server.sendToAllTCP(new Network.InitializeShipState(shipStateMap));
 
-                lobbyScreen.playerMap = playerMap;
-                lobbyScreen.isLobbyToBeUpdated = true;
+                    lobbyScreen.playerMap = playerMap;
+                    lobbyScreen.isLobbyToBeUpdated = true;
 
-                connection.sendTCP(
-                        new Network.LevelProperty(
-                                lobbyScreen.multiPlayerPlayScreen.level.property));
+                    lobbyScreen.shipStateMap = shipStateMap;
+                    lobbyScreen.isShipStateToBeUpdated = true;
 
+                    connection.sendTCP(
+                            new Network.LevelProperty(
+                                    lobbyScreen.multiPlayerPlayScreen.level.property));
+
+                }
             }
         } else if (object instanceof Network.PlayerReadyRequest) {
             Network.PlayerReadyRequest playerReadyRequest = (Network.PlayerReadyRequest) object;

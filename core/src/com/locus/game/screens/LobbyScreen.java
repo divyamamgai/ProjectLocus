@@ -17,16 +17,18 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.network.Player;
+import com.locus.game.network.ShipState;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created by Divya Mamgai on 10/2/2016.
@@ -50,6 +52,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private class PlayerData {
+
         private Sprite shipSprite;
         private Text playerReadyText, playerNumberText;
 
@@ -71,27 +74,30 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
 
+    public MultiPlayerPlayScreen multiPlayerPlayScreen;
+    public Level.Property levelProperty;
+    public HashMap<Integer, Player> playerMap;
+    public HashMap<Integer, ShipState> shipStateMap;
+
     private Type type;
     public State state = State.Starting;
     private ArrayList<PlayerData> playerDataList;
 
-    private Text clientLobbyText, hostLobbyText, readyText;
+    private Text clientLobbyText, hostLobbyText, readyText, timerText;
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
-    private BoundingBox boundingBox;
 
-    public MultiPlayerPlayScreen multiPlayerPlayScreen;
-    public Level.Property levelProperty;
-    public HashMap<Integer, Player> playerMap;
-
-    private Timer timer;
+    private Vector3 readyBBMinimum, readyBBMaximum;
+    private BoundingBox readyBB;
 
     public boolean initializePlayScreen;
     private boolean isInitializedPlayScreen;
     public boolean isLobbyToBeUpdated;
     public boolean isGameToBeStarted;
     public float gameStartTime;
-    private boolean isGameStarted;
+    private long previousTime;
+    public boolean isGameStarted;
+    public boolean isShipStateToBeUpdated;
 
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
                 LobbyScreen.Type type) {
@@ -127,16 +133,21 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         glyphLayout.setText(projectLocus.font32, "Failed");
         failedFontHalfWidth = glyphLayout.width / 2f;
 
-        timer = new Timer();
+        readyBBMinimum = new Vector3(0, 0, 0);
+        readyBBMaximum = new Vector3(0, 0, 0);
+        readyBB = new BoundingBox();
 
         initializePlayScreen = false;
         isLobbyToBeUpdated = false;
         isGameToBeStarted = false;
         isGameStarted = false;
+        isShipStateToBeUpdated = false;
+        previousTime = 0;
 
         clientLobbyText = new Text(projectLocus.font32, "Client Lobby");
         hostLobbyText = new Text(projectLocus.font32, "Host Lobby");
         readyText = new Text(projectLocus.font32, "READY");
+        timerText = new Text(projectLocus.font32, "10");
         playerDataList = new ArrayList<PlayerData>();
 
         switch (type) {
@@ -154,6 +165,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 gameStartTime = 10f;
 
                 state = State.Starting;
+                projectLocus.gameServer.initializeMap();
                 projectLocus.gameServer.start(this);
 
                 break;
@@ -174,46 +186,55 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void positionUI() {
+
         int row, col;
         float colWidth = (ProjectLocus.screenCameraWidth - (5 * COLUMN_PADDING)) / 4,
                 rowHeight = ((ProjectLocus.screenCameraHeight - 80) - (3 * ROW_PADDING)) / 2;
-        Sprite shipSprite;
+
+        PlayerData playerData;
         for (int i = 0; i < playerDataList.size(); i++) {
+
             row = i / 4;
             col = i % 4;
-            shipSprite = playerDataList.get(i).shipSprite;
-            playerDataList.get(i).shipSprite.setPosition(COLUMN_PADDING +
-                            (col * (colWidth + COLUMN_PADDING)) + ((colWidth - shipSprite.getWidth()) / 2),
+
+            playerData = playerDataList.get(i);
+
+            playerData.shipSprite.setPosition(COLUMN_PADDING + (col * (colWidth + COLUMN_PADDING))
+                            + ((colWidth - playerData.shipSprite.getWidth()) / 2),
                     ROW_PADDING + (((row + 1) % 2) * (rowHeight + ROW_PADDING)) +
-                            ((rowHeight - shipSprite.getHeight()) / 2));
+                            ((rowHeight - playerData.shipSprite.getHeight()) / 2));
+
+            playerData.playerNumberText.setPosition(playerData.shipSprite.getX() +
+                            ((playerData.shipSprite.getWidth() / 2)
+                                    - playerData.playerNumberText.getHalfWidth()),
+                    playerData.shipSprite.getY() + playerData.shipSprite.getHeight() + SHIP_PADDING);
+
+            playerData.playerReadyText.setPosition(playerData.shipSprite.getX() +
+                            ((playerData.shipSprite.getWidth() / 2)
+                                    - playerData.playerReadyText.getHalfWidth()),
+                    playerData.shipSprite.getY() - SHIP_PADDING / 2);
+
         }
-        Vector3 minimumPosition = new Vector3(ProjectLocus.screenCameraWidth - COLUMN_PADDING
+
+        readyBBMinimum.set(ProjectLocus.screenCameraWidth - COLUMN_PADDING
                 - readyText.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
                 ROW_PADDING - readyText.getHalfHeight() - 20, 0);
-        Vector3 maximumPosition = new Vector3(minimumPosition.x + readyText.getWidth() + 20,
-                minimumPosition.y + readyText.getHeight() + 20, 0);
-        boundingBox = new BoundingBox();
-        boundingBox.set(minimumPosition, maximumPosition);
-    }
+        readyBBMaximum.set(readyBBMinimum.x + readyText.getWidth() + 20,
+                readyBBMinimum.y + readyText.getHeight() + 20, 0);
+        readyBB.set(readyBBMinimum, readyBBMaximum);
 
-    private void startGame() {
-        if (isGameToBeStarted && !isGameStarted) {
+        readyText.setPosition(
+                ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
+                ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING -
+                        readyText.getHalfHeight());
 
-            Gdx.app.log("Lobby", "Scheduling...");
-            timer.scheduleTask(new Timer.Task() {
-                @Override
-                public void run() {
-                    Gdx.app.log("Lobby", "Running...");
-                    projectLocus.setScreen(multiPlayerPlayScreen);
-                }
-            }, gameStartTime);
+        timerText.setPosition(ProjectLocus.screenCameraHalfWidth - timerText.getHalfWidth(),
+                ProjectLocus.screenCameraHalfHeight - timerText.getHalfWidth());
 
-            isGameStarted = true;
-            isGameToBeStarted = false;
-        }
     }
 
     private void updateLobby() {
+
         if (isLobbyToBeUpdated) {
 
             Player player;
@@ -223,7 +244,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 player = playerMap.get(connectionID);
                 Gdx.app.log("Player Connection ID", String.valueOf(connectionID));
                 Gdx.app.log("Player Type", player.property.type.toString());
-                Text playerNumberText = new Text(projectLocus.font24, String.format("%02d", i++)),
+                Text playerNumberText = new Text(projectLocus.font24,
+                        String.format(Locale.ENGLISH, "%02d", i++)),
                         playerReadyText = new Text(projectLocus.font24,
                                 (player.isReady ? "Ready" : "Not Ready"));
                 Sprite shipSprite =
@@ -235,11 +257,13 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
             isLobbyToBeUpdated = false;
         }
+
     }
 
     private void drawLobby(SpriteBatch spriteBatch) {
-        startGame();
+
         updateLobby();
+
         if (type == Type.Host) {
             hostLobbyText.draw(spriteBatch, COLUMN_PADDING,
                     ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING
@@ -250,20 +274,35 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                             - clientLobbyText.getHalfHeight());
         }
         for (PlayerData playerData : playerDataList) {
-            playerData.playerNumberText.draw(spriteBatch,
-                    playerData.shipSprite.getX() + ((playerData.shipSprite.getWidth() / 2)
-                            - playerData.playerNumberText.getHalfWidth()),
-                    playerData.shipSprite.getY() + playerData.shipSprite.getHeight() + SHIP_PADDING);
+            playerData.playerNumberText.draw(spriteBatch);
             playerData.shipSprite.draw(spriteBatch);
-            playerData.playerReadyText.draw(spriteBatch,
-                    playerData.shipSprite.getX() + ((playerData.shipSprite.getWidth() / 2)
-                            - playerData.playerReadyText.getHalfWidth()),
-                    playerData.shipSprite.getY() - SHIP_PADDING / 2);
+            playerData.playerReadyText.draw(spriteBatch);
         }
-        readyText.draw(projectLocus.spriteBatch,
-                ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
-                ProjectLocus.screenCameraHeight - MARGIN_TOP +
-                        ROW_PADDING - readyText.getHalfHeight());
+        readyText.draw(projectLocus.spriteBatch);
+
+        if (isGameToBeStarted && !isGameStarted) {
+
+            if (TimeUtils.timeSinceMillis(previousTime) >= 1000) {
+
+                if (gameStartTime <= 1) {
+                    Gdx.app.log("Over Time", String.valueOf(gameStartTime));
+                    projectLocus.setScreen(multiPlayerPlayScreen);
+                    isGameStarted = true;
+                    isGameToBeStarted = false;
+                }
+
+                previousTime = TimeUtils.millis();
+                Gdx.app.log("Start Time", String.valueOf(gameStartTime));
+                gameStartTime -= 1f;
+                timerText.setText(String.format(Locale.ENGLISH, "%02d",
+                        MathUtils.ceil(gameStartTime)));
+
+            }
+
+            timerText.draw(spriteBatch);
+
+        }
+
     }
 
     @Override
@@ -293,13 +332,13 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         switch (type) {
             case Host:
                 switch (state) {
+                    case Started:
+                        drawLobby(projectLocus.spriteBatch);
+                        break;
                     case Starting:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Starting...",
                                 ProjectLocus.screenCameraHalfWidth - startingFontHalfWidth,
                                 ProjectLocus.screenCameraHalfHeight + 16f);
-                        break;
-                    case Started:
-                        drawLobby(projectLocus.spriteBatch);
                         break;
                     case Failed:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Failed",
@@ -310,16 +349,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 break;
             case Client:
                 switch (state) {
-                    case Searching:
-                        projectLocus.font32.draw(projectLocus.spriteBatch, "Searching...",
-                                ProjectLocus.screenCameraHalfWidth - searchingFontHalfWidth,
-                                ProjectLocus.screenCameraHalfHeight + 16f);
-                        break;
-                    case Connecting:
-                        projectLocus.font32.draw(projectLocus.spriteBatch, "Connecting...",
-                                ProjectLocus.screenCameraHalfWidth - connectingFontHalfWidth,
-                                ProjectLocus.screenCameraHalfHeight + 16f);
-                        break;
                     case Connected:
                         drawLobby(projectLocus.spriteBatch);
                         // Cannot be called from the GameClient cause that is not a Screen and is
@@ -330,6 +359,16 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                             isInitializedPlayScreen = true;
                             initializePlayScreen = false;
                         }
+                        break;
+                    case Searching:
+                        projectLocus.font32.draw(projectLocus.spriteBatch, "Searching...",
+                                ProjectLocus.screenCameraHalfWidth - searchingFontHalfWidth,
+                                ProjectLocus.screenCameraHalfHeight + 16f);
+                        break;
+                    case Connecting:
+                        projectLocus.font32.draw(projectLocus.spriteBatch, "Connecting...",
+                                ProjectLocus.screenCameraHalfWidth - connectingFontHalfWidth,
+                                ProjectLocus.screenCameraHalfHeight + 16f);
                         break;
                     case Failed:
                         projectLocus.font32.draw(projectLocus.spriteBatch, "Failed",
@@ -409,7 +448,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
-        if (boundingBox.contains(touchPosition)) {
+        if (readyBB.contains(touchPosition)) {
             projectLocus.gameClient.ready();
         }
         return false;

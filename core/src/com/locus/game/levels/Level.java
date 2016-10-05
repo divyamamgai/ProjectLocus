@@ -94,9 +94,6 @@ public class Level implements Disposable {
         entityAliveList = new ArrayList<Entity>();
         entityDeadList = new ArrayList<Entity>();
 
-        entityAliveList.add(player = new Ship(this, projectLocus.playerShipProperty,
-                ProjectLocus.WORLD_HALF_WIDTH + 250f, ProjectLocus.WORLD_HALF_HEIGHT));
-
         planet = new Planet(this, property.planetType, ProjectLocus.WORLD_HALF_WIDTH,
                 ProjectLocus.WORLD_HALF_HEIGHT);
 
@@ -127,6 +124,13 @@ public class Level implements Disposable {
 
     public void bindController() {
         Gdx.input.setInputProcessor(inputMultiplexer);
+    }
+
+    public void addShip(Ship ship, boolean isPlayer) {
+        if (isPlayer) {
+            player = ship;
+        }
+        entityAliveList.add(ship);
     }
 
     public void update(float delta) {

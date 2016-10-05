@@ -1,6 +1,7 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.levels.Level;
@@ -47,6 +48,9 @@ class Network {
         kryo.register(Level.Property.class);
         kryo.register(LevelProperty.class);
         kryo.register(StartGame.class);
+        kryo.register(Vector2.class);
+        kryo.register(ShipState.class);
+        kryo.register(InitializeShipState.class);
     }
 
     static class PlayerJoinRequest {
@@ -139,6 +143,34 @@ class Network {
 
         StartGame() {
 
+        }
+
+    }
+
+    static class InitializeShipState {
+
+        HashMap<Integer, ShipState> shipStateMap;
+
+        InitializeShipState() {
+
+        }
+
+        InitializeShipState(HashMap<Integer, ShipState> shipStateMap) {
+            this.shipStateMap = shipStateMap;
+        }
+
+    }
+
+    static class GameState {
+
+        HashMap<Integer, ShipState> shipStateMap;
+
+        GameState() {
+
+        }
+
+        GameState(HashMap<Integer, ShipState> shipStateMap) {
+            this.shipStateMap = shipStateMap;
         }
 
     }
