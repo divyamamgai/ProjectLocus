@@ -82,6 +82,8 @@ public class LoadingScreen implements Screen {
         assetManager.load("fonts/font24Selected.fnt", BitmapFont.class);
         assetManager.load("fonts/font32.fnt", BitmapFont.class);
         assetManager.load("fonts/font32Selected.fnt", BitmapFont.class);
+        assetManager.load("fonts/font32Red.fnt", BitmapFont.class);
+        assetManager.load("fonts/font32Green.fnt", BitmapFont.class);
         assetManager.load("sprites/bullets/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/0/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/1/pack.atlas", TextureAtlas.class);
@@ -150,6 +152,12 @@ public class LoadingScreen implements Screen {
             projectLocus.font32Selected = assetManager.get("fonts/font32Selected.fnt",
                     BitmapFont.class);
             projectLocus.font32Selected.setColor(ProjectLocus.FONT_SELECTED_COLOR);
+            projectLocus.font32Red = assetManager.get("fonts/font32Red.fnt",
+                    BitmapFont.class);
+            projectLocus.font32Red.setColor(ProjectLocus.FONT_RED_COLOR);
+            projectLocus.font32Green = assetManager.get("fonts/font32Green.fnt",
+                    BitmapFont.class);
+            projectLocus.font32Green.setColor(ProjectLocus.FONT_GREEN_COLOR);
 
             for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
                 projectLocus.tiledMapList.add(assetManager.get("backgrounds/" +

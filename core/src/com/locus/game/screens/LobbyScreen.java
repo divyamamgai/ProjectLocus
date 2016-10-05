@@ -98,6 +98,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private long previousTime;
     public boolean isGameStarted;
     public boolean isShipStateToBeUpdated;
+    private boolean isReady;
 
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
                 LobbyScreen.Type type) {
@@ -142,11 +143,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         isGameToBeStarted = false;
         isGameStarted = false;
         isShipStateToBeUpdated = false;
+        isReady = false;
         previousTime = 0;
 
         clientLobbyText = new Text(projectLocus.font32, "Client Lobby");
         hostLobbyText = new Text(projectLocus.font32, "Host Lobby");
-        readyText = new Text(projectLocus.font32, "READY");
+        readyText = new Text(projectLocus.font32Red, "READY");
         timerText = new Text(projectLocus.font32, "10");
         playerDataList = new ArrayList<PlayerData>();
 
@@ -162,7 +164,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
                 isInitializedPlayScreen = true;
 
-                gameStartTime = 10f;
+                gameStartTime = ProjectLocus.GAME_COUNT_DOWN;
 
                 state = State.Starting;
                 projectLocus.gameServer.initializeMap();
@@ -449,7 +451,27 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
         if (readyBB.contains(touchPosition)) {
-            projectLocus.gameClient.ready();
+            if (isReady) {
+                switch (type) {
+                    case Host:
+                        projectLocus.gameServer.sendReadyState(isReady = false);
+                        break;
+                    case Client:
+                        projectLocus.gameClient.sendReadyState(isReady = false);
+                        break;
+                }
+                readyText.setFont(projectLocus.font32Red);
+            } else {
+                switch (type) {
+                    case Host:
+                        projectLocus.gameServer.sendReadyState(isReady = true);
+                        break;
+                    case Client:
+                        projectLocus.gameClient.sendReadyState(isReady = true);
+                        break;
+                }
+                readyText.setFont(projectLocus.font32Green);
+            }
         }
         return false;
     }

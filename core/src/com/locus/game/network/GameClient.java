@@ -109,7 +109,8 @@ public class GameClient {
             lobbyScreen.initializePlayScreen = true;
             Gdx.app.log("Client", "Received Level Property");
         } else if (object instanceof Network.StartGame) {
-            float gameStartTime = 10f - ((float) connection.getReturnTripTime() / 1000f);
+            float gameStartTime = ProjectLocus.GAME_COUNT_DOWN -
+                    ((float) connection.getReturnTripTime() / 1000f);
             Gdx.app.log("Client", "Received Start Game, Starting Game In " + gameStartTime);
             lobbyScreen.gameStartTime = gameStartTime;
             lobbyScreen.isGameToBeStarted = true;
@@ -120,8 +121,8 @@ public class GameClient {
 
     }
 
-    public void ready() {
-        client.sendTCP(new Network.PlayerReadyRequest(true));
+    public void sendReadyState(boolean isReady) {
+        client.sendTCP(new Network.PlayerReadyRequest(isReady));
         client.updateReturnTripTime();
     }
 

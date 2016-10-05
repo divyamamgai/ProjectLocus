@@ -40,7 +40,7 @@ public class GameServer {
         shipStateMap = new HashMap<Integer, ShipState>();
 
         // Add the Host itself initially.
-        playerMap.put(0, new Player(projectLocus.playerShipProperty, true));
+        playerMap.put(0, new Player(projectLocus.playerShipProperty, false));
         shipStateMap.put(0, createShipState(projectLocus.playerShipProperty.type, 0));
 
     }
@@ -106,14 +106,8 @@ public class GameServer {
                     shipStateMap.put(connectionID,
                             createShipState(playerJoinRequest.property.type, shipStateMap.size()));
 
-                    server.sendToAllTCP(new Network.UpdateLobby(playerMap));
-                    server.sendToAllTCP(new Network.InitializeShipState(shipStateMap));
-
-                    lobbyScreen.playerMap = playerMap;
-                    lobbyScreen.isLobbyToBeUpdated = true;
-
-                    lobbyScreen.shipStateMap = shipStateMap;
-                    lobbyScreen.isShipStateToBeUpdated = true;
+                    sendUpdateLobby();
+                    sendInitializeShipState();
 
                     connection.sendTCP(
                             new Network.LevelProperty(
@@ -127,26 +121,9 @@ public class GameServer {
 
                 playerMap.get(connectionID).isReady = playerReadyRequest.isReady;
 
-                server.sendToAllTCP(new Network.UpdateLobby(playerMap));
-
-                lobbyScreen.playerMap = playerMap;
-                lobbyScreen.isLobbyToBeUpdated = true;
+                sendUpdateLobby();
 
                 Gdx.app.log("Host", "Player #" + connectionID + " Is Ready");
-
-                boolean areAllReady = true;
-                for (Integer playerConnectionID : playerMap.keySet()) {
-                    if (!playerMap.get(playerConnectionID).isReady) {
-                        areAllReady = false;
-                        break;
-                    }
-                }
-
-                if (areAllReady) {
-                    server.sendToAllTCP(new Network.StartGame());
-                    Gdx.app.log("Host", "All Ready, Starting Game In 10...");
-                    lobbyScreen.isGameToBeStarted = true;
-                }
 
             } else {
                 connection.sendTCP(new Network.Error("Player Not Found"));
@@ -166,6 +143,48 @@ public class GameServer {
             lobbyScreen.isLobbyToBeUpdated = true;
 
         }
+    }
+
+    private void sendUpdateLobby() {
+
+        server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+
+        lobbyScreen.playerMap = playerMap;
+        lobbyScreen.isLobbyToBeUpdated = true;
+
+        // Check if all of the players are Ready so we can start the game.
+        boolean areAllReady = true;
+        for (Integer playerConnectionID : playerMap.keySet()) {
+            if (!playerMap.get(playerConnectionID).isReady) {
+                areAllReady = false;
+                break;
+            }
+        }
+
+        if (areAllReady) {
+            server.sendToAllTCP(new Network.StartGame());
+            Gdx.app.log("Host", "All Ready, Starting Game In 10...");
+            lobbyScreen.isGameToBeStarted = true;
+        }
+
+    }
+
+    private void sendInitializeShipState() {
+
+        server.sendToAllTCP(new Network.InitializeShipState(shipStateMap));
+
+        lobbyScreen.shipStateMap = shipStateMap;
+        lobbyScreen.isShipStateToBeUpdated = true;
+
+    }
+
+    public void sendReadyState(boolean isReady) {
+
+        // Set Host's ready state.
+        playerMap.get(0).isReady = isReady;
+
+        sendUpdateLobby();
+
     }
 
     public void stop() {

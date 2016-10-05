@@ -51,11 +51,14 @@ public class ProjectLocus extends Game implements Disposable {
     public static final float PI_BY_TWO = MathUtils.PI / 2f;
 
     public static final long START_TIME = TimeUtils.millis();
+    public static final float GAME_COUNT_DOWN = 5f;
     public static final int MAX_PLAYER_COUNT = 8;
     public static final float PLAYER_START_RADIUS = 150f;
     public static final float PLAYER_START_ANGLE_DELTA = 2f * MathUtils.PI / MAX_PLAYER_COUNT;
 
     public static final Color FONT_SELECTED_COLOR = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);
+    public static final Color FONT_RED_COLOR = new Color(200f / 255f, 30f / 255f, 30f / 255f, 1f);
+    public static final Color FONT_GREEN_COLOR = new Color(30f / 255f, 200f / 255f, 30f / 255f, 1f);
 
     private static float aspectRatio = 1f;
     public static int screenCameraWidth = 854;
@@ -72,6 +75,7 @@ public class ProjectLocus extends Game implements Disposable {
     public AssetManager assetManager;
     public BitmapFont font24, font32;
     public BitmapFont font24Selected, font32Selected;
+    public BitmapFont font32Red, font32Green;
     public ArrayList<TiledMap> tiledMapList;
     public TextureAtlas uiTextureAtlas;
     public TextureAtlas bulletTextureAtlas;
