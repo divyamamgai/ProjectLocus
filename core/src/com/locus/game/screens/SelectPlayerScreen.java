@@ -62,13 +62,11 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
         this.projectLocus = projectLocus;
         this.backgroundMovementAngleRad = backgroundMovementAngleRad;
 
-        foregroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        foregroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
-        foregroundCamera.update();
+        foregroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
 
-        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        backgroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
-        backgroundCamera.update();
+        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
 
         tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
                 ProjectLocus.TILED_MAP_SCALE);

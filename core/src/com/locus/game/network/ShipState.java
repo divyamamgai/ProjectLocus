@@ -9,19 +9,19 @@ import com.badlogic.gdx.math.Vector2;
 
 public class ShipState {
 
-    Vector2 position;
-    float angleRad;
-    Vector2 velocity;
-    float angularVelocity;
-    boolean isThrustEnabled;
-    boolean thrustDirection;
-    boolean isRotationEnabled;
-    boolean rotationDirection;
-    boolean isFireEnabled;
+    public Vector2 position;
+    public float angleRad;
+    public Vector2 velocity;
+    public float angularVelocity;
+    public boolean isThrustEnabled;
+    public boolean thrustDirection;
+    public boolean isRotationEnabled;
+    public boolean rotationDirection;
+    public boolean isFireEnabled;
 
-    boolean isAlive;
-    float health;
-    long score;
+    public boolean isAlive;
+    public float health;
+    public long score;
 
     ShipState() {
         position = new Vector2(0, 0);

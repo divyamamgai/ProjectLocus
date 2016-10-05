@@ -53,7 +53,7 @@ public class ProjectLocus extends Game implements Disposable {
     public static final long START_TIME = TimeUtils.millis();
     public static final float GAME_COUNT_DOWN = 5f;
     public static final int MAX_PLAYER_COUNT = 8;
-    public static final float PLAYER_START_RADIUS = 150f;
+    public static final float PLAYER_START_RADIUS = 175f;
     public static final float PLAYER_START_ANGLE_DELTA = 2f * MathUtils.PI / MAX_PLAYER_COUNT;
 
     public static final Color FONT_SELECTED_COLOR = new Color(217f / 255f, 100f / 255f, 89f / 255f, 1f);

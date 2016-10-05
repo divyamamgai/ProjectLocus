@@ -41,13 +41,11 @@ public class LoadingScreen implements Screen {
 
         this.projectLocus = projectLocus;
 
-        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
-        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraHalfWidth, ProjectLocus.screenCameraHalfHeight);
-        foregroundCamera.update();
+        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
 
-        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        backgroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
-        backgroundCamera.update();
+        backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
+                ProjectLocus.worldCameraHeight);
 
         assetManager = projectLocus.assetManager;
 

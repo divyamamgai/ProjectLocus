@@ -50,7 +50,8 @@ class Network {
         kryo.register(StartGame.class);
         kryo.register(Vector2.class);
         kryo.register(ShipState.class);
-        kryo.register(InitializeShipState.class);
+        kryo.register(UpdateAllShipState.class);
+        kryo.register(UpdateShipState.class);
     }
 
     static class PlayerJoinRequest {
@@ -147,16 +148,32 @@ class Network {
 
     }
 
-    static class InitializeShipState {
+    static class UpdateAllShipState {
 
         HashMap<Integer, ShipState> shipStateMap;
 
-        InitializeShipState() {
+        UpdateAllShipState() {
 
         }
 
-        InitializeShipState(HashMap<Integer, ShipState> shipStateMap) {
+        UpdateAllShipState(HashMap<Integer, ShipState> shipStateMap) {
             this.shipStateMap = shipStateMap;
+        }
+
+    }
+
+    static class UpdateShipState {
+
+        ShipState shipState;
+        int connectionID;
+
+        UpdateShipState() {
+
+        }
+
+        UpdateShipState(ShipState shipState, int connectionID) {
+            this.shipState = shipState;
+            this.connectionID = connectionID;
         }
 
     }

@@ -13,6 +13,8 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
 import com.locus.game.ProjectLocus;
+import com.locus.game.network.Player;
+import com.locus.game.network.ShipState;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.entities.Entity;
@@ -22,6 +24,7 @@ import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.InputController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -76,7 +79,8 @@ public class Level implements Disposable {
 
     // Debugging
     private Box2DDebugRenderer box2DDebugRenderer;
-    private OrthographicCamera fpsCamera;
+
+    private HashMap<Integer, Ship> shipHashMap;
 
     public Level(ProjectLocus projectLocus, Property property) {
 
@@ -109,16 +113,10 @@ public class Level implements Disposable {
         barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
-        inputController = new InputController(player);
-        inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(inputController);
-        inputMultiplexer.addProcessor(new GestureDetector(inputController));
-
         // Debugging
         box2DDebugRenderer = new Box2DDebugRenderer();
-        fpsCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
-                ProjectLocus.worldCameraHeight);
-//        projectLocus.font24.getData().setScale(0.2f);
+
+        shipHashMap = new HashMap<Integer, Ship>();
 
     }
 
@@ -126,11 +124,33 @@ public class Level implements Disposable {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
-    public void addShip(Ship ship, boolean isPlayer) {
+    public void addShip(ShipState shipState, Ship.Property property, int connectionID,
+                        boolean isPlayer, boolean isHost) {
+        Ship ship = new Ship(this, property, shipState.position.x, shipState.position.y,
+                shipState.angleRad);
         if (isPlayer) {
+            Gdx.app.log("Player Is Host ", String.valueOf(isHost));
             player = ship;
+            inputController = new InputController(projectLocus, player, isHost, shipState);
+            inputMultiplexer = new InputMultiplexer();
+            inputMultiplexer.addProcessor(inputController);
+            inputMultiplexer.addProcessor(new GestureDetector(inputController));
         }
         entityAliveList.add(ship);
+        shipHashMap.put(connectionID, ship);
+    }
+
+    public void updateShip(ShipState shipState, int connectionID) {
+        Ship ship = shipHashMap.get(connectionID);
+        if (shipState.isRotationEnabled) {
+            ship.applyRotation(shipState.rotationDirection);
+        }
+        if (shipState.isThrustEnabled) {
+            ship.applyThrust(shipState.thrustDirection);
+        }
+        if (shipState.isFireEnabled) {
+            ship.fire();
+        }
     }
 
     public void update(float delta) {
@@ -158,6 +178,7 @@ public class Level implements Disposable {
                     moon.applyGravitationalForce(entity);
                 }
             } else {
+                entity.killBody();
                 entityDeadList.add(entity);
                 entityIterator.remove();
             }
@@ -208,12 +229,6 @@ public class Level implements Disposable {
 
         // Debugging
 //        box2DDebugRenderer.render(world, camera.combined);
-
-        spriteBatch.setProjectionMatrix(fpsCamera.combined);
-        spriteBatch.begin();
-        projectLocus.font24.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
-                ProjectLocus.worldCameraWidth - 8f, ProjectLocus.worldCameraHeight - 2f);
-        spriteBatch.end();
 
     }
 
@@ -277,17 +292,10 @@ public class Level implements Disposable {
         // Debugging
 //        box2DDebugRenderer.render(world, camera.combined);
 
-        spriteBatch.setProjectionMatrix(fpsCamera.combined);
-        spriteBatch.begin();
-        projectLocus.font24.draw(spriteBatch, String.valueOf(Gdx.graphics.getFramesPerSecond()),
-                ProjectLocus.worldCameraWidth - 8f, ProjectLocus.worldCameraHeight - 2f);
-        spriteBatch.end();
-
     }
 
     public void resize() {
         camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        fpsCamera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
     }
 
 //    public boolean isInLevel(Vector2 positionUI) {

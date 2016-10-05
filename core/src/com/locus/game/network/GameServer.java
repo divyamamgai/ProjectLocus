@@ -51,8 +51,11 @@ public class GameServer {
                 .getShip(shipType.ordinal());
         shipState.health = playerShipDefinition.maxHealth;
         shipState.angleRad = ProjectLocus.PLAYER_START_ANGLE_DELTA * shipIndex;
-        shipState.position.set(ProjectLocus.PLAYER_START_RADIUS * MathUtils.cos(shipState.angleRad),
-                ProjectLocus.PLAYER_START_RADIUS * MathUtils.sin(shipState.angleRad));
+        shipState.position.set(
+                ProjectLocus.WORLD_HALF_WIDTH +
+                        ProjectLocus.PLAYER_START_RADIUS * MathUtils.cos(shipState.angleRad),
+                ProjectLocus.WORLD_HALF_HEIGHT +
+                        ProjectLocus.PLAYER_START_RADIUS * MathUtils.sin(shipState.angleRad));
         return shipState;
     }
 
@@ -90,13 +93,27 @@ public class GameServer {
     }
 
     void onReceived(Connection connection, Object object) {
+
         int connectionID = connection.getID();
-        if (object instanceof Network.PlayerJoinRequest) {
-            if (lobbyScreen.isGameStarted) {
+
+        if (object instanceof Network.UpdateShipState) {
+
+            Network.UpdateShipState updateShipState = (Network.UpdateShipState) object;
+
+            server.sendToAllExceptTCP(connectionID, updateShipState);
+
+            lobbyScreen.multiPlayerPlayScreen.level.updateShip(updateShipState.shipState,
+                    updateShipState.connectionID);
+
+        } else if (object instanceof Network.PlayerJoinRequest) {
+
+            if (lobbyScreen.isGameStarted || playerMap.size() == ProjectLocus.MAX_PLAYER_COUNT) {
                 connection.sendTCP(new Network.PlayerJoinRequestRejected(
                         "Game Already Started"));
             } else {
+
                 Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
+
                 if (playerMap.containsKey(connectionID)) {
                     connection.sendTCP(new Network.PlayerJoinRequestRejected(
                             "Already Existing Client With ID : " + connectionID));
@@ -107,16 +124,19 @@ public class GameServer {
                             createShipState(playerJoinRequest.property.type, shipStateMap.size()));
 
                     sendUpdateLobby();
-                    sendInitializeShipState();
+                    sendUpdateShipState();
 
                     connection.sendTCP(
                             new Network.LevelProperty(
                                     lobbyScreen.multiPlayerPlayScreen.level.property));
 
                 }
+
             }
         } else if (object instanceof Network.PlayerReadyRequest) {
+
             Network.PlayerReadyRequest playerReadyRequest = (Network.PlayerReadyRequest) object;
+
             if (playerMap.containsKey(connectionID)) {
 
                 playerMap.get(connectionID).isReady = playerReadyRequest.isReady;
@@ -128,21 +148,25 @@ public class GameServer {
             } else {
                 connection.sendTCP(new Network.Error("Player Not Found"));
             }
+
         }
     }
 
     void onDisconnected(Connection connection) {
+
         int connectionID = connection.getID();
+
         if (playerMap.containsKey(connectionID)) {
 
             playerMap.remove(connectionID);
+            shipStateMap.remove(connectionID);
 
-            server.sendToAllTCP(new Network.UpdateLobby(playerMap));
+            sendUpdateLobby();
 
-            lobbyScreen.playerMap = playerMap;
-            lobbyScreen.isLobbyToBeUpdated = true;
+            sendUpdateShipState();
 
         }
+
     }
 
     private void sendUpdateLobby() {
@@ -152,30 +176,37 @@ public class GameServer {
         lobbyScreen.playerMap = playerMap;
         lobbyScreen.isLobbyToBeUpdated = true;
 
-        // Check if all of the players are Ready so we can start the game.
-        boolean areAllReady = true;
-        for (Integer playerConnectionID : playerMap.keySet()) {
-            if (!playerMap.get(playerConnectionID).isReady) {
-                areAllReady = false;
-                break;
+        // More than one player is needed for Multi Player.
+        if (playerMap.size() > 1) {
+            // Check if all of the players are Ready so we can start the game.
+            boolean areAllReady = true;
+            for (Integer playerConnectionID : playerMap.keySet()) {
+                if (!playerMap.get(playerConnectionID).isReady) {
+                    areAllReady = false;
+                    break;
+                }
             }
-        }
 
-        if (areAllReady) {
-            server.sendToAllTCP(new Network.StartGame());
-            Gdx.app.log("Host", "All Ready, Starting Game In 10...");
-            lobbyScreen.isGameToBeStarted = true;
+            if (areAllReady) {
+                server.sendToAllTCP(new Network.StartGame());
+                Gdx.app.log("Host", "All Ready, Starting Game...");
+                lobbyScreen.isGameToBeStarted = true;
+            }
         }
 
     }
 
-    private void sendInitializeShipState() {
+    private void sendUpdateShipState() {
 
-        server.sendToAllTCP(new Network.InitializeShipState(shipStateMap));
+        server.sendToAllTCP(new Network.UpdateAllShipState(shipStateMap));
 
         lobbyScreen.shipStateMap = shipStateMap;
         lobbyScreen.isShipStateToBeUpdated = true;
 
+    }
+
+    public void sendShipState(ShipState shipState) {
+        server.sendToAllTCP(new Network.UpdateShipState(shipState, 0));
     }
 
     public void sendReadyState(boolean isReady) {

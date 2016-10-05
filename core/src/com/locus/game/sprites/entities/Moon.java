@@ -119,4 +119,9 @@ public class Moon extends Entity {
     public void kill() {
     }
 
+    @Override
+    public void killBody() {
+
+    }
+
 }

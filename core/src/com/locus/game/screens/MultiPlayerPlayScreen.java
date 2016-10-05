@@ -40,6 +40,7 @@ public class MultiPlayerPlayScreen implements Screen {
 
         hud.update(delta);
         hud.draw();
+        
     }
 
     @Override

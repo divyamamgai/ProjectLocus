@@ -39,7 +39,11 @@ public class Ship extends Entity implements InputController.InputCallBack {
     private Vector2 bulletPosition;
     private short bulletsFired;
 
-    public Ship(Level level, Ship.Property property, float x, float y) {
+    public Ship() {
+
+    }
+
+    public Ship(Level level, Ship.Property property, float x, float y, float angleRad) {
 
         this.level = level;
 
@@ -51,7 +55,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         body = level.world.createBody(definition.bodyDef);
 
-        body.setTransform(x, y, 0);
+        body.setTransform(x, y, angleRad);
         body.setLinearDamping(LINEAR_DAMPING);
         body.setAngularDamping(ANGULAR_DAMPING);
         body.setUserData(this);
@@ -66,30 +70,6 @@ public class Ship extends Entity implements InputController.InputCallBack {
         bulletsFired = 0;
         health = definition.maxHealth;
 
-    }
-
-    private void fireBullet(Bullet.Type type) {
-        if (bulletsFired == 0) {
-            Vector2 bodyPosition = body.getPosition();
-            float angleRad = body.getAngle();
-            for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                if (level.bulletDeadList.size() > 0) {
-                    Bullet bullet = level.bulletDeadList.get(0);
-                    bullet.resurrect(this,
-                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                            angleRad);
-                    level.bulletAliveList.add(bullet);
-                    level.bulletDeadList.remove(0);
-                } else {
-                    level.bulletAliveList.add(new Bullet(level, type, this,
-                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                            angleRad));
-                }
-            }
-        } else if (bulletsFired >= 8) {
-            bulletsFired = -1;
-        }
-        bulletsFired++;
     }
 
     @Override
@@ -132,6 +112,36 @@ public class Ship extends Entity implements InputController.InputCallBack {
         if (isAlive) {
             isAlive = false;
         }
+    }
+
+    @Override
+    public void killBody() {
+        body.setAwake(false);
+        body.setActive(false);
+    }
+
+    private void fireBullet(Bullet.Type type) {
+        if (bulletsFired == 0) {
+            Vector2 bodyPosition = body.getPosition();
+            float angleRad = body.getAngle();
+            for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
+                if (level.bulletDeadList.size() > 0) {
+                    Bullet bullet = level.bulletDeadList.get(0);
+                    bullet.resurrect(this,
+                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                            angleRad);
+                    level.bulletAliveList.add(bullet);
+                    level.bulletDeadList.remove(0);
+                } else {
+                    level.bulletAliveList.add(new Bullet(level, type, this,
+                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                            angleRad));
+                }
+            }
+        } else if (bulletsFired >= 8) {
+            bulletsFired = -1;
+        }
+        bulletsFired++;
     }
 
     @Override

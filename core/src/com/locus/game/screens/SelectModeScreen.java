@@ -88,15 +88,9 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
-        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraHalfWidth,
-                ProjectLocus.screenCameraHalfHeight);
-        foregroundCamera.update();
 
         backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
-        backgroundCamera.setToOrtho(false, ProjectLocus.WORLD_HALF_WIDTH,
-                ProjectLocus.WORLD_HALF_HEIGHT);
-        backgroundCamera.update();
 
         tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
                 ProjectLocus.TILED_MAP_SCALE);
