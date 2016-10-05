@@ -1,6 +1,7 @@
 package com.locus.game.screens;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.tools.Hud;
@@ -15,6 +16,7 @@ public class MultiPlayerPlayScreen implements Screen {
     private LobbyScreen lobbyScreen;
     private Hud hud;
     public Level level;
+    private OrthographicCamera foregroundCamera;
 
     MultiPlayerPlayScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen) {
 
@@ -23,7 +25,10 @@ public class MultiPlayerPlayScreen implements Screen {
 
         level = new Level(projectLocus, lobbyScreen.levelProperty);
 
-        hud = new Hud(projectLocus, Hud.Type.Survival);
+        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+
+        hud = new Hud(projectLocus, Hud.Type.Survival, foregroundCamera);
 
     }
 
@@ -38,15 +43,18 @@ public class MultiPlayerPlayScreen implements Screen {
         level.update(delta);
         level.render(projectLocus.spriteBatch);
 
-        hud.update(delta);
-        hud.draw();
+        hud.updateTimer(delta);
+        hud.draw(projectLocus.spriteBatch);
         
     }
 
     @Override
     public void resize(int width, int height) {
         ProjectLocus.resizeCamera(width, height);
+        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
         level.resize();
+        hud.positionUI();
     }
 
     @Override

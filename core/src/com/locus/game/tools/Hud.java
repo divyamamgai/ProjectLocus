@@ -1,15 +1,12 @@
 package com.locus.game.tools;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.locus.game.ProjectLocus;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by Rohit Yadav on 02-Oct-16.
@@ -18,15 +15,6 @@ import com.locus.game.ProjectLocus;
 
 public class Hud {
 
-    private Stage stage;
-
-    private int[] playersNumber, playersScore;
-    private int score, playerCount, timeMinutes, timeSeconds;
-    private float timeChangeCount;
-
-    private Label scoreCountLabel, timeCountLabel, timeLabel;
-    private Label[] playersScoreLabel;
-
     public enum Type {
         Survival,
         DeathMatch
@@ -34,82 +22,120 @@ public class Hud {
 
     private Type type;
 
-    public Hud(ProjectLocus projectLocus, Type type) {
+    private static final int ROW_PADDING = 48, COLUMN_PADDING = 32, HUD_HEIGHT = 80;
+
+    private class PlayerHudData {
+        int playerNumber, connectionID;
+        long playerScore;
+        boolean isAlive;
+        Text playerScoreText, playerNumberText;
+
+        PlayerHudData(int playerNumber, int playerScore, boolean isAlive, int connectionID) {
+            this.playerNumber = playerNumber;
+            this.playerScore = playerScore;
+            this.isAlive = isAlive;
+            this.connectionID = connectionID;
+            this.playerScoreText = new Text(projectLocus.font24,
+                    String.format(Locale.ENGLISH, "%04d", this.playerScore));
+            this.playerNumberText = new Text(projectLocus.font24,
+                    String.format(Locale.ENGLISH, "%d", this.playerNumber));
+        }
+    }
+
+    private ArrayList<PlayerHudData> playerHudDataList;
+    private int playerCount, timeMinutes, timeSeconds;
+    private float timeChangeCount;
+    private long score;
+
+    private Text scoreCountText, timeMinuteText, timeSecondText;
+    private ProjectLocus projectLocus;
+    private OrthographicCamera foregroundCamera;
+
+    public Hud(ProjectLocus projectLocus, Type type, OrthographicCamera foregroundCamera) {
         playerCount = 8;
+        this.projectLocus = projectLocus;
         this.type = type;
+        this.foregroundCamera = foregroundCamera;
 
         score = timeMinutes = timeSeconds = 0;
         timeChangeCount = 0f;
-        playersNumber = new int[playerCount];
-        playersScore = new int[playerCount];
-        Label[] playersLabel = new Label[playerCount];
-        playersScoreLabel = new Label[playerCount];
+        playerHudDataList = new ArrayList<PlayerHudData>();
         for (int i = 0; i < playerCount; i++) {
-            playersNumber[i] = i + 1;
-            playersScore[i] = 0;
+            playerHudDataList.add(new PlayerHudData(i + 1, 0, false, -1));
         }
         if (type == Type.DeathMatch) {
             timeMinutes = 4;
+            timeSeconds = 0;
         }
 
-        Viewport viewport = new FitViewport(ProjectLocus.screenCameraWidth,
-                ProjectLocus.screenCameraHeight, new OrthographicCamera());
-        stage = new Stage(viewport, projectLocus.spriteBatch);
-
-        Table table = new Table();
-        table.top();
-        table.setFillParent(true);
-
-        Label scoreLabel = new Label("SCORE", new Label.LabelStyle(projectLocus.font24, Color.WHITE));
-        scoreCountLabel = new Label(String.format("%04d", score),
-                new Label.LabelStyle(projectLocus.font24, Color.WHITE));
-        for (int i = 0; i < playerCount; i++) {
-            playersLabel[i] = new Label(String.format("%01d", playersNumber[i]),
-                    new Label.LabelStyle(projectLocus.font24, Color.BLUE));
-            playersScoreLabel[i] = new Label(String.format("%04d", playersScore[i]),
-                    new Label.LabelStyle(projectLocus.font24, Color.GREEN));
-        }
+        timeChangeCount = 0f;
+        scoreCountText = new Text(projectLocus.font32,
+                String.format(Locale.ENGLISH, "%04d", score), COLUMN_PADDING, ROW_PADDING);
         if (type == Type.DeathMatch) {
-            timeLabel = new Label("TIME", new Label.LabelStyle(projectLocus.font24, Color.WHITE));
-            timeCountLabel = new Label(String.format("%02d:%02d", timeMinutes, timeSeconds),
-                    new Label.LabelStyle(projectLocus.font24, Color.WHITE));
+            timeSecondText = new Text(projectLocus.font32,
+                    String.format(Locale.ENGLISH, " : %02d", timeSeconds));
+            timeSecondText.setPosition(ProjectLocus.screenCameraWidth - COLUMN_PADDING
+                    - timeSecondText.getWidth(), ROW_PADDING);
+            timeMinuteText = new Text(projectLocus.font32,
+                    String.format(Locale.ENGLISH, "%02d", timeMinutes));
+            timeMinuteText.setPosition(ProjectLocus.screenCameraWidth - timeSecondText.getWidth()
+                    - timeMinuteText.getWidth() - COLUMN_PADDING, ROW_PADDING);
         }
 
-        table.add(scoreLabel).expandX().padTop(10);
-        for (int i = 0; i < playerCount; i++) {
-            table.add(playersLabel[i]).expandX().padTop(10);
-        }
-        if (type == Type.DeathMatch) {
-            table.add(timeLabel).expandX().padTop(10);
-        }
-        table.row();
-        table.add(scoreCountLabel).padTop(10);
-        for (int i = 0; i < playerCount; i++) {
-            table.add(playersScoreLabel[i]).padTop(10);
-        }
-        if (type == Type.DeathMatch) {
-            table.add(timeCountLabel).padTop(10);
-        }
-
-        stage.addActor(table);
     }
 
-    public void update(float deltaTime) {
+    public void positionUI() {
+        int rowHeight = ((HUD_HEIGHT) - (3 * ROW_PADDING)) / 2,
+                columnWidth = ((ProjectLocus.screenCameraWidth) -
+                        ((playerCount + 1) * COLUMN_PADDING)) / playerCount;
+        int i = 0;
+        for (PlayerHudData playerHudData : playerHudDataList) {
+            playerHudData.playerNumberText.setPosition(COLUMN_PADDING +
+                            (i * (columnWidth + COLUMN_PADDING)) +
+                            ((columnWidth / 2) - playerHudData.playerNumberText.getHalfWidth()),
+                    ProjectLocus.screenCameraHeight - ROW_PADDING - (ROW_PADDING / 4) - rowHeight);
+            playerHudData.playerScoreText.setPosition(COLUMN_PADDING +
+                            (i * (columnWidth + COLUMN_PADDING)) +
+                            ((columnWidth / 2) - playerHudData.playerScoreText.getHalfWidth()),
+                    ProjectLocus.screenCameraHeight - (2 * (ROW_PADDING + rowHeight))
+                            - (ROW_PADDING / 2));
+            i++;
+        }
+    }
+
+    public void updateScore(long score) {
+        this.score += score;
+        scoreCountText.setText(String.format(Locale.ENGLISH, "%04d", this.score));
+    }
+
+    public void updateTimer(float delta) {
         if (type == Type.DeathMatch) {
-            timeChangeCount += deltaTime;
+            timeChangeCount += delta;
             if (timeChangeCount >= 1) {
                 timeSeconds--;
                 if (timeSeconds < 0) {
                     timeMinutes--;
                     timeSeconds = 59;
                 }
-                timeCountLabel.setText(String.format("%02d:%02d", timeMinutes, timeSeconds));
+                timeMinuteText.setText(String.format(Locale.ENGLISH, "%02d", timeMinutes));
+                timeSecondText.setText(String.format(Locale.ENGLISH, " : %02d", timeSeconds));
                 timeChangeCount = 0f;
             }
         }
     }
 
-    public void draw() {
-        stage.draw();
+    public void draw(SpriteBatch spriteBatch) {
+        spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+        spriteBatch.begin();
+        for (PlayerHudData playerHudData : playerHudDataList) {
+            playerHudData.playerNumberText.draw(spriteBatch);
+            playerHudData.playerScoreText.draw(spriteBatch);
+        }
+        scoreCountText.draw(spriteBatch);
+        if (type == Type.DeathMatch) {
+            timeMinuteText.draw(spriteBatch);
+            timeSecondText.draw(spriteBatch);
+        }
+        spriteBatch.end();
     }
 }
