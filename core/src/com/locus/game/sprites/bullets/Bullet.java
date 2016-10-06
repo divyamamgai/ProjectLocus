@@ -17,6 +17,34 @@ import com.locus.game.sprites.entities.Ship;
 
 public class Bullet extends Sprite {
 
+    public Ship getShip() {
+        return ship;
+    }
+
+    public void setShip(Ship ship) {
+        this.ship = ship;
+    }
+
+    public BulletLoader.Definition getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(BulletLoader.Definition definition) {
+        this.definition = definition;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public float getDamage() {
+        return definition.damage;
+    }
+
+    public Bullet.Type getType() {
+        return definition.type;
+    }
+
     public enum Type {
 
         Normal,
@@ -29,33 +57,30 @@ public class Bullet extends Sprite {
     }
 
     private Timer timer;
-    public Ship ship;
+    private Ship ship;
     private Body body;
-    public BulletLoader.Definition definition;
-    public boolean isAlive = true;
+    private BulletLoader.Definition definition;
+    private boolean isAlive = true;
 
     public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
 
-        this.ship = ship;
-
-        timer = new Timer();
-
-        definition = level.projectLocus.bulletLoader.get(type);
+        setShip(ship);
+        setDefinition(level.getBulletLoader().get(type));
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
 
-        body = level.world.createBody(definition.bodyDef);
+        body = level.getWorld().createBody(definition.bodyDef);
         body.setTransform(position.x, position.y, angleRad);
         body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
         body.setUserData(this);
         definition.attachFixture(body);
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
-
         update();
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
+        timer = new Timer();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
 
     }

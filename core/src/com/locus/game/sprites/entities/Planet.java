@@ -34,12 +34,12 @@ public class Planet extends Entity {
 
         this.level = level;
 
-        definition = level.projectLocus.entityLoader.get(Entity.Type.Planet, type.ordinal());
+        definition = level.getEntityLoader().get(Entity.Type.Planet, type.ordinal());
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
 
-        body = level.world.createBody(definition.bodyDef);
+        body = level.getWorld().createBody(definition.bodyDef);
 
         body.setTransform(x, y, 0);
         body.setUserData(this);

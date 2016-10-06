@@ -21,8 +21,6 @@ public class GameClient {
     private Client client;
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
-    public int connectionID;
-    private String hostAddress;
 
     private class GameClientConnectRunnable implements Runnable {
 
@@ -34,31 +32,46 @@ public class GameClient {
 
         @Override
         public void run() {
+
             List<InetAddress> addressList = client.discoverHosts(Network.SERVER_UDP_PORT,
                     Network.CONNECTION_TIMEOUT);
-            Gdx.app.log("Lobby Client", addressList.toString());
-            lobbyJoinScreen.state = LobbyScreen.State.Connecting;
+
+            lobbyJoinScreen.setState(LobbyScreen.State.Connecting);
+
             for (InetAddress address : addressList) {
                 try {
+
                     // We only need IPv4 addresses.
                     if (address instanceof Inet4Address) {
+
                         client.connect(Network.CONNECTION_TIMEOUT,
                                 address.getHostAddress(), Network.SERVER_TCP_PORT,
                                 Network.SERVER_UDP_PORT);
+
+                        lobbyJoinScreen.setState(LobbyScreen.State.Connected);
+
                         Gdx.app.log("Lobby Client", "Connected To Host @ " +
                                 address.getHostAddress() + ":" + Network.SERVER_TCP_PORT);
+
                         // For now break at the first successfully connected server.
-                        lobbyJoinScreen.state = LobbyScreen.State.Connected;
+                        break;
+
                     }
-                    break;
+
                 } catch (IOException e) {
+
+                    lobbyJoinScreen.setState(LobbyScreen.State.Failed);
+
                     e.printStackTrace();
+
                 }
             }
+
             // Check if the connecting failed with everyone.
-            if (lobbyJoinScreen.state == LobbyScreen.State.Connecting) {
-                lobbyJoinScreen.state = LobbyScreen.State.Failed;
+            if (lobbyJoinScreen.checkState(LobbyScreen.State.Connecting)) {
+                lobbyJoinScreen.setState(LobbyScreen.State.Failed);
             }
+
         }
     }
 
@@ -78,87 +91,54 @@ public class GameClient {
         client.addListener(new ClientListener(this));
         client.start();
 
-        // Launch a dirty |:P} Thread to retrieve list of the IP Addresses.
         new Thread(new GameClientConnectRunnable(lobbyScreen)).start();
 
     }
 
     void onConnected(Connection connection) {
-
-        connectionID = connection.getID();
-
-        hostAddress = connection.getRemoteAddressTCP().toString();
-
+        Gdx.app.log("Client On Connected", String.valueOf(connection.getID()));
         client.sendTCP(new Network.PlayerJoinRequest(projectLocus.playerShipProperty));
         client.updateReturnTripTime();
-
     }
 
     void onReceived(Connection connection, Object object) {
 
-        if (object instanceof Network.UpdateShipState) {
+        if (object instanceof Network.UpdateLobby) {
 
-            Network.UpdateShipState updateShipState = (Network.UpdateShipState) object;
-
-            lobbyScreen.multiPlayerPlayScreen.level.updateShip(updateShipState.shipState,
-                    updateShipState.connectionID);
-
-            Gdx.app.log("Client", "Received Ship State For : " + updateShipState.connectionID);
-
-        } else if (object instanceof Network.UpdateLobby) {
-
-            lobbyScreen.playerMap = ((Network.UpdateLobby) object).playerMap;
-            lobbyScreen.isLobbyToBeUpdated = true;
-
-            Gdx.app.log("Client", "Accepted Player Count : " +
-                    String.valueOf(lobbyScreen.playerMap.size()));
+            lobbyScreen.setPlayerMap(((Network.UpdateLobby) object).playerMap);
 
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
 
             projectLocus.setScreen(lobbyScreen.selectModeScreen);
+            lobbyScreen.dispose();
             Gdx.app.log("Client", ((Network.PlayerJoinRequestRejected) object).reason);
 
         } else if (object instanceof Network.LevelProperty) {
 
-            lobbyScreen.levelProperty = ((Network.LevelProperty) object).levelProperty;
-            lobbyScreen.initializePlayScreen = true;
+            lobbyScreen.setLevelProperty(((Network.LevelProperty) object).levelProperty);
 
             Gdx.app.log("Client", "Received Level Property");
 
-        } else if (object instanceof Network.UpdateAllShipState) {
-
-            lobbyScreen.shipStateMap = ((Network.UpdateAllShipState) object).shipStateMap;
-            lobbyScreen.isShipStateToBeUpdated = true;
-
-            Gdx.app.log("Client", "Received Ship State Map, Initialized.");
-
         } else if (object instanceof Network.StartGame) {
 
-            float gameStartTime = ProjectLocus.GAME_COUNT_DOWN -
+            float startGameIn = ProjectLocus.GAME_COUNT_DOWN -
                     ((float) connection.getReturnTripTime() / 1000f);
 
-            Gdx.app.log("Client", "Received Start Game, Starting Game In " + gameStartTime);
+            Gdx.app.log("Client", "Received Start Game, Starting Game In " + startGameIn);
 
-            lobbyScreen.gameStartTime = gameStartTime;
-            lobbyScreen.isGameToBeStarted = true;
-
+            lobbyScreen.startGame(startGameIn);
         }
 
     }
 
     void onDisconnected(Connection connection) {
-
+        stop();
         projectLocus.setScreen(lobbyScreen.selectModeScreen);
-
+        lobbyScreen.dispose();
     }
 
     public void sendReadyState(boolean isReady) {
         client.sendTCP(new Network.PlayerReadyRequest(isReady));
-        client.updateReturnTripTime();
-    }
-
-    public void sendShipState(ShipState shipState) {
-        client.sendTCP(new Network.UpdateShipState(shipState, connectionID));
         client.updateReturnTripTime();
     }
 

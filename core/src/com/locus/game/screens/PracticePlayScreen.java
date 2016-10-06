@@ -29,6 +29,10 @@ class PracticePlayScreen implements Screen {
 
         level = new Level(projectLocus, new Level.Property(Planet.Type.Gas, moonPropertyList, 1));
 
+        level.addShipAlive(projectLocus.playerShipProperty,
+                ProjectLocus.WORLD_HALF_WIDTH + 100f, ProjectLocus.WORLD_HALF_HEIGHT + 100f,
+                0, true);
+
     }
 
     @Override

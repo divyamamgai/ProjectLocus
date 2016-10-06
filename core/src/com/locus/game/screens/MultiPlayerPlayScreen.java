@@ -10,10 +10,9 @@ import com.locus.game.tools.Hud;
  * Created by Divya Mamgai on 9/6/2016.
  * Multi Player Play Screen
  */
-public class MultiPlayerPlayScreen implements Screen {
+class MultiPlayerPlayScreen implements Screen {
 
     public ProjectLocus projectLocus;
-    private LobbyScreen lobbyScreen;
     private Hud hud;
     public Level level;
     private OrthographicCamera foregroundCamera;
@@ -21,9 +20,8 @@ public class MultiPlayerPlayScreen implements Screen {
     MultiPlayerPlayScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen) {
 
         this.projectLocus = projectLocus;
-        this.lobbyScreen = lobbyScreen;
 
-        level = new Level(projectLocus, lobbyScreen.levelProperty);
+        level = new Level(projectLocus, lobbyScreen.getLevelProperty());
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -45,7 +43,7 @@ public class MultiPlayerPlayScreen implements Screen {
 
         hud.updateTimer(delta);
         hud.draw(projectLocus.spriteBatch);
-        
+
     }
 
     @Override

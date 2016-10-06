@@ -2,8 +2,8 @@ package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Frustum;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.locus.game.levels.Level;
 
@@ -25,42 +25,66 @@ public abstract class Entity extends Sprite {
 
     }
 
-    Level level;
-    public Body body;
-    public EntityLoader.Definition definition;
-    public float health;
-    public boolean isAlive = true;
+    protected Level level;
+    protected EntityLoader.Definition definition;
+    Body body;
+    float health;
+    boolean isAlive = true;
 
-    // Enable the constructors as per the needs.
+    public Level getLevel() {
+        return level;
+    }
+
+    public void setLevel(Level level) {
+        this.level = level;
+    }
+
+    public Body getBody() {
+        return body;
+    }
+
+    void setBody(Body body) {
+        this.body = body;
+    }
+
+    public Vector2 getBodyPosition() {
+        return body.getPosition();
+    }
+
+    public EntityLoader.Definition getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(EntityLoader.Definition definition) {
+        this.definition = definition;
+    }
+
+    public float getHealth() {
+        return health;
+    }
+
+    void setHealth(float health) {
+        this.health = health;
+    }
+
+    public void reduceHealth(float by) {
+        health -= by;
+        if (health <= 0) {
+            kill();
+        }
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
 
     Entity() {
         super();
     }
-
-    //    Entity(Texture textureRegion) {
-//        super(textureRegion);
-//    }
-//    public Entity(Texture textureRegion, int srcWidth, int srcHeight) {
-//        super(textureRegion, srcWidth, srcHeight);
-//    }
-//
-//    public Entity(Texture textureRegion, int srcX, int srcY, int srcWidth, int srcHeight) {
-//        super(textureRegion, srcX, srcY, srcWidth, srcHeight);
-//    }
-//
-
-    public Entity(TextureRegion region) {
-        super(region);
-    }
-
-//
-//    public Entity(TextureRegion region, int srcX, int srcY, int srcWidth, int srcHeight) {
-//        super(region, srcX, srcY, srcWidth, srcHeight);
-//    }
-//
-//    public Entity(Sprite sprite) {
-//        super(sprite);
-//    }
 
     public abstract void update();
 

@@ -1,10 +1,10 @@
 package com.locus.game;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -73,7 +73,7 @@ public class ProjectLocus extends Game implements Disposable {
     public SpriteBatch spriteBatch;
     // Common Assets, for now we will cache everything since it is all very small.
     public AssetManager assetManager;
-    public BitmapFont font24, font32;
+    public BitmapFont font24, font32, font72;
     public BitmapFont font24Selected, font32Selected;
     public BitmapFont font32Red, font32Green;
     public ArrayList<TiledMap> tiledMapList;
@@ -100,8 +100,6 @@ public class ProjectLocus extends Game implements Disposable {
         assetManager = new AssetManager();
         tiledMapList = new ArrayList<TiledMap>();
         playerShipProperty = new Ship.Property();
-        gameServer = new GameServer(this);
-        gameClient = new GameClient(this);
 
         setScreen(new LoadingScreen(this));
 
@@ -122,12 +120,15 @@ public class ProjectLocus extends Game implements Disposable {
 
     @Override
     public void dispose() {
-        assetManager.clear();
         assetManager.dispose();
-        entityLoader.dispose();
+        if (entityLoader != null) {
+            entityLoader.dispose();
+        }
         spriteBatch.dispose();
-        gameServer.stop();
-        gameClient.stop();
+        if (gameServer != null)
+            gameServer.stop();
+        if (gameClient != null)
+            gameClient.stop();
     }
 
 }

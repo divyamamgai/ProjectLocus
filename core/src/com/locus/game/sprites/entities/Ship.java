@@ -15,6 +15,14 @@ import com.locus.game.tools.InputController;
  */
 public class Ship extends Entity implements InputController.InputCallBack {
 
+    public Ship.Type getType() {
+        return type;
+    }
+
+    public void setType(Ship.Type type) {
+        this.type = type;
+    }
+
     public enum Type {
 
         Fighter,
@@ -38,6 +46,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     private Vector2 thrustVelocity;
     private Vector2 bulletPosition;
     private short bulletsFired;
+    private Ship.Type type;
 
     public Ship() {
 
@@ -45,16 +54,16 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     public Ship(Level level, Ship.Property property, float x, float y, float angleRad) {
 
-        this.level = level;
-
-        definition = level.projectLocus.entityLoader.get(Entity.Type.Ship, property.type.ordinal());
+        setLevel(level);
+        setType(property.type);
+        setDefinition(level.getEntityLoader().get(Entity.Type.Ship, type.ordinal()));
+        setHealth(definition.maxHealth);
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
         setColor(property.color);
 
-        body = level.world.createBody(definition.bodyDef);
-
+        setBody(level.getWorld().createBody(definition.bodyDef));
         body.setTransform(x, y, angleRad);
         body.setLinearDamping(LINEAR_DAMPING);
         body.setAngularDamping(ANGULAR_DAMPING);
@@ -65,20 +74,27 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         update();
 
-        thrustVelocity = new Vector2(0, 0);
-        bulletPosition = new Vector2(0, 0);
+        thrustVelocity = new Vector2();
+        bulletPosition = new Vector2();
+        bulletsFired = 0;
+
+    }
+
+    public void resurrect(Color color, float x, float y, float angleRad) {
+
+        isAlive = true;
         bulletsFired = 0;
         health = definition.maxHealth;
+
+        body.setActive(true);
+        body.setTransform(x, y, angleRad);
+
+        setColor(color);
 
     }
 
     @Override
     public void update() {
-        Vector2 linearVelocity = body.getLinearVelocity();
-        float speed2 = linearVelocity.len2();
-        if (speed2 > definition.maxSpeed2) {
-            body.setLinearVelocity(linearVelocity.scl(definition.maxSpeed2 / speed2));
-        }
         Vector2 spritePosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(spritePosition.x, spritePosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
@@ -96,10 +112,10 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
             float percentageHealth = health / definition.maxHealth;
 
-            spriteBatch.draw(level.barBackgroundTexture,
+            spriteBatch.draw(level.getBarBackgroundTexture(),
                     bodyPosition.x - definition.halfWidth - 0.2f, bodyPosition.y + 2.8f,
                     definition.width + 0.4f, 0.9f);
-            spriteBatch.draw(level.barForegroundTexture,
+            spriteBatch.draw(level.getBarForegroundTexture(),
                     bodyPosition.x - definition.halfWidth, bodyPosition.y + 3f,
                     definition.width * percentageHealth, 0.5f);
 
@@ -125,20 +141,11 @@ public class Ship extends Entity implements InputController.InputCallBack {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                if (level.bulletDeadList.size() > 0) {
-                    Bullet bullet = level.bulletDeadList.get(0);
-                    bullet.resurrect(this,
-                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                            angleRad);
-                    level.bulletAliveList.add(bullet);
-                    level.bulletDeadList.remove(0);
-                } else {
-                    level.bulletAliveList.add(new Bullet(level, type, this,
-                            bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
-                            angleRad));
-                }
+                level.addBulletAlive(type, this,
+                        bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                        angleRad);
             }
-        } else if (bulletsFired >= 8) {
+        } else if (bulletsFired >= 5) {
             bulletsFired = -1;
         }
         bulletsFired++;
@@ -151,14 +158,18 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     @Override
     public void applyThrust(boolean isForward) {
-        Vector2 playerPosition = body.getPosition();
-        float angleRad = body.getAngle();
-        if (isForward) {
-            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
-                    .rotateRad(angleRad), playerPosition, true);
-        } else {
-            body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
-                    .rotateRad(angleRad).scl(-1f), playerPosition, true);
+        Vector2 linearVelocity = body.getLinearVelocity();
+        float speed2 = linearVelocity.len2();
+        if (speed2 < definition.maxSpeed2) {
+            Vector2 playerPosition = body.getPosition();
+            float angleRad = body.getAngle();
+            if (isForward) {
+                body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                        .rotateRad(angleRad), playerPosition, true);
+            } else {
+                body.applyLinearImpulse(thrustVelocity.set(0, definition.thrustSpeed)
+                        .rotateRad(angleRad).scl(-1f), playerPosition, true);
+            }
         }
     }
 

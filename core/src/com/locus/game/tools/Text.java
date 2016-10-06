@@ -33,10 +33,10 @@ public class Text {
 
         this.font = font;
 
-        setText(text);
-
         this.x = x;
         this.y = y;
+
+        setText(text);
 
     }
 

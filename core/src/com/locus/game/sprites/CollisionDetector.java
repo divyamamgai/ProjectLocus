@@ -56,15 +56,13 @@ public class CollisionDetector implements ContactListener {
                 }
             }
             if (entity != null) {
-                if (bullet.ship != entity) {
-                    switch (entity.definition.type) {
+                if (bullet.getShip() != entity) {
+                    switch (entity.getDefinition().type) {
                         case Planet:
                         case Moon:
                             break;
                         default:
-                            if ((entity.health -= bullet.definition.damage) <= 0) {
-                                entity.kill();
-                            }
+                            entity.reduceHealth(bullet.getDamage());
                     }
                     bullet.kill();
                 }
@@ -72,32 +70,24 @@ public class CollisionDetector implements ContactListener {
         } else {
             Entity entityA = (Entity) objectA;
             Entity entityB = (Entity) objectB;
-            switch (entityA.definition.type) {
+            switch (entityA.getDefinition().type) {
                 case Ship:
                     float speed2;
-                    switch (entityB.definition.type) {
+                    switch (entityB.getDefinition().type) {
                         case Ship:
                             break;
                         case Planet:
-                            speed2 = entityA.body.getLinearVelocity().len2();
-                            if ((speed2 > 900f) && ((entityA.health -= 75f) <= 0)) {
-                                entityA.kill();
-                            } else if ((entityA.health -= 5f) <= 0) {
-                                entityA.kill();
-                            }
+                            speed2 = entityA.getBody().getLinearVelocity().len2();
+                            entityA.reduceHealth(speed2 > 900f ? 75f : 25f);
                             break;
                         case Moon:
-                            speed2 = entityA.body.getLinearVelocity().len2();
-                            if ((speed2 > 900f) && ((entityA.health -= 25f) <= 0)) {
-                                entityA.kill();
-                            } else if ((entityA.health -= 1f) <= 0) {
-                                entityA.kill();
-                            }
+                            speed2 = entityA.getBody().getLinearVelocity().len2();
+                            entityA.reduceHealth(speed2 > 900f ? 30f : 10f);
                             break;
                     }
                     break;
                 case Planet:
-                    switch (entityB.definition.type) {
+                    switch (entityB.getDefinition().type) {
                         case Ship:
                             break;
                         case Planet:
@@ -107,7 +97,7 @@ public class CollisionDetector implements ContactListener {
                     }
                     break;
                 case Moon:
-                    switch (entityB.definition.type) {
+                    switch (entityB.getDefinition().type) {
                         case Ship:
                             break;
                         case Planet:

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 
 /**
@@ -34,7 +35,7 @@ public class Moon extends Entity {
         float orbitRadius, orbitAngle;
 
         public Property() {
-            
+
         }
 
         public Property(Moon.Type type, float orbitRadius, float orbitAngle) {
@@ -52,12 +53,12 @@ public class Moon extends Entity {
 
         this.level = level;
 
-        definition = level.projectLocus.entityLoader.get(Entity.Type.Moon, moonProperty.type.ordinal());
+        definition = level.getEntityLoader().get(Entity.Type.Moon, moonProperty.type.ordinal());
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
 
-        body = level.world.createBody(definition.bodyDef);
+        body = level.getWorld().createBody(definition.bodyDef);
 
         Vector2 moonPosition = (new Vector2(moonProperty.orbitRadius, 0))
                 .rotate(moonProperty.orbitAngle)
@@ -73,6 +74,12 @@ public class Moon extends Entity {
         planetPosition = new Vector2(planetX, planetY);
         orbitalVelocity = new Vector2(1, 1);
 
+    }
+
+    public static Vector2 getStartPosition(Moon.Property property) {
+        return (new Vector2(property.orbitRadius, 0))
+                .rotate(property.orbitAngle)
+                .add(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
     }
 
     public void applyGravitationalForce(Entity entity) {

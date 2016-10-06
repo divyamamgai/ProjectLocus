@@ -1,7 +1,6 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.levels.Level;
@@ -10,7 +9,7 @@ import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by Divya Mamgai on 10/3/2016.
@@ -33,7 +32,7 @@ class Network {
         kryo.register(UpdateLobby.class);
         kryo.register(ArrayList.class);
         kryo.register(Integer.class);
-        kryo.register(HashMap.class);
+        kryo.register(LinkedHashMap.class);
         kryo.register(Player.class);
         kryo.register(String.class);
         kryo.register(PlayerJoinRequestRejected.class);
@@ -47,11 +46,11 @@ class Network {
         kryo.register(Level.class);
         kryo.register(Level.Property.class);
         kryo.register(LevelProperty.class);
-        kryo.register(StartGame.class);
-        kryo.register(Vector2.class);
+        kryo.register(PlanetState.class);
+        kryo.register(MoonState.class);
         kryo.register(ShipState.class);
-        kryo.register(UpdateAllShipState.class);
-        kryo.register(UpdateShipState.class);
+        kryo.register(CreateShip.class);
+        kryo.register(StartGame.class);
     }
 
     static class PlayerJoinRequest {
@@ -70,13 +69,13 @@ class Network {
 
     static class UpdateLobby {
 
-        HashMap<Integer, Player> playerMap;
+        LinkedHashMap<Integer, Player> playerMap;
 
         UpdateLobby() {
 
         }
 
-        UpdateLobby(HashMap<Integer, Player> playerMap) {
+        UpdateLobby(LinkedHashMap<Integer, Player> playerMap) {
             this.playerMap = playerMap;
         }
 
@@ -105,9 +104,7 @@ class Network {
         }
 
         PlayerReadyRequest(boolean isReady) {
-
             this.isReady = isReady;
-
         }
 
     }
@@ -140,54 +137,32 @@ class Network {
 
     }
 
+    static class CreateShip {
+
+        Ship.Property property;
+        ShipState shipState;
+
+        CreateShip() {
+
+        }
+
+        CreateShip(Ship.Property property, ShipState shipState) {
+            this.property = property;
+            this.shipState = shipState;
+        }
+
+    }
+
     static class StartGame {
+
+        ArrayList<CreateShip> createShipList;
 
         StartGame() {
 
         }
 
-    }
-
-    static class UpdateAllShipState {
-
-        HashMap<Integer, ShipState> shipStateMap;
-
-        UpdateAllShipState() {
-
-        }
-
-        UpdateAllShipState(HashMap<Integer, ShipState> shipStateMap) {
-            this.shipStateMap = shipStateMap;
-        }
-
-    }
-
-    static class UpdateShipState {
-
-        ShipState shipState;
-        int connectionID;
-
-        UpdateShipState() {
-
-        }
-
-        UpdateShipState(ShipState shipState, int connectionID) {
-            this.shipState = shipState;
-            this.connectionID = connectionID;
-        }
-
-    }
-
-    static class GameState {
-
-        HashMap<Integer, ShipState> shipStateMap;
-
-        GameState() {
-
-        }
-
-        GameState(HashMap<Integer, ShipState> shipStateMap) {
-            this.shipStateMap = shipStateMap;
+        StartGame(ArrayList<CreateShip> createShipList) {
+            this.createShipList = createShipList;
         }
 
     }

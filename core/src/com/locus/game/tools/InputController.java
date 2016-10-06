@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.locus.game.ProjectLocus;
-import com.locus.game.network.ShipState;
 
 /**
  * Created by Rohit Yadav on 26-Sep-16.
@@ -33,16 +31,8 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             isPrimaryBulletEnabled, isSecondaryBulletEnabled;
     private static int thrustPointerID, rotationPointerID, firingPointerID;
 
-    private ProjectLocus projectLocus;
-    private boolean isHost;
-    private ShipState shipState;
-
-    public InputController(ProjectLocus projectLocus, InputCallBack inputCallBack, boolean isHost,
-                           ShipState shipState) {
-        this.projectLocus = projectLocus;
+    public InputController(InputCallBack inputCallBack) {
         this.inputCallBack = inputCallBack;
-        this.isHost = isHost;
-        this.shipState = shipState;
         camera = new OrthographicCamera(854, 480);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         isRotationEnabled = isThrustEnabled = isFireEnabled = false;
@@ -251,34 +241,14 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     }
 
     public void update() {
-        shipState.isRotationEnabled = isRotationEnabled;
-        shipState.isThrustEnabled = isThrustEnabled;
-        shipState.isFireEnabled = isFireEnabled;
         if (isRotationEnabled) {
             inputCallBack.applyRotation(isRotationClockwise);
-            shipState.rotationDirection = isRotationClockwise;
-            if (isHost) {
-                projectLocus.gameServer.sendShipState(shipState);
-            } else {
-                projectLocus.gameClient.sendShipState(shipState);
-            }
         }
         if (isThrustEnabled) {
             inputCallBack.applyThrust(isThrustForward);
-            shipState.thrustDirection = isThrustForward;
-            if (isHost) {
-                projectLocus.gameServer.sendShipState(shipState);
-            } else {
-                projectLocus.gameClient.sendShipState(shipState);
-            }
         }
         if (isFireEnabled) {
             inputCallBack.fire();
-            if (isHost) {
-                projectLocus.gameServer.sendShipState(shipState);
-            } else {
-                projectLocus.gameClient.sendShipState(shipState);
-            }
         }
     }
 }
