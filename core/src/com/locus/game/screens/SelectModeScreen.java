@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.locus.game.ProjectLocus;
 import com.locus.game.tools.Text;
 
@@ -30,7 +31,6 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     private class MenuOption {
 
         private Text text, textSelected;
-        private Vector2 textPosition, textSelectedPosition;
         private float dy;
 
         boolean isSelected;
@@ -41,9 +41,6 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
             this.text = new Text(font, text);
             this.textSelected = new Text(fontSelected, text);
 
-            textPosition = new Vector2(0, 0);
-            textSelectedPosition = new Vector2(0, 0);
-
             isSelected = false;
             position();
 
@@ -51,17 +48,17 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
         public void draw(SpriteBatch spriteBatch) {
             if (isSelected) {
-                textSelected.draw(spriteBatch, textSelectedPosition.x, textSelectedPosition.y);
+                textSelected.draw(spriteBatch);
             } else {
-                text.draw(spriteBatch, textPosition.x, textPosition.y);
+                text.draw(spriteBatch);
             }
         }
 
         void position() {
-            textPosition.set(
+            text.setPosition(
                     ProjectLocus.screenCameraHalfWidth - text.getHalfWidth(),
                     menuStartPositionY + dy);
-            textSelectedPosition.set(
+            textSelected.setPosition(
                     ProjectLocus.screenCameraHalfWidth - textSelected.getHalfWidth(),
                     menuStartPositionY + dy);
         }
@@ -107,6 +104,8 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                 "Practice", -96f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
                 "Back", -144f));
+        menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
+                "Exit", -192f));
 
         selectedMenuOption = 0;
         menuOptionList.get(selectedMenuOption).isSelected = true;
@@ -122,7 +121,7 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
         logo.setPosition(ProjectLocus.screenCameraHalfWidth - logo.getWidth() / 2,
                 ProjectLocus.screenCameraHeight - logo.getHeight() - 24f);
 
-        menuStartPositionY = ProjectLocus.screenCameraHeight - logo.getHeight() - 96f;
+        menuStartPositionY = ProjectLocus.screenCameraHeight - logo.getHeight() - 72f;
 
         for (MenuOption menuOption : menuOptionList) {
             menuOption.position();
@@ -229,6 +228,9 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                 selectPlayerScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
                 projectLocus.setScreen(selectPlayerScreen);
                 break;
+            case 4:
+                Gdx.app.exit();
+                break;
         }
     }
 
@@ -236,9 +238,11 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     public boolean keyDown(int keycode) {
         switch (keycode) {
             case Input.Keys.W:
+            case Input.Keys.UP:
                 previousMenuOption();
                 break;
             case Input.Keys.S:
+            case Input.Keys.DOWN:
                 nextMenuOption();
                 break;
             case Input.Keys.ENTER:
@@ -246,8 +250,8 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                 break;
             case Input.Keys.BACK:
                 // Go back to previous Screen.
-                selectedMenuOption = 3;
-                submit();
+//                selectedMenuOption = 3;
+//                submit();
                 break;
         }
         return false;
@@ -290,6 +294,17 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
+        Vector3 touchPosition = new Vector3(x, y, 0);
+        foregroundCamera.unproject(touchPosition);
+        for (MenuOption menuOption : menuOptionList) {
+            if (menuOption.text.getTextBoundingBox().contains(touchPosition)) {
+                menuOptionList.get(selectedMenuOption).isSelected = false;
+                selectedMenuOption = menuOptionList.indexOf(menuOption);
+                menuOptionList.get(selectedMenuOption).isSelected = true;
+                submit();
+                break;
+            }
+        }
         return false;
     }
 

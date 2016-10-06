@@ -70,7 +70,8 @@ public class Hud {
 
         timeChangeCount = 0f;
         scoreCountText = new Text(projectLocus.font32,
-                String.format(Locale.ENGLISH, "%04d", score), COLUMN_PADDING, ROW_PADDING);
+                String.format(Locale.ENGLISH, "%04d", score));
+        scoreCountText.setPosition(COLUMN_PADDING, ROW_PADDING);
         if (type == Type.DeathMatch) {
             timeSecondText = new Text(projectLocus.font32,
                     String.format(Locale.ENGLISH, " : %02d", timeSeconds));
