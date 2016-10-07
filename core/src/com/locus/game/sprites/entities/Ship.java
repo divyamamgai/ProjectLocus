@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.levels.Level;
+import com.locus.game.network.ShipState;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.tools.InputController;
 
@@ -15,7 +16,7 @@ import com.locus.game.tools.InputController;
  */
 public class Ship extends Entity implements InputController.InputCallBack {
 
-    public Ship.Type getType() {
+    public Ship.Type getShipType() {
         return type;
     }
 
@@ -47,10 +48,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     private Vector2 bulletPosition;
     private short bulletsFired;
     private Ship.Type type;
-
-    public Ship() {
-
-    }
+    private ShipState shipState;
 
     public Ship(Level level, Ship.Property property, float x, float y, float angleRad) {
 
@@ -72,12 +70,19 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        update();
-
         thrustVelocity = new Vector2();
         bulletPosition = new Vector2();
         bulletsFired = 0;
 
+        shipState = new ShipState();
+        shipState.ID = ID;
+
+        update();
+
+    }
+
+    public ShipState getShipState() {
+        return shipState;
     }
 
     public void resurrect(Color color, float x, float y, float angleRad) {
@@ -95,9 +100,20 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     @Override
     public void update() {
-        Vector2 spritePosition = body.getPosition().sub(definition.bodyOrigin);
+
+        Vector2 bodyPosition = body.getPosition();
+
+        shipState.bodyX = bodyPosition.x;
+        shipState.bodyY = bodyPosition.y;
+
+        Vector2 spritePosition = bodyPosition.sub(definition.bodyOrigin);
+
         setPosition(spritePosition.x, spritePosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
+        shipState.angleDeg = getRotation();
+        shipState.health = health;
+
     }
 
     @Override
@@ -132,7 +148,6 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     @Override
     public void killBody() {
-        body.setAwake(false);
         body.setActive(false);
     }
 
@@ -176,6 +191,13 @@ public class Ship extends Entity implements InputController.InputCallBack {
     @Override
     public void fire() {
         fireBullet(Bullet.Type.Normal);
+    }
+
+    @Override
+    public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
+                              boolean isRotationEnabled, boolean isRotationClockwise,
+                              boolean isFireEnabled) {
+
     }
 
 }

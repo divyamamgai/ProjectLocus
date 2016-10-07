@@ -7,22 +7,18 @@ package com.locus.game.network;
 
 public class ShipState {
 
-    public float x, y, bodyX, bodyY, angleDeg, health;
-    public boolean isAlive;
+    public short ID;
+    public float bodyX, bodyY, angleDeg, health;
 
-    ShipState() {
-        x = 0;
-        y = 0;
+    public ShipState() {
         bodyX = 0;
         bodyY = 0;
         angleDeg = 0;
         health = 0;
-        isAlive = true;
     }
 
-    ShipState(float x, float y, float bodyX, float bodyY, float angleDeg, float health) {
-        this.x = x;
-        this.y = y;
+    ShipState(short ID, float bodyX, float bodyY, float angleDeg, float health) {
+        this.ID = ID;
         this.bodyX = bodyX;
         this.bodyY = bodyY;
         this.angleDeg = angleDeg;

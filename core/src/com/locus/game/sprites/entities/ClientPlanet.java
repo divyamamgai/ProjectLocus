@@ -13,10 +13,6 @@ import com.locus.game.network.PlanetState;
 
 public class ClientPlanet extends ClientEntity {
 
-    ClientPlanet() {
-
-    }
-
     public ClientPlanet(ClientLevel level, Planet.Type type) {
 
         setLevel(level);
@@ -30,11 +26,13 @@ public class ClientPlanet extends ClientEntity {
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
         setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
 
+        angleDeg = 0;
+        toAngleDeg = 0;
+
     }
 
     public void update(PlanetState planetState) {
-        // No need to change positions.
-        setRotation(planetState.angleDeg);
+        toAngleDeg = planetState.angleDeg;
     }
 
     @Override
@@ -45,4 +43,8 @@ public class ClientPlanet extends ClientEntity {
         }
     }
 
+    public void interpolate(float delta) {
+        angleDeg += (toAngleDeg - angleDeg) * ProjectLocus.INTERPOLATION_FACTOR * delta;
+        setRotation(angleDeg);
+    }
 }

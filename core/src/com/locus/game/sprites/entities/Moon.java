@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
+import com.locus.game.network.MoonState;
 
 /**
  * Created by Divya Mamgai on 9/27/2016.
@@ -47,9 +48,10 @@ public class Moon extends Entity {
     }
 
     private Circle gravityCircle;
-    private Vector2 planetPosition, orbitalVelocity;
+    private Vector2 orbitalVelocity;
+    private MoonState moonState;
 
-    public Moon(Level level, float planetX, float planetY, Moon.Property moonProperty) {
+    public Moon(Level level, Moon.Property moonProperty) {
 
         this.level = level;
 
@@ -62,7 +64,7 @@ public class Moon extends Entity {
 
         Vector2 moonPosition = (new Vector2(moonProperty.orbitRadius, 0))
                 .rotate(moonProperty.orbitAngle)
-                .add(planetX, planetY);
+                .add(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
 
         body.setTransform(moonPosition.x, moonPosition.y, 0);
         body.setUserData(this);
@@ -71,15 +73,20 @@ public class Moon extends Entity {
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
         gravityCircle = new Circle(moonPosition.x, moonPosition.y, definition.radius * 6f);
-        planetPosition = new Vector2(planetX, planetY);
         orbitalVelocity = new Vector2(1, 1);
+
+        moonState = new MoonState();
 
     }
 
-    public static Vector2 getStartPosition(Moon.Property property) {
+    static Vector2 getStartPosition(Moon.Property property) {
         return (new Vector2(property.orbitRadius, 0))
                 .rotate(property.orbitAngle)
                 .add(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT);
+    }
+
+    public MoonState getMoonState() {
+        return moonState;
     }
 
     public void applyGravitationalForce(Entity entity) {
@@ -97,19 +104,26 @@ public class Moon extends Entity {
     @Override
     public void update() {
 
-        float angleRad = body.getPosition().sub(planetPosition).angleRad();
+        float orbitalAngleRad = body.getPosition()
+                .sub(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT).angleRad();
         Vector2 bodyPosition = body.getPosition();
+
+        moonState.bodyX = bodyPosition.x;
+        moonState.bodyY = bodyPosition.y;
 
         orbitalVelocity
                 .set(0, 1f)
-                .rotateRad(angleRad)
+                .rotateRad(orbitalAngleRad)
                 .scl(definition.orbitalVelocity);
         body.setLinearVelocity(orbitalVelocity);
 
         gravityCircle.setPosition(bodyPosition);
+
         Vector2 planetPosition = bodyPosition.sub(definition.bodyOrigin);
         setPosition(planetPosition.x, planetPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
+        moonState.angleDeg = getRotation();
 
     }
 

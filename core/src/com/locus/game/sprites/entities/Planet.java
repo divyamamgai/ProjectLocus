@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.locus.game.levels.Level;
+import com.locus.game.network.PlanetState;
 
 /**
  * Created by Divya Mamgai on 9/23/2016.
@@ -29,6 +30,7 @@ public class Planet extends Entity {
     }
 
     private Circle gravityCircle;
+    private PlanetState planetState;
 
     public Planet(Level level, Planet.Type type, float x, float y) {
 
@@ -47,8 +49,18 @@ public class Planet extends Entity {
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
+        // We only to update these once since the planet is stationary.
+        Vector2 planetPosition = body.getPosition().sub(definition.bodyOrigin);
+        setPosition(planetPosition.x, planetPosition.y);
+
         gravityCircle = new Circle(x, y, definition.radius * 6f);
 
+        planetState = new PlanetState();
+
+    }
+
+    public PlanetState getPlanetState() {
+        return planetState;
     }
 
     public float getRadius() {
@@ -69,9 +81,11 @@ public class Planet extends Entity {
 
     @Override
     public void update() {
-        Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
-        setPosition(bodyPosition.x, bodyPosition.y);
+
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
+        planetState.angleDeg = getRotation();
+
     }
 
     @Override

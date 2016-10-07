@@ -1,6 +1,8 @@
 package com.locus.game.network;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ShortArray;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.levels.Level;
@@ -48,9 +50,15 @@ class Network {
         kryo.register(LevelProperty.class);
         kryo.register(PlanetState.class);
         kryo.register(MoonState.class);
+        kryo.register(Vector2.class);
         kryo.register(ShipState.class);
         kryo.register(CreateShip.class);
         kryo.register(StartGame.class);
+        kryo.register(short[].class);
+        kryo.register(ShortArray.class);
+        kryo.register(BulletState.class);
+        kryo.register(GameState.class);
+        kryo.register(ControllerState.class);
     }
 
     static class PlayerJoinRequest {
@@ -139,6 +147,7 @@ class Network {
 
     static class CreateShip {
 
+        int connectionID;
         Ship.Property property;
         ShipState shipState;
 
@@ -146,7 +155,8 @@ class Network {
 
         }
 
-        CreateShip(Ship.Property property, ShipState shipState) {
+        CreateShip(int connectionID, Ship.Property property, ShipState shipState) {
+            this.connectionID = connectionID;
             this.property = property;
             this.shipState = shipState;
         }
@@ -163,6 +173,35 @@ class Network {
 
         StartGame(ArrayList<CreateShip> createShipList) {
             this.createShipList = createShipList;
+        }
+
+    }
+
+    static class GameState {
+
+        PlanetState planetState;
+        ArrayList<MoonState> moonStateList;
+        ArrayList<ShipState> shipAliveStateList;
+        ShortArray shipKilledArray;
+        ArrayList<BulletState> bulletAliveStateList;
+        ShortArray bulletKilledArray;
+
+        GameState() {
+
+        }
+
+    }
+
+    static class ControllerState {
+
+        boolean isThrustEnabled;
+        boolean isThrustForward;
+        boolean isRotationEnabled;
+        boolean isRotationClockwise;
+        boolean isFireEnabled;
+
+        ControllerState() {
+
         }
 
     }

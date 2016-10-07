@@ -21,7 +21,7 @@ class MultiPlayerPlayScreen implements Screen {
 
         this.projectLocus = projectLocus;
 
-        level = new Level(projectLocus, lobbyScreen.getLevelProperty());
+        level = new Level(projectLocus, lobbyScreen.getLevelProperty(), true);
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);

@@ -1,7 +1,9 @@
 package com.locus.game.sprites.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
+import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
 import com.locus.game.network.ShipState;
 
@@ -11,11 +13,7 @@ import com.locus.game.network.ShipState;
  */
 public class ClientShip extends ClientEntity {
 
-    ClientShip() {
-
-    }
-
-    ClientShip(ClientLevel level, Ship.Property property, ShipState shipState) {
+    public ClientShip(ClientLevel level, Ship.Property property, ShipState shipState) {
 
         setLevel(level);
         setDefinition(level.getEntityLoader().get(Entity.Type.Ship, property.type.ordinal()));
@@ -25,17 +23,27 @@ public class ClientShip extends ClientEntity {
         setColor(property.color);
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        update(shipState);
+        ID = shipState.ID;
+
+        bodyX = toBodyX = shipState.bodyX;
+        bodyY = toBodyY = shipState.bodyY;
+        angleDeg = toAngleDeg = shipState.angleDeg;
+
+        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+        setRotation(angleDeg);
 
     }
 
+    public void resurrect(Color color, ShipState shipState) {
+        setColor(color);
+        update(shipState);
+    }
+
     public void update(ShipState shipState) {
-        setPosition(shipState.x, shipState.y);
-        bodyX = shipState.bodyX;
-        bodyY = shipState.bodyY;
-        setRotation(shipState.angleDeg);
+        toBodyX = shipState.bodyX;
+        toBodyY = shipState.bodyY;
+        toAngleDeg = shipState.angleDeg;
         health = shipState.health;
-        isAlive = shipState.isAlive;
     }
 
     @Override
@@ -57,4 +65,11 @@ public class ClientShip extends ClientEntity {
 
     }
 
+    public void interpolate(float delta) {
+        bodyX += (toBodyX - bodyX) * ProjectLocus.INTERPOLATION_FACTOR * delta;
+        bodyY += (toBodyY - bodyY) * ProjectLocus.INTERPOLATION_FACTOR * delta;
+        angleDeg += (toAngleDeg - angleDeg) * ProjectLocus.INTERPOLATION_FACTOR * delta;
+        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+        setRotation(angleDeg);
+    }
 }

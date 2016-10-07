@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Timer;
 import com.locus.game.levels.Level;
+import com.locus.game.network.BulletState;
 import com.locus.game.sprites.entities.Ship;
 
 /**
@@ -16,6 +17,12 @@ import com.locus.game.sprites.entities.Ship;
  */
 
 public class Bullet extends Sprite {
+
+    public static short BulletCount = 0;
+
+    public short getID() {
+        return ID;
+    }
 
     public Ship getShip() {
         return ship;
@@ -56,13 +63,17 @@ public class Bullet extends Sprite {
 
     }
 
+    private short ID;
     private Timer timer;
     private Ship ship;
     private Body body;
     private BulletLoader.Definition definition;
     private boolean isAlive = true;
+    private BulletState bulletState;
 
     public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
+
+        ID = BulletCount++;
 
         setShip(ship);
         setDefinition(level.getBulletLoader().get(type));
@@ -77,8 +88,13 @@ public class Bullet extends Sprite {
         definition.attachFixture(body);
 
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
-        update();
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
+        bulletState = new BulletState();
+        bulletState.ID = ID;
+        bulletState.angleDeg = getRotation();
+
+        update();
 
         timer = new Timer();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
@@ -92,11 +108,12 @@ public class Bullet extends Sprite {
         isAlive = true;
 
         body.setActive(true);
+        body.setTransform(position.x, position.y, angleRad);
+        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
 
         setRotation(angleRad * MathUtils.radiansToDegrees);
 
-        body.setTransform(position.x, position.y, angleRad);
-        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
+        bulletState.angleDeg = getRotation();
 
         timer.clear();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
@@ -104,10 +121,16 @@ public class Bullet extends Sprite {
     }
 
     public void update() {
-        Vector2 bodyPosition = body.getPosition().sub(definition.bodyOrigin);
-        setPosition(bodyPosition.x, bodyPosition.y);
-        // We do not need the bullets to rotate so why take the extra overhead.
-//        setRotation(body.getAngle() * MathUtils.radiansToDegrees);
+
+        Vector2 bodyPosition = body.getPosition();
+
+        bulletState.bodyX = bodyPosition.x;
+        bulletState.bodyY = bodyPosition.y;
+
+        Vector2 bulletPosition = bodyPosition.sub(definition.bodyOrigin);
+
+        setPosition(bulletPosition.x, bulletPosition.y);
+
     }
 
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {

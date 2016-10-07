@@ -294,6 +294,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         // on a separate thread.
         if (createPlayScreen && !isPlayScreenCreated) {
             multiPlayerPlayScreenClient = new MultiPlayerPlayScreenClient(projectLocus, this);
+            projectLocus.gameClient.setLevel(multiPlayerPlayScreenClient.level);
             isPlayScreenCreated = true;
             createPlayScreen = false;
         }
@@ -332,8 +333,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
                 if (startGameIn <= 1) {
 
-                    Gdx.app.log("Game Started With Time Left", String.valueOf(startGameIn));
-
                     switch (type) {
                         case Host:
                             projectLocus.setScreen(multiPlayerPlayScreen);
@@ -349,8 +348,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 }
 
                 previousTime = TimeUtils.millis();
-
-                Gdx.app.log("Starting Game In", String.valueOf(startGameIn));
 
                 startGameIn -= 1f;
 

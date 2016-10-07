@@ -57,7 +57,7 @@ public class CollisionDetector implements ContactListener {
             }
             if (entity != null) {
                 if (bullet.getShip() != entity) {
-                    switch (entity.getDefinition().type) {
+                    switch (entity.getType()) {
                         case Planet:
                         case Moon:
                             break;

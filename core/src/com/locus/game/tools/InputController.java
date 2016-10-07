@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.locus.game.ProjectLocus;
 
 /**
  * Created by Rohit Yadav on 26-Sep-16.
@@ -21,6 +22,10 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
         void fire();
 
+        void applyControls(boolean isThrustEnabled, boolean isThrustForward,
+                           boolean isRotationEnabled, boolean isRotationClockwise,
+                           boolean isFireEnabled);
+
     }
 
     private float initialXCoordinateRotation, initialYCoordinateThrust, tapXCoordinate, tapYCoordinate;
@@ -29,12 +34,16 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     private static boolean isRotationEnabled, isThrustEnabled, isFireEnabled,
             isRotationClockwise, isThrustForward, isSetRotationPointer, isSetThrustPointer,
             isPrimaryBulletEnabled, isSecondaryBulletEnabled;
+    private boolean isHost;
     private static int thrustPointerID, rotationPointerID, firingPointerID;
 
-    public InputController(InputCallBack inputCallBack) {
+    public InputController(InputCallBack inputCallBack, boolean isHost) {
         this.inputCallBack = inputCallBack;
-        camera = new OrthographicCamera(854, 480);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
+        this.isHost = isHost;
+        camera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+        camera.position.set(ProjectLocus.screenCameraHalfWidth,
+                ProjectLocus.screenCameraHalfHeight, 0);
         isRotationEnabled = isThrustEnabled = isFireEnabled = false;
         isRotationClockwise = isThrustForward = false;
         rotationPointerID = thrustPointerID = firingPointerID = -1;
@@ -241,14 +250,20 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     }
 
     public void update() {
-        if (isRotationEnabled) {
-            inputCallBack.applyRotation(isRotationClockwise);
-        }
-        if (isThrustEnabled) {
-            inputCallBack.applyThrust(isThrustForward);
-        }
-        if (isFireEnabled) {
-            inputCallBack.fire();
+        if (isHost) {
+            if (isRotationEnabled) {
+                inputCallBack.applyRotation(isRotationClockwise);
+            }
+            if (isThrustEnabled) {
+                inputCallBack.applyThrust(isThrustForward);
+            }
+            if (isFireEnabled) {
+                inputCallBack.fire();
+            }
+        } else if (isRotationEnabled || isThrustEnabled || isFireEnabled) {
+            inputCallBack.applyControls(isThrustEnabled, isThrustForward,
+                    isRotationEnabled, isRotationClockwise,
+                    isFireEnabled);
         }
     }
 }

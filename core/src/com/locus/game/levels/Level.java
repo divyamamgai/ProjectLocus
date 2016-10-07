@@ -14,7 +14,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Queue;
+import com.badlogic.gdx.utils.ShortArray;
 import com.locus.game.ProjectLocus;
+import com.locus.game.network.BulletState;
+import com.locus.game.network.MoonState;
+import com.locus.game.network.PlanetState;
+import com.locus.game.network.ShipState;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
@@ -36,6 +41,7 @@ import java.util.Iterator;
 public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
+    private final boolean isMultiPlayer;
 
     public static class Property {
 
@@ -71,6 +77,17 @@ public class Level implements Disposable {
     private InputMultiplexer inputMultiplexer;
     private Level.Property property;
 
+    private PlanetState planetState;
+    private ArrayList<MoonState> moonStateList;
+    private ArrayList<ShipState> shipAliveStateList;
+    private ShortArray shipKilledArray;
+    private ArrayList<BulletState> bulletAliveStateList;
+    private ShortArray bulletKilledArray;
+
+    private float timePassed;
+
+//    private Box2DDebugRenderer box2DDebugRenderer;
+
     public EntityLoader getEntityLoader() {
         return projectLocus.entityLoader;
     }
@@ -99,10 +116,41 @@ public class Level implements Disposable {
         this.property = property;
     }
 
-    public Level(ProjectLocus projectLocus, Property property) {
+    public PlanetState getPlanetState() {
+        return planetState;
+    }
+
+    public ArrayList<MoonState> getMoonStateList() {
+        return moonStateList;
+    }
+
+    public ArrayList<ShipState> getShipAliveStateList() {
+        return shipAliveStateList;
+    }
+
+    public ShortArray getShipKilledArray() {
+        return shipKilledArray;
+    }
+
+    public ArrayList<BulletState> getBulletAliveStateList() {
+        return bulletAliveStateList;
+    }
+
+    public ShortArray getBulletKilledArray() {
+        return bulletKilledArray;
+    }
+
+    public Level(ProjectLocus projectLocus, Property property, boolean isMultiPlayer) {
+
+        // Reset Entity and Bullet Count
+        Entity.EntityCount = 0;
+        Bullet.BulletCount = 0;
 
         this.projectLocus = projectLocus;
         this.property = property;
+        this.isMultiPlayer = isMultiPlayer;
+
+        timePassed = 0;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
@@ -111,23 +159,34 @@ public class Level implements Disposable {
         world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
+//        box2DDebugRenderer = new Box2DDebugRenderer();
+//        box2DDebugRenderer.setDrawAABBs(true);
+//        box2DDebugRenderer.setDrawBodies(true);
+//        box2DDebugRenderer.setDrawContacts(true);
+//        box2DDebugRenderer.setDrawInactiveBodies(true);
+//        box2DDebugRenderer.setDrawVelocities(true);
+
         TiledMap tiledMap = projectLocus.tiledMapList.get(property.backgroundType);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, ProjectLocus.TILED_MAP_SCALE);
 
         barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
-        bulletAliveList = new ArrayList<Bullet>();
+        bulletAliveList = new ArrayList<Bullet>(ProjectLocus.MAX_BULLET_COUNT);
+        bulletAliveStateList = new ArrayList<BulletState>(ProjectLocus.MAX_BULLET_COUNT);
+        bulletKilledArray = new ShortArray(ProjectLocus.MAX_BULLET_COUNT);
 
         // We know that how many Type of Bullets we have so we pass the capacity too.
         Bullet.Type[] bulletTypeArray = Bullet.Type.values();
         bulletDeadQueueMap = new HashMap<Bullet.Type, Queue<Bullet>>(bulletTypeArray.length);
         // Initialize the bulletDeadQueueMap with the available Bullet Types.
         for (Bullet.Type bulletType : bulletTypeArray) {
-            bulletDeadQueueMap.put(bulletType, new Queue<Bullet>());
+            bulletDeadQueueMap.put(bulletType, new Queue<Bullet>(ProjectLocus.MAX_BULLET_COUNT));
         }
 
         shipAliveList = new ArrayList<Ship>();
+        shipAliveStateList = new ArrayList<ShipState>();
+        shipKilledArray = new ShortArray();
 
         // We know that how many Type of Ships we have so we pass the capacity too.
         Ship.Type[] shipTypeArray = Ship.Type.values();
@@ -139,11 +198,14 @@ public class Level implements Disposable {
 
         planet = new Planet(this, property.planetType, ProjectLocus.WORLD_HALF_WIDTH,
                 ProjectLocus.WORLD_HALF_HEIGHT);
+        planetState = planet.getPlanetState();
 
         moonList = new ArrayList<Moon>();
+        moonStateList = new ArrayList<MoonState>();
+        Moon moon;
         for (Moon.Property moonProperty : property.moonPropertyList) {
-            moonList.add(new Moon(this, ProjectLocus.WORLD_HALF_WIDTH,
-                    ProjectLocus.WORLD_HALF_HEIGHT, moonProperty));
+            moonList.add((moon = new Moon(this, moonProperty)));
+            moonStateList.add(moon.getMoonState());
         }
 
         inputMultiplexer = new InputMultiplexer();
@@ -158,23 +220,27 @@ public class Level implements Disposable {
         return shipAliveList.get(shipIndex);
     }
 
-    public int addShipAlive(Ship.Property shipProperty, float x, float y, float angleRad,
-                            boolean isPlayer) {
+    public synchronized int addShipAlive(Ship.Property shipProperty, float x, float y, float angleRad,
+                                         boolean isPlayer) {
 
         Ship ship;
+        ShipState shipState;
         Queue<Ship> shipDeadQueue = shipDeadQueueMap.get(shipProperty.type);
 
         if (shipDeadQueue.size > 0) {
             ship = shipDeadQueue.removeFirst();
             ship.resurrect(shipProperty.color, x, y, angleRad);
+            shipState = ship.getShipState();
         } else {
             ship = new Ship(this, shipProperty, x, y, angleRad);
+            shipState = ship.getShipState();
         }
 
         shipAliveList.add(ship);
+        shipAliveStateList.add(shipState);
 
         if (isPlayer) {
-            inputController = new InputController(player = ship);
+            inputController = new InputController((player = ship), true);
             inputMultiplexer.clear();
             inputMultiplexer.addProcessor(inputController);
             inputMultiplexer.addProcessor(new GestureDetector(inputController));
@@ -185,14 +251,14 @@ public class Level implements Disposable {
 
     }
 
-    public void removeShipAlive(int shipIndex) {
+    public synchronized void removeShipAlive(int shipIndex) {
         if (shipIndex >= 0 && shipIndex < shipAliveList.size()) {
             shipAliveList.remove(shipIndex);
         }
     }
 
-    public void addBulletAlive(Bullet.Type bulletType, Ship ship, Vector2 bulletPosition,
-                               float angleRad) {
+    public synchronized void addBulletAlive(Bullet.Type bulletType, Ship ship, Vector2 bulletPosition,
+                                            float angleRad) {
         Bullet bullet;
         Queue<Bullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletType);
         if (bulletDeadQueue.size > 0) {
@@ -204,7 +270,7 @@ public class Level implements Disposable {
         bulletAliveList.add(bullet);
     }
 
-    public void update(float delta) {
+    public synchronized void update(float delta) {
 
         if (player != null && player.isAlive()) {
             inputController.update();
@@ -220,8 +286,10 @@ public class Level implements Disposable {
         }
 
         Iterator<Ship> shipIterator = shipAliveList.iterator();
+        Iterator<ShipState> shipStateIterator = shipAliveStateList.iterator();
         while (shipIterator.hasNext()) {
             Ship ship = shipIterator.next();
+            shipStateIterator.next();
             if (ship.isAlive()) {
                 ship.update();
                 planet.applyGravitationalForce(ship);
@@ -230,8 +298,10 @@ public class Level implements Disposable {
                 }
             } else {
                 ship.killBody();
-                shipDeadQueueMap.get(ship.getType()).addLast(ship);
+                shipDeadQueueMap.get(ship.getShipType()).addLast(ship);
+                shipKilledArray.add(ship.getID());
                 shipIterator.remove();
+                shipStateIterator.remove();
             }
         }
 
@@ -247,12 +317,20 @@ public class Level implements Disposable {
             }
         }
 
+        if (isMultiPlayer) {
+            timePassed += delta;
+            if (timePassed >= 0.0033f) {
+                projectLocus.gameServer.sendGameState();
+                timePassed = 0;
+            }
+        }
+
         world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
                 ProjectLocus.POSITION_ITERATIONS);
 
     }
 
-    public void render(SpriteBatch spriteBatch) {
+    public synchronized void render(SpriteBatch spriteBatch) {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -277,6 +355,8 @@ public class Level implements Disposable {
         }
 
         spriteBatch.end();
+
+//        box2DDebugRenderer.render(world, camera.combined);
 
     }
 

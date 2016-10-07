@@ -13,6 +13,8 @@ import com.locus.game.levels.Level;
  */
 public abstract class Entity extends Sprite {
 
+    public static short EntityCount = 0;
+
     public enum Type {
 
         Ship,
@@ -25,11 +27,16 @@ public abstract class Entity extends Sprite {
 
     }
 
+    short ID;
     protected Level level;
     protected EntityLoader.Definition definition;
     Body body;
     float health;
     boolean isAlive = true;
+
+    public short getID() {
+        return ID;
+    }
 
     public Level getLevel() {
         return level;
@@ -49,6 +56,10 @@ public abstract class Entity extends Sprite {
 
     public Vector2 getBodyPosition() {
         return body.getPosition();
+    }
+
+    public Type getType() {
+        return definition.type;
     }
 
     public EntityLoader.Definition getDefinition() {
@@ -78,12 +89,9 @@ public abstract class Entity extends Sprite {
         return isAlive;
     }
 
-    public void setAlive(boolean alive) {
-        isAlive = alive;
-    }
-
     Entity() {
         super();
+        ID = EntityCount++;
     }
 
     public abstract void update();

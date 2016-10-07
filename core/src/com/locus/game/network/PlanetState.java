@@ -9,7 +9,7 @@ public class PlanetState {
 
     public float angleDeg;
 
-    PlanetState() {
+    public PlanetState() {
 
     }
 

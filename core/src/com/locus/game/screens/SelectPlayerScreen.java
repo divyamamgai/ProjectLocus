@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
 import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;

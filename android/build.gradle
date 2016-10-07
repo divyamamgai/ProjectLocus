@@ -24,6 +24,14 @@ android {
             minSdkVersion 16
             targetSdkVersion 16
         }
+        Lollipop {
+            minSdkVersion 21
+            targetSdkVersion 21
+        }
+        KitKat {
+            minSdkVersion 19
+            targetSdkVersion 19
+        }
     }
 }
 // called every time gradle gets executed, takes the native dependencies of

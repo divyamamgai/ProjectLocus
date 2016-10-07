@@ -1,46 +1,53 @@
-package com.locus.game.sprites.entities;
+package com.locus.game.sprites.bullets;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
-import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
-import com.locus.game.network.MoonState;
+import com.locus.game.network.BulletState;
 
 /**
- * Created by Divya Mamgai on 9/27/2016.
- * Moon
+ * Created by Divya Mamgai on 9/19/2016.
+ * Bullet
  */
 
-public class ClientMoon extends ClientEntity {
+public class ClientBullet extends Sprite {
 
-    public ClientMoon(ClientLevel level, Moon.Property moonProperty) {
+    private float bodyX, bodyY, toBodyX, toBodyY;
 
-        setLevel(level);
-        setDefinition(level.getEntityLoader().get(Entity.Type.Moon, moonProperty.type.ordinal()));
+    public void setDefinition(BulletLoader.Definition definition) {
+        this.definition = definition;
+    }
+
+    private BulletLoader.Definition definition;
+
+    public ClientBullet(ClientLevel level, Bullet.Type type, BulletState bulletState) {
+
+        setDefinition(level.getBulletLoader().get(type));
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
-        Vector2 startPosition = Moon.getStartPosition(moonProperty);
-
-        toBodyX = bodyX = startPosition.x;
-        toBodyY = bodyY = startPosition.y;
-        toAngleDeg = angleDeg = 0;
+        bodyX = toBodyX = bulletState.bodyX;
+        bodyY = toBodyY = bulletState.bodyY;
 
         setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        setRotation(angleDeg);
+        setRotation(bulletState.angleDeg);
 
     }
 
-    public void update(MoonState moonState) {
-        toBodyX = moonState.bodyX;
-        toBodyY = moonState.bodyY;
-        toAngleDeg = moonState.angleDeg;
+    public void resurrect(BulletState bulletState) {
+        update(bulletState);
+        setRotation(bulletState.angleDeg);
     }
 
-    @Override
+    public void update(BulletState bulletState) {
+        toBodyX = bulletState.bodyX;
+        toBodyY = bulletState.bodyY;
+    }
+
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {
         if (frustum.boundsInFrustum(bodyX, bodyY, 0,
                 definition.halfWidth, definition.halfHeight, 0)) {
@@ -51,8 +58,7 @@ public class ClientMoon extends ClientEntity {
     public void interpolate(float delta) {
         bodyX += (toBodyX - bodyX) * ProjectLocus.INTERPOLATION_FACTOR * delta;
         bodyY += (toBodyY - bodyY) * ProjectLocus.INTERPOLATION_FACTOR * delta;
-        angleDeg += (toAngleDeg - angleDeg) * ProjectLocus.INTERPOLATION_FACTOR * delta;
         setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        setRotation(angleDeg);
     }
+
 }

@@ -1,11 +1,11 @@
 package com.locus.game.network;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 import com.locus.game.ProjectLocus;
+import com.locus.game.levels.Level;
 import com.locus.game.screens.LobbyScreen;
 import com.locus.game.sprites.entities.Ship;
 
@@ -26,16 +26,19 @@ public class GameServer {
     private LobbyScreen lobbyScreen;
     private LinkedHashMap<Integer, Player> playerMap;
     private HashMap<Integer, Integer> shipIndexMap;
+    private Network.GameState gameState;
+    private Level level;
 
     public GameServer(ProjectLocus projectLocus) {
 
         this.projectLocus = projectLocus;
 
-        server = new Server();
+        server = new Server(10240, 10240);
         Network.registerClasses(server);
 
         playerMap = new LinkedHashMap<Integer, Player>();
         shipIndexMap = new HashMap<Integer, Integer>();
+        gameState = new Network.GameState();
 
     }
 
@@ -46,7 +49,7 @@ public class GameServer {
         float angleRad = connectionID * ProjectLocus.PLAYER_START_ANGLE_DELTA;
 
         shipIndexMap.put(connectionID,
-                lobbyScreen.getLevel().addShipAlive(shipProperty,
+                level.addShipAlive(shipProperty,
                         ProjectLocus.WORLD_HALF_WIDTH +
                                 MathUtils.cos(angleRad) * ProjectLocus.PLAYER_START_RADIUS,
                         ProjectLocus.WORLD_HALF_HEIGHT +
@@ -58,14 +61,9 @@ public class GameServer {
 
     private void removePlayer(int connectionID) {
         if (playerMap.containsKey(connectionID)) {
-            Gdx.app.log("Host", "Number Of Players : " + playerMap.size());
             playerMap.remove(connectionID);
-            Gdx.app.log("Host", "Client Removed #" + connectionID);
-            Gdx.app.log("Size", String.valueOf(playerMap.size()));
-            Gdx.app.log("Key", playerMap.keySet().toString());
-            Gdx.app.log("Value", playerMap.values().toString());
             // Remove returns the deleted value.
-            lobbyScreen.getLevel().removeShipAlive(shipIndexMap.remove(connectionID));
+            level.removeShipAlive(shipIndexMap.remove(connectionID));
             sendUpdateLobby();
         }
     }
@@ -73,6 +71,8 @@ public class GameServer {
     public void start(LobbyScreen lobbyScreen) {
 
         this.lobbyScreen = lobbyScreen;
+
+        level = lobbyScreen.getLevel();
 
         playerMap.clear();
         shipIndexMap.clear();
@@ -85,9 +85,6 @@ public class GameServer {
             server.start();
 
             lobbyScreen.setState(LobbyScreen.State.Started);
-
-            Gdx.app.log("Lobby Host", "Server Started @ TCP : " + Network.SERVER_TCP_PORT +
-                    " UDP : " + Network.SERVER_UDP_PORT);
 
             // Add the Host itself initially.
             addPlayer(0, projectLocus.playerShipProperty);
@@ -112,7 +109,22 @@ public class GameServer {
 
         int connectionID = connection.getID();
 
-        if (object instanceof Network.PlayerJoinRequest) {
+        if (object instanceof Network.ControllerState) {
+
+            Network.ControllerState controllerState = (Network.ControllerState) object;
+            Ship ship = level.getShipAlive(shipIndexMap.get(connectionID));
+
+            if (controllerState.isThrustEnabled) {
+                ship.applyThrust(controllerState.isThrustForward);
+            }
+            if (controllerState.isRotationEnabled) {
+                ship.applyRotation(controllerState.isRotationClockwise);
+            }
+            if (controllerState.isFireEnabled) {
+                ship.fire();
+            }
+
+        } else if (object instanceof Network.PlayerJoinRequest) {
 
             if (lobbyScreen.isGameStarted()) {
 
@@ -129,9 +141,9 @@ public class GameServer {
                 Network.PlayerJoinRequest playerJoinRequest = (Network.PlayerJoinRequest) object;
 
                 if (playerMap.containsKey(connectionID)) {
-                    
+
                     connection.sendTCP(new Network.PlayerJoinRequestRejected(
-                            "Already Existing Client With ID : " + connectionID));
+                            "Already Existing Client #" + connectionID));
 
                 } else {
 
@@ -156,8 +168,6 @@ public class GameServer {
 
                 sendUpdateLobby();
 
-                Gdx.app.log("Host", "Player #" + connectionID + " Is Ready");
-
             } else {
 
                 connection.sendTCP(new Network.Error("Player Not Found"));
@@ -180,8 +190,6 @@ public class GameServer {
         // More than one player is needed for Multi Player.
         if (playerMap.size() > 1) {
 
-            Gdx.app.log("Host", String.valueOf(playerMap.size()));
-
             // Check if all of the players are Ready so we can start the game.
             boolean areAllReady = true;
 
@@ -198,22 +206,22 @@ public class GameServer {
                 Ship ship;
                 Vector2 bodyPosition;
                 for (Integer connectionID : playerMap.keySet()) {
-                    ship = lobbyScreen.getLevel().getShipAlive(shipIndexMap.get(connectionID));
+                    ship = level.getShipAlive(shipIndexMap.get(connectionID));
                     bodyPosition = ship.getBodyPosition();
-                    createShipList.add(new Network.CreateShip(
-                            playerMap.get(connectionID).property,
-                            new ShipState(
-                                    ship.getX(), ship.getY(),
-                                    bodyPosition.x, bodyPosition.y,
-                                    ship.getRotation(),
-                                    ship.getHealth())));
+                    createShipList.add(
+                            new Network.CreateShip(
+                                    connectionID,
+                                    playerMap.get(connectionID).property,
+                                    new ShipState(
+                                            ship.getID(),
+                                            bodyPosition.x, bodyPosition.y,
+                                            ship.getRotation(),
+                                            ship.getHealth())));
                 }
 
                 server.sendToAllTCP(new Network.StartGame(createShipList));
 
                 lobbyScreen.startGame(ProjectLocus.GAME_COUNT_DOWN);
-
-                Gdx.app.log("Host", "All Ready, Starting Game...");
 
             }
 
@@ -227,6 +235,22 @@ public class GameServer {
         playerMap.get(0).isReady = isReady;
 
         sendUpdateLobby();
+
+    }
+
+    public void sendGameState() {
+
+        gameState.planetState = level.getPlanetState();
+        gameState.moonStateList = level.getMoonStateList();
+        gameState.shipAliveStateList = level.getShipAliveStateList();
+        gameState.shipKilledArray = level.getShipKilledArray();
+        gameState.bulletAliveStateList = level.getBulletAliveStateList();
+        gameState.bulletKilledArray = level.getBulletKilledArray();
+
+        server.sendToAllTCP(gameState);
+
+        gameState.shipKilledArray.clear();
+        gameState.bulletKilledArray.clear();
 
     }
 

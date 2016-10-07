@@ -7,15 +7,13 @@ package com.locus.game.network;
 
 public class MoonState {
 
-    public float x, y, bodyX, bodyY, angleDeg;
+    public float bodyX, bodyY, angleDeg;
 
     public MoonState() {
 
     }
 
-    public MoonState(float x, float y, float bodyX, float bodyY, float angleDeg) {
-        this.x = x;
-        this.y = y;
+    public MoonState(float bodyX, float bodyY, float angleDeg) {
         this.bodyX = bodyX;
         this.bodyY = bodyY;
         this.angleDeg = angleDeg;

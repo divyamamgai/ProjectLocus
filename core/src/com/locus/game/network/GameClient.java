@@ -1,14 +1,16 @@
 package com.locus.game.network;
 
-import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
+import com.locus.game.levels.ClientLevel;
 import com.locus.game.screens.LobbyScreen;
+import com.locus.game.tools.InputController;
 
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,11 +18,44 @@ import java.util.List;
  * Game Client
  */
 
-public class GameClient {
+public class GameClient implements InputController.InputCallBack {
 
     private Client client;
     private ProjectLocus projectLocus;
     private LobbyScreen lobbyScreen;
+    private ClientLevel level;
+    private Network.ControllerState controllerState;
+
+    public void setLevel(ClientLevel level) {
+        this.level = level;
+    }
+
+    @Override
+    public void applyThrust(boolean isForward) {
+    }
+
+    @Override
+    public void applyRotation(boolean isClockwise) {
+    }
+
+    @Override
+    public void fire() {
+    }
+
+    @Override
+    public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
+                              boolean isRotationEnabled, boolean isRotationClockwise,
+                              boolean isFireEnabled) {
+
+        controllerState.isThrustEnabled = isThrustEnabled;
+        controllerState.isThrustForward = isThrustForward;
+        controllerState.isRotationEnabled = isRotationEnabled;
+        controllerState.isRotationClockwise = isRotationClockwise;
+        controllerState.isFireEnabled = isFireEnabled;
+
+        client.sendUDP(controllerState);
+
+    }
 
     private class GameClientConnectRunnable implements Runnable {
 
@@ -50,9 +85,6 @@ public class GameClient {
 
                         lobbyJoinScreen.setState(LobbyScreen.State.Connected);
 
-                        Gdx.app.log("Lobby Client", "Connected To Host @ " +
-                                address.getHostAddress() + ":" + Network.SERVER_TCP_PORT);
-
                         // For now break at the first successfully connected server.
                         break;
 
@@ -79,8 +111,10 @@ public class GameClient {
 
         this.projectLocus = projectLocus;
 
-        client = new Client();
+        client = new Client(10240, 10240);
         Network.registerClasses(client);
+
+        controllerState = new Network.ControllerState();
 
     }
 
@@ -96,14 +130,22 @@ public class GameClient {
     }
 
     void onConnected(Connection connection) {
-        Gdx.app.log("Client On Connected", String.valueOf(connection.getID()));
         client.sendTCP(new Network.PlayerJoinRequest(projectLocus.playerShipProperty));
         client.updateReturnTripTime();
     }
 
     void onReceived(Connection connection, Object object) {
 
-        if (object instanceof Network.UpdateLobby) {
+        if (object instanceof Network.GameState) {
+
+            Network.GameState gameState = (Network.GameState) object;
+
+            level.setPlanetState(gameState.planetState);
+            level.setMoonStateList(gameState.moonStateList);
+            level.setShipAliveStateList(gameState.shipAliveStateList);
+            level.setShipKilledArray(gameState.shipKilledArray);
+
+        } else if (object instanceof Network.UpdateLobby) {
 
             lobbyScreen.setPlayerMap(((Network.UpdateLobby) object).playerMap);
 
@@ -111,22 +153,26 @@ public class GameClient {
 
             projectLocus.setScreen(lobbyScreen.selectModeScreen);
             lobbyScreen.dispose();
-            Gdx.app.log("Client", ((Network.PlayerJoinRequestRejected) object).reason);
 
         } else if (object instanceof Network.LevelProperty) {
 
             lobbyScreen.setLevelProperty(((Network.LevelProperty) object).levelProperty);
 
-            Gdx.app.log("Client", "Received Level Property");
-
         } else if (object instanceof Network.StartGame) {
+
+            ArrayList<Network.CreateShip> createShipList =
+                    ((Network.StartGame) object).createShipList;
 
             float startGameIn = ProjectLocus.GAME_COUNT_DOWN -
                     ((float) connection.getReturnTripTime() / 1000f);
 
-            Gdx.app.log("Client", "Received Start Game, Starting Game In " + startGameIn);
-
             lobbyScreen.startGame(startGameIn);
+
+            for (Network.CreateShip createShip : createShipList) {
+                level.addShipAlive(createShip.property, createShip.shipState,
+                        createShip.connectionID == connection.getID());
+            }
+
         }
 
     }

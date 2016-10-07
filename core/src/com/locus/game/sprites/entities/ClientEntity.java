@@ -13,8 +13,8 @@ public abstract class ClientEntity extends Sprite {
 
     protected ClientLevel level;
     protected EntityLoader.Definition definition;
-    protected float health, bodyX, bodyY;
-    protected boolean isAlive = true;
+    short ID;
+    float health, bodyX, bodyY, angleDeg, toBodyX, toBodyY, toAngleDeg;
 
     // Enable the constructors as per the needs.
 
@@ -38,35 +38,6 @@ public abstract class ClientEntity extends Sprite {
 
     public void setDefinition(EntityLoader.Definition definition) {
         this.definition = definition;
-    }
-
-    public float getBodyY() {
-        return bodyY;
-    }
-
-    public float getBodyX() {
-        return bodyX;
-    }
-
-    public void setBodyPosition(float bodyX, float bodyY) {
-        this.bodyX = bodyX;
-        this.bodyY = bodyY;
-    }
-
-    public float getHealth() {
-        return health;
-    }
-
-    public void setHealth(float health) {
-        this.health = health;
-    }
-
-    public boolean isAlive() {
-        return isAlive;
-    }
-
-    public void setAlive(boolean alive) {
-        isAlive = alive;
     }
 
 }
