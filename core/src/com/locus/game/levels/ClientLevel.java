@@ -10,12 +10,16 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.ShortArray;
 import com.locus.game.ProjectLocus;
+import com.locus.game.network.BulletState;
 import com.locus.game.network.ShipState;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
+import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
+import com.locus.game.sprites.bullets.ClientBullet;
 import com.locus.game.sprites.entities.ClientEntity;
 import com.locus.game.sprites.entities.ClientMoon;
 import com.locus.game.sprites.entities.ClientPlanet;
@@ -39,8 +43,9 @@ public class ClientLevel {
 
     private OrthographicCamera camera;
     private ProjectLocus projectLocus;
-    private HashMap<Short, ClientShip> shipAliveMap;
-    private HashMap<Short, ClientShip> shipDeadMap;
+    private HashMap<Short, ClientShip> shipMap;
+    private HashMap<Short, ClientBullet> bulletMap;
+    private HashMap<Bullet.Type, Queue<ClientBullet>> bulletDeadQueueMap;
     private ClientShip player;
     private ArrayList<ClientMoon> moonList;
     private TextureRegion barBackgroundTexture, barForegroundTexture;
@@ -77,27 +82,35 @@ public class ClientLevel {
         }
     }
 
-    public synchronized void setShipAliveStateList(ArrayList<ShipState> shipAliveStateList) {
-        Iterator<ShipState> shipStateIterator = shipAliveStateList.iterator();
+    public synchronized void setShipStateList(ArrayList<ShipState> shipStateList) {
+        Iterator<ShipState> shipStateIterator = shipStateList.iterator();
         ShipState shipState;
-        Short ID;
         while (shipStateIterator.hasNext()) {
             shipState = shipStateIterator.next();
-            ID = shipState.ID;
-            if (shipAliveMap.containsKey(ID)) {
-                shipAliveMap.get(ID).update(shipState);
+            shipMap.get(shipState.ID).update(shipState);
+        }
+    }
+
+    public synchronized void setBulletAliveStateList(ArrayList<BulletState> bulletAliveStateList) {
+        Iterator<BulletState> bulletStateIterator = bulletAliveStateList.iterator();
+        BulletState bulletState;
+        while (bulletStateIterator.hasNext()) {
+            bulletState = bulletStateIterator.next();
+            if (bulletMap.containsKey(bulletState.ID)) {
+                bulletMap.get(bulletState.ID).update(bulletState);
             } else {
-                shipAliveMap.put(ID, shipDeadMap.get(ID));
+//                Queue<Bullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletState.);
+//                if (bulletDeadQueue.size > 0) {
+//                    bullet = bulletDeadQueue.removeFirst();
+//                    bullet.resurrect(ship, bulletPosition, angleRad);
+//                } else {
+//                    bullet = new Bullet(this, bulletType, ship, bulletPosition, angleRad);
+//                }
             }
         }
     }
 
-    public synchronized void setShipKilledArray(ShortArray shipKilledArray) {
-        Short ID;
-        for (int i = 0; i < shipKilledArray.size; i++) {
-            ID = shipKilledArray.get(i);
-            shipDeadMap.put(ID, shipAliveMap.remove(ID));
-        }
+    public synchronized void setBulletKilledArray(ShortArray bulletKilledArray) {
     }
 
     public ClientLevel(ProjectLocus projectLocus, Level.Property property) {
@@ -120,8 +133,17 @@ public class ClientLevel {
             moonList.add(new ClientMoon(this, moonProperty));
         }
 
-        shipAliveMap = new HashMap<Short, ClientShip>(ProjectLocus.MAX_PLAYER_COUNT);
-        shipDeadMap = new HashMap<Short, ClientShip>(ProjectLocus.MAX_PLAYER_COUNT);
+        shipMap = new HashMap<Short, ClientShip>(ProjectLocus.MAX_PLAYER_COUNT);
+
+        bulletMap = new HashMap<Short, ClientBullet>(ProjectLocus.MAX_BULLET_COUNT);
+
+        // We know that how many Type of Bullets we have so we pass the capacity too.
+        Bullet.Type[] bulletTypeArray = Bullet.Type.values();
+        bulletDeadQueueMap = new HashMap<Bullet.Type, Queue<ClientBullet>>(bulletTypeArray.length);
+        // Initialize the bulletDeadQueueMap with the available Bullet Types.
+        for (Bullet.Type bulletType : bulletTypeArray) {
+            bulletDeadQueueMap.put(bulletType, new Queue<ClientBullet>());
+        }
 
         inputMultiplexer = new InputMultiplexer();
         inputController = new InputController(projectLocus.gameClient, false);
@@ -134,16 +156,10 @@ public class ClientLevel {
                                           boolean isPlayer) {
 
         ClientShip ship;
-        Short ID = shipState.ID;
 
-        if (shipDeadMap.containsKey(ID)) {
-            ship = shipDeadMap.remove(ID);
-            ship.resurrect(shipProperty.color, shipState);
-        } else {
-            ship = new ClientShip(this, shipProperty, shipState);
-        }
+        ship = new ClientShip(this, shipProperty, shipState);
 
-        shipAliveMap.put(ID, ship);
+        shipMap.put(shipState.ID, ship);
 
         if (isPlayer) {
             player = ship;
@@ -170,7 +186,7 @@ public class ClientLevel {
             moon.interpolate(delta);
         }
 
-        for (ClientShip ship : shipAliveMap.values()) {
+        for (ClientShip ship : shipMap.values()) {
             ship.interpolate(delta);
         }
 
@@ -192,7 +208,7 @@ public class ClientLevel {
             moon.draw(spriteBatch, camera.frustum);
         }
 
-        for (ClientEntity entity : shipAliveMap.values()) {
+        for (ClientEntity entity : shipMap.values()) {
             entity.draw(spriteBatch, camera.frustum);
         }
 

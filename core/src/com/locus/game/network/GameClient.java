@@ -142,8 +142,9 @@ public class GameClient implements InputController.InputCallBack {
 
             level.setPlanetState(gameState.planetState);
             level.setMoonStateList(gameState.moonStateList);
-            level.setShipAliveStateList(gameState.shipAliveStateList);
-            level.setShipKilledArray(gameState.shipKilledArray);
+            level.setShipStateList(gameState.shipStateList);
+            level.setBulletAliveStateList(gameState.bulletAliveStateList);
+            level.setBulletKilledArray(gameState.bulletKilledArray);
 
         } else if (object instanceof Network.UpdateLobby) {
 

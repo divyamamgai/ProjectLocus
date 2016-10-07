@@ -145,7 +145,7 @@ class PauseScreen implements Screen, InputProcessor {
         if (isResumePressed) {
             projectLocus.flingHorizontalSound.play();
             isResumePressed = false;
-//            projectLocus.setScreen(screen);
+            projectLocus.setScreen(screen);
         }
         if (isQuitPressed) {
             projectLocus.screenTransitionSound.play();

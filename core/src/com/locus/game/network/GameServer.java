@@ -242,14 +242,12 @@ public class GameServer {
 
         gameState.planetState = level.getPlanetState();
         gameState.moonStateList = level.getMoonStateList();
-        gameState.shipAliveStateList = level.getShipAliveStateList();
-        gameState.shipKilledArray = level.getShipKilledArray();
+        gameState.shipStateList = level.getShipStateList();
         gameState.bulletAliveStateList = level.getBulletAliveStateList();
         gameState.bulletKilledArray = level.getBulletKilledArray();
 
         server.sendToAllTCP(gameState);
 
-        gameState.shipKilledArray.clear();
         gameState.bulletKilledArray.clear();
 
     }

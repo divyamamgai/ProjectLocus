@@ -160,7 +160,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
-        } else if (bulletsFired >= 5) {
+        } else if (bulletsFired >= 10) {
             bulletsFired = -1;
         }
         bulletsFired++;

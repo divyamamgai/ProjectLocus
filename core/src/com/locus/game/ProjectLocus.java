@@ -1,7 +1,6 @@
 package com.locus.game;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -14,7 +13,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.utils.Disposable;
-import com.locus.game.network.BulletState;
 import com.locus.game.network.GameClient;
 import com.locus.game.network.GameServer;
 import com.locus.game.screens.LoadingScreen;
@@ -30,7 +28,7 @@ public class ProjectLocus extends Game implements Disposable {
     public static final Vector2 GRAVITY = new Vector2(0, 0);
 
     // Gravitational Constant - (N(m^2))/(kg^2)
-    public static final float GRAVITATIONAL_CONSTANT = 0f;
+    public static final float GRAVITATIONAL_CONSTANT = 0.000035f;
 
     // Virtual Width of the Game World in meters.
     private static final float WORLD_WIDTH = 2048f;
@@ -42,7 +40,7 @@ public class ProjectLocus extends Game implements Disposable {
             WORLD_HEIGHT * WORLD_HEIGHT);
 
     // Desired FPS of the projectLocus and Box2D configuration variables.
-    public static final float FPS = 1 / 30f;
+    public static final float FPS = 1 / 60f;
     public static final short VELOCITY_ITERATIONS = 6;
     public static final short POSITION_ITERATIONS = 2;
 
@@ -110,7 +108,7 @@ public class ProjectLocus extends Game implements Disposable {
         playerShipProperty = new Ship.Property();
 
         setScreen(new LoadingScreen(this));
-        
+
     }
 
     @Override

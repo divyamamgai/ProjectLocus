@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.ShortArray;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.levels.Level;
+import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
@@ -56,6 +57,7 @@ class Network {
         kryo.register(StartGame.class);
         kryo.register(short[].class);
         kryo.register(ShortArray.class);
+        kryo.register(Bullet.Type.class);
         kryo.register(BulletState.class);
         kryo.register(GameState.class);
         kryo.register(ControllerState.class);
@@ -181,8 +183,7 @@ class Network {
 
         PlanetState planetState;
         ArrayList<MoonState> moonStateList;
-        ArrayList<ShipState> shipAliveStateList;
-        ShortArray shipKilledArray;
+        ArrayList<ShipState> shipStateList;
         ArrayList<BulletState> bulletAliveStateList;
         ShortArray bulletKilledArray;
 

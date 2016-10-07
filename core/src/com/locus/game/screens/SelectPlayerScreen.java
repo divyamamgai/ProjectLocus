@@ -58,6 +58,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     private EntityLoader.Definition selectedDefinition;
     private Text exitGameText, doneText, exitGameSelectedText, doneSelectedText;
     private boolean isExitGame, isDoneSelection;
+    private float maxSpeed, maxHealth, maxDamage;
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
@@ -93,6 +94,8 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
         shipMap = new HashMap<Ship.Type, Sprite>();
         shipDefinitionMap = new HashMap<Ship.Type, EntityLoader.Definition>();
 
+        maxHealth = maxSpeed = maxDamage = 0;
+
         Sprite sprite;
         EntityLoader.Definition definition;
         for (Ship.Type shipType : shipTypeArray) {
@@ -102,6 +105,9 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
                     definition.height * SHIP_SPRITE_SCALE);
             shipMap.put(shipType, sprite);
             shipDefinitionMap.put(shipType, definition);
+            maxHealth = Math.max(definition.maxHealth, maxHealth);
+            maxSpeed = Math.max(definition.maxSpeed, maxSpeed);
+            maxDamage = Math.max(definition.maxDamage, maxDamage);
         }
 
         selectedShipTypeIndex = selectedShipColorIndex = 0;
@@ -212,7 +218,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
                 208f, 24f);
         projectLocus.spriteBatch.draw(barForegroundTexture,
                 statPositionX + 128f, statPositionY - 8f,
-                200f * (selectedDefinition.maxHealth / 3000f), 16f);
+                200f * (selectedDefinition.maxHealth / maxHealth), 16f);
 
         projectLocus.font24.draw(projectLocus.spriteBatch, "Speed", statPositionX, statPositionY - 24f);
         projectLocus.spriteBatch.draw(barBackgroundTexture,
@@ -220,7 +226,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
                 208f, 24f);
         projectLocus.spriteBatch.draw(barForegroundTexture,
                 statPositionX + 128f, statPositionY - 40f,
-                200f * (selectedDefinition.maxSpeed / 72f), 16f);
+                200f * (selectedDefinition.maxSpeed / maxSpeed), 16f);
 
         projectLocus.font24.draw(projectLocus.spriteBatch, "Power", statPositionX, statPositionY - 56f);
         projectLocus.spriteBatch.draw(barBackgroundTexture,
@@ -228,7 +234,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
                 208f, 24f);
         projectLocus.spriteBatch.draw(barForegroundTexture,
                 statPositionX + 128f, statPositionY - 72f,
-                200f * (selectedDefinition.maxDamage / 2f), 16f);
+                200f * (selectedDefinition.maxDamage / maxDamage), 16f);
 
         if (isExitGame) {
             exitGameSelectedText.draw(projectLocus.spriteBatch);

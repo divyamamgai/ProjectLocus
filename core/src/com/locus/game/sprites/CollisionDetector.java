@@ -63,6 +63,14 @@ public class CollisionDetector implements ContactListener {
                             break;
                         default:
                             entity.reduceHealth(bullet.getDamage());
+                            switch (bullet.getType()) {
+                                case Normal:
+                                    bullet.getShip().getShipState().score += 10;
+                                    break;
+                                default:
+                                    bullet.getShip().getShipState().score += 30;
+                                    break;
+                            }
                     }
                     bullet.kill();
                 }

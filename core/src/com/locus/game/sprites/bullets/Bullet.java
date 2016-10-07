@@ -52,10 +52,16 @@ public class Bullet extends Sprite {
         return definition.type;
     }
 
+    public BulletState getBulletState() {
+        return bulletState;
+    }
+
     public enum Type {
 
         Normal,
-        Medium;
+        Fighter,
+        SuperSonic,
+        Bomber;
 
         public String toString() {
             return String.valueOf(ordinal());
@@ -93,6 +99,7 @@ public class Bullet extends Sprite {
         bulletState = new BulletState();
         bulletState.ID = ID;
         bulletState.angleDeg = getRotation();
+        bulletState.type = type;
 
         update();
 

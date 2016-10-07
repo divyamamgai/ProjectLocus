@@ -79,8 +79,7 @@ public class Level implements Disposable {
 
     private PlanetState planetState;
     private ArrayList<MoonState> moonStateList;
-    private ArrayList<ShipState> shipAliveStateList;
-    private ShortArray shipKilledArray;
+    private ArrayList<ShipState> shipStateList;
     private ArrayList<BulletState> bulletAliveStateList;
     private ShortArray bulletKilledArray;
 
@@ -124,12 +123,8 @@ public class Level implements Disposable {
         return moonStateList;
     }
 
-    public ArrayList<ShipState> getShipAliveStateList() {
-        return shipAliveStateList;
-    }
-
-    public ShortArray getShipKilledArray() {
-        return shipKilledArray;
+    public ArrayList<ShipState> getShipStateList() {
+        return shipStateList;
     }
 
     public ArrayList<BulletState> getBulletAliveStateList() {
@@ -176,21 +171,20 @@ public class Level implements Disposable {
         barBackgroundTexture = projectLocus.uiTextureAtlas.findRegion("barBackground");
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
-        bulletAliveList = new ArrayList<Bullet>(ProjectLocus.MAX_BULLET_COUNT);
-        bulletAliveStateList = new ArrayList<BulletState>(ProjectLocus.MAX_BULLET_COUNT);
-        bulletKilledArray = new ShortArray(ProjectLocus.MAX_BULLET_COUNT);
+        bulletAliveList = new ArrayList<Bullet>();
+        bulletAliveStateList = new ArrayList<BulletState>();
+        bulletKilledArray = new ShortArray();
 
         // We know that how many Type of Bullets we have so we pass the capacity too.
         Bullet.Type[] bulletTypeArray = Bullet.Type.values();
         bulletDeadQueueMap = new HashMap<Bullet.Type, Queue<Bullet>>(bulletTypeArray.length);
         // Initialize the bulletDeadQueueMap with the available Bullet Types.
         for (Bullet.Type bulletType : bulletTypeArray) {
-            bulletDeadQueueMap.put(bulletType, new Queue<Bullet>(ProjectLocus.MAX_BULLET_COUNT));
+            bulletDeadQueueMap.put(bulletType, new Queue<Bullet>());
         }
 
         shipAliveList = new ArrayList<Ship>();
-        shipAliveStateList = new ArrayList<ShipState>();
-        shipKilledArray = new ShortArray();
+        shipStateList = new ArrayList<ShipState>();
 
         // We know that how many Type of Ships we have so we pass the capacity too.
         Ship.Type[] shipTypeArray = Ship.Type.values();
@@ -228,20 +222,17 @@ public class Level implements Disposable {
                                          boolean isPlayer) {
 
         Ship ship;
-        ShipState shipState;
         Queue<Ship> shipDeadQueue = shipDeadQueueMap.get(shipProperty.type);
 
         if (shipDeadQueue.size > 0) {
             ship = shipDeadQueue.removeFirst();
             ship.resurrect(shipProperty.color, x, y, angleRad);
-            shipState = ship.getShipState();
         } else {
             ship = new Ship(this, shipProperty, x, y, angleRad);
-            shipState = ship.getShipState();
         }
 
         shipAliveList.add(ship);
-        shipAliveStateList.add(shipState);
+        shipStateList.add(ship.getShipState());
 
         if (isPlayer) {
             inputController = new InputController((player = ship), true);
@@ -265,13 +256,16 @@ public class Level implements Disposable {
                                             float angleRad) {
         Bullet bullet;
         Queue<Bullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletType);
+
         if (bulletDeadQueue.size > 0) {
             bullet = bulletDeadQueue.removeFirst();
             bullet.resurrect(ship, bulletPosition, angleRad);
         } else {
             bullet = new Bullet(this, bulletType, ship, bulletPosition, angleRad);
         }
+
         bulletAliveList.add(bullet);
+        bulletAliveStateList.add(bullet.getBulletState());
     }
 
     public synchronized void update(float delta) {
@@ -290,10 +284,8 @@ public class Level implements Disposable {
         }
 
         Iterator<Ship> shipIterator = shipAliveList.iterator();
-        Iterator<ShipState> shipStateIterator = shipAliveStateList.iterator();
         while (shipIterator.hasNext()) {
             Ship ship = shipIterator.next();
-            shipStateIterator.next();
             if (ship.isAlive()) {
                 ship.update();
                 planet.applyGravitationalForce(ship);
@@ -303,9 +295,7 @@ public class Level implements Disposable {
             } else {
                 ship.killBody();
                 shipDeadQueueMap.get(ship.getShipType()).addLast(ship);
-                shipKilledArray.add(ship.getID());
                 shipIterator.remove();
-                shipStateIterator.remove();
             }
         }
 
