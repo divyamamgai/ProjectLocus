@@ -85,10 +85,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private Text startingText, searchingText, connectingText, failedText, clientLobbyText,
             hostLobbyText, readyText, timerText;
 
-    // Prone To Be Changed.
-    private Vector3 readyBBMinimum, readyBBMaximum;
-    private BoundingBox readyBB;
-
     private boolean createPlayScreen;
     private boolean isPlayScreenCreated;
     private boolean isPlayerMapToBeUpdated;
@@ -163,11 +159,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
                 ProjectLocus.TILED_MAP_SCALE);
-
-        // Prone To Be Changed.
-        readyBBMinimum = new Vector3(0, 0, 0);
-        readyBBMaximum = new Vector3(0, 0, 0);
-        readyBB = new BoundingBox();
 
         createPlayScreen = isPlayScreenCreated = isPlayerMapToBeUpdated = isGameToBeStarted =
                 isGameStarted = isReady = false;
@@ -258,14 +249,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         }
 
-        // Prone To Be Changed.
-        readyBBMinimum.set(ProjectLocus.screenCameraWidth - COLUMN_PADDING
-                - readyText.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
-                ROW_PADDING - readyText.getHalfHeight() - 20, 0);
-        readyBBMaximum.set(readyBBMinimum.x + readyText.getWidth() + 20,
-                readyBBMinimum.y + readyText.getHeight() + 20, 0);
-        readyBB.set(readyBBMinimum, readyBBMaximum);
-
         readyText.setPosition(
                 ProjectLocus.screenCameraWidth - COLUMN_PADDING - readyText.getWidth(),
                 ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING -
@@ -335,9 +318,11 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
                     switch (type) {
                         case Host:
+                            projectLocus.screenTransitionSound.play();
                             projectLocus.setScreen(multiPlayerPlayScreen);
                             break;
                         case Client:
+                            projectLocus.screenTransitionSound.play();
                             projectLocus.setScreen(multiPlayerPlayScreenClient);
                             break;
                     }
@@ -392,12 +377,37 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
+        if (!projectLocus.isLobbyScreenMusicPlaying) {
+            if (projectLocus.isScreenBackgroundMusicPlaying) {
+                projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+            }
+            projectLocus.lobbyScreenBackgroundMusic.play();
+            projectLocus.isLobbyScreenMusicPlaying =
+                    projectLocus.lobbyScreenBackgroundMusic.isPlaying();
+        }
     }
 
     @Override
     public void render(float delta) {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (projectLocus.isScreenBackgroundMusicPlaying) {
+            if (projectLocus.screenBackgroundMusic.getVolume() > 0) {
+                projectLocus.screenBackgroundMusic.setVolume(projectLocus.screenBackgroundMusic.getVolume()
+                        - delta);
+            } else {
+                projectLocus.screenBackgroundMusic.setVolume(0f);
+                projectLocus.isLobbyScreenMusicPlaying = true;
+                projectLocus.lobbyScreenBackgroundMusic.setVolume(
+                        projectLocus.lobbyScreenBackgroundMusic.getVolume() + delta);
+                if (projectLocus.lobbyScreenBackgroundMusic.getVolume() >= 1f) {
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(1f);
+                    projectLocus.isScreenBackgroundMusicPlaying = false;
+
+                }
+            }
+        }
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
@@ -508,6 +518,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                         break;
                 }
                 selectModeScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                projectLocus.screenTransitionSound.play();
                 projectLocus.setScreen(selectModeScreen);
                 break;
         }
@@ -528,7 +539,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
-        if (readyBB.contains(touchPosition)) {
+        if (readyText.getTextBoundingBox().contains(touchPosition)) {
             if (isReady) {
                 switch (type) {
                     case Host:

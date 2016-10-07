@@ -5,6 +5,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -87,6 +89,11 @@ public class LoadingScreen implements Screen {
         assetManager.load("sprites/entities/0/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/1/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/2/pack.atlas", TextureAtlas.class);
+        assetManager.load("sounds/BackgroundMusic1.mp3", Music.class);
+        assetManager.load("sounds/LobbyScreenMusic.mp3", Music.class);
+        assetManager.load("sounds/flingHorizontalSound.wav", Sound.class);
+        assetManager.load("sounds/flingVerticalSound.wav", Sound.class);
+        assetManager.load("sounds/ScreenTransition.wav", Sound.class);
 
         for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
             assetManager.load("backgrounds/" + String.valueOf(backgroundType) + ".tmx",
@@ -161,6 +168,17 @@ public class LoadingScreen implements Screen {
             projectLocus.font72 = assetManager.get("fonts/font72.fnt",
                     BitmapFont.class);
 
+            projectLocus.screenBackgroundMusic =
+                    assetManager.get("sounds/BackgroundMusic1.mp3", Music.class);
+            projectLocus.lobbyScreenBackgroundMusic =
+                    assetManager.get("sounds/LobbyScreenMusic.mp3", Music.class);
+            projectLocus.flingVerticalSound =
+                    assetManager.get("sounds/flingVerticalSound.wav", Sound.class);
+            projectLocus.flingHorizontalSound =
+                    assetManager.get("sounds/flingHorizontalSound.wav", Sound.class);
+            projectLocus.screenTransitionSound =
+                    assetManager.get("sounds/ScreenTransition.wav", Sound.class);
+
             for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
                 projectLocus.tiledMapList.add(assetManager.get("backgrounds/" +
                         String.valueOf(backgroundType) + ".tmx", TiledMap.class));
@@ -183,6 +201,8 @@ public class LoadingScreen implements Screen {
             projectLocus.entityLoader = new EntityLoader(projectLocus);
 
             projectLocus.setScreen(new SelectPlayerScreen(projectLocus, backgroundMovementAngleRad));
+//            projectLocus.setScreen(new PauseScreen(projectLocus));
+//            projectLocus.setScreen(new ErrorScreen(projectLocus, "Hello Error"));
 
         } else {
 

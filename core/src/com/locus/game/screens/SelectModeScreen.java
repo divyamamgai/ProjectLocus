@@ -16,7 +16,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Timer;
 import com.locus.game.ProjectLocus;
 import com.locus.game.tools.Text;
 
@@ -104,7 +103,7 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
                 "Practice", -96f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
-                "Back", -144f));
+                "Change Ship", -144f));
         menuOptionList.add(new MenuOption(projectLocus.font32, projectLocus.font32Selected,
                 "Exit", -192f));
 
@@ -133,12 +132,36 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
+        if (!projectLocus.isScreenBackgroundMusicPlaying) {
+            if (projectLocus.isLobbyScreenMusicPlaying) {
+                projectLocus.screenBackgroundMusic.setVolume(0f);
+            }
+            projectLocus.screenBackgroundMusic.play();
+            projectLocus.isScreenBackgroundMusicPlaying =
+                    projectLocus.screenBackgroundMusic.isPlaying();
+        }
     }
 
     @Override
     public void render(float delta) {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (projectLocus.isLobbyScreenMusicPlaying) {
+            if (projectLocus.lobbyScreenBackgroundMusic.getVolume() > 0) {
+                projectLocus.lobbyScreenBackgroundMusic.setVolume(
+                        projectLocus.lobbyScreenBackgroundMusic.getVolume() - delta);
+            } else {
+                projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+                projectLocus.isScreenBackgroundMusicPlaying = true;
+                projectLocus.screenBackgroundMusic.setVolume(
+                        projectLocus.screenBackgroundMusic.getVolume() + delta);
+                if (projectLocus.screenBackgroundMusic.getVolume() >= 1f) {
+                    projectLocus.isLobbyScreenMusicPlaying = false;
+                    projectLocus.screenBackgroundMusic.setVolume(1f);
+                }
+            }
+        }
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
@@ -195,6 +218,7 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     }
 
     private void nextMenuOption() {
+        projectLocus.flingVerticalSound.play();
         menuOptionList.get(selectedMenuOption).isSelected = false;
         selectedMenuOption++;
         if (selectedMenuOption == menuOptionList.size()) {
@@ -204,6 +228,7 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     }
 
     private void previousMenuOption() {
+        projectLocus.flingVerticalSound.play();
         menuOptionList.get(selectedMenuOption).isSelected = false;
         selectedMenuOption--;
         if (selectedMenuOption < 0) {
@@ -215,17 +240,21 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     private void submit() {
         switch (selectedMenuOption) {
             case 0:
+                projectLocus.screenTransitionSound.play();
                 projectLocus.setScreen(new LobbyScreen(projectLocus, this, LobbyScreen.Type.Host));
                 break;
             case 1:
+                projectLocus.screenTransitionSound.play();
                 projectLocus.setScreen(new LobbyScreen(projectLocus, this,
                         LobbyScreen.Type.Client));
                 break;
             case 2:
+                projectLocus.screenTransitionSound.play();
                 PracticePlayScreen practicePlayScreen = new PracticePlayScreen(projectLocus, this);
                 projectLocus.setScreen(practicePlayScreen);
                 break;
             case 3:
+                projectLocus.screenTransitionSound.play();
                 selectPlayerScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
                 projectLocus.setScreen(selectPlayerScreen);
                 break;

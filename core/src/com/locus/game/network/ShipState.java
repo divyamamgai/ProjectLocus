@@ -7,7 +7,7 @@ package com.locus.game.network;
 
 public class ShipState {
 
-    public short ID;
+    public short ID, score;
     public float bodyX, bodyY, angleDeg, health;
 
     public ShipState() {
@@ -15,6 +15,7 @@ public class ShipState {
         bodyY = 0;
         angleDeg = 0;
         health = 0;
+        score = 0;
     }
 
     ShipState(short ID, float bodyX, float bodyY, float angleDeg, float health) {
@@ -23,6 +24,7 @@ public class ShipState {
         this.bodyY = bodyY;
         this.angleDeg = angleDeg;
         this.health = health;
+        score = 0;
     }
 
 }

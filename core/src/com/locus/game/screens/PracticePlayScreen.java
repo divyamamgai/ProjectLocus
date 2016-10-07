@@ -1,5 +1,7 @@
 package com.locus.game.screens;
 
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.MathUtils;
 import com.locus.game.ProjectLocus;
@@ -13,14 +15,16 @@ import java.util.ArrayList;
  * Created by Divya Mamgai on 9/6/2016.
  * Multi Player Play Screen
  */
-class PracticePlayScreen implements Screen {
+class PracticePlayScreen implements Screen, InputProcessor {
 
     public ProjectLocus projectLocus;
+    private SelectModeScreen selectModeScreen;
     private Level level;
 
     PracticePlayScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen) {
 
         this.projectLocus = projectLocus;
+        this.selectModeScreen = selectModeScreen;
 
         ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
         moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
@@ -42,6 +46,7 @@ class PracticePlayScreen implements Screen {
 
     @Override
     public void show() {
+        level.getInputMultiplexer().addProcessor(this);
         level.bindController();
     }
 
@@ -80,4 +85,50 @@ class PracticePlayScreen implements Screen {
         level.dispose();
     }
 
+    @Override
+    public boolean keyDown(int keycode) {
+        switch (keycode) {
+            case Input.Keys.ESCAPE:
+            case Input.Keys.P:
+            case Input.Keys.BACKSPACE:
+                projectLocus.setScreen(new PauseScreen(projectLocus, selectModeScreen, this));
+                break;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
 }

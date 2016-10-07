@@ -55,6 +55,14 @@ public class Text {
         return halfHeight;
     }
 
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
     public String getText() {
         return text;
     }

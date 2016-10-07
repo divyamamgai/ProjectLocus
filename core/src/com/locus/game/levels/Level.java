@@ -140,6 +140,10 @@ public class Level implements Disposable {
         return bulletKilledArray;
     }
 
+    public InputMultiplexer getInputMultiplexer() {
+        return inputMultiplexer;
+    }
+
     public Level(ProjectLocus projectLocus, Property property, boolean isMultiPlayer) {
 
         // Reset Entity and Bullet Count

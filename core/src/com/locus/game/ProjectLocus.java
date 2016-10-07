@@ -3,6 +3,8 @@ package com.locus.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -89,6 +91,10 @@ public class ProjectLocus extends Game implements Disposable {
     public Ship.Property playerShipProperty;
     public GameServer gameServer;
     public GameClient gameClient;
+    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
+    public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound;
+    public boolean isLobbyScreenMusicPlaying, isScreenBackgroundMusicPlaying,
+            isPlayScreenBackgroundMusicPlaying;
 
     @Override
     public void create() {

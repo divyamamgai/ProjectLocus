@@ -15,11 +15,12 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.math.Vector3;
 import com.locus.game.ProjectLocus;
 import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Ship;
+import com.locus.game.tools.Text;
 
 import java.util.HashMap;
 
@@ -30,7 +31,7 @@ import java.util.HashMap;
 
 class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
-    private static final float SHIP_SPRITE_SCALE = 10f;
+    private static final float SHIP_SPRITE_SCALE = 10f, SIDE_PADDING = 25f, BOTTOM_PADDING = 44f;
 
     float backgroundMovementAngleRad;
     private float statPositionX, statPositionY;
@@ -55,6 +56,8 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     private InputMultiplexer inputMultiplexer;
     private TextureRegion barBackgroundTexture, barForegroundTexture;
     private EntityLoader.Definition selectedDefinition;
+    private Text exitGameText, doneText, exitGameSelectedText, doneSelectedText;
+    private boolean isExitGame, isDoneSelection;
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
@@ -104,6 +107,26 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
         selectedShipTypeIndex = selectedShipColorIndex = 0;
         selectedDefinition = shipDefinitionMap.get(shipTypeArray[selectedShipTypeIndex]);
 
+        doneText = new Text(projectLocus.font32, "DONE");
+        doneText.setPosition(ProjectLocus.screenCameraWidth - SIDE_PADDING -
+                doneText.getWidth(), BOTTOM_PADDING);
+        exitGameText = new Text(projectLocus.font32, "EXIT");
+        exitGameText.setPosition(SIDE_PADDING, BOTTOM_PADDING);
+
+        doneSelectedText = new Text(projectLocus.font32Selected, "DONE");
+        doneSelectedText.setPosition(ProjectLocus.screenCameraWidth - SIDE_PADDING -
+                doneSelectedText.getWidth(), BOTTOM_PADDING);
+        exitGameSelectedText = new Text(projectLocus.font32Selected, "EXIT");
+        exitGameSelectedText.setPosition(SIDE_PADDING, BOTTOM_PADDING);
+
+        isDoneSelection = false;
+        isExitGame = false;
+
+        projectLocus.flingHorizontalSound =
+                Gdx.audio.newSound(Gdx.files.internal("sounds/flingHorizontalSound.wav"));
+        projectLocus.flingVerticalSound =
+                Gdx.audio.newSound(Gdx.files.internal("sounds/flingVerticalSound.wav"));
+
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);
@@ -141,12 +164,24 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCatchBackKey(true);
+        if (!projectLocus.isScreenBackgroundMusicPlaying) {
+            projectLocus.screenBackgroundMusic.setVolume(0f);
+        }
+        projectLocus.screenBackgroundMusic.play();
+        projectLocus.isScreenBackgroundMusicPlaying =
+                projectLocus.screenBackgroundMusic.isPlaying();
     }
 
     @Override
     public void render(float delta) {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (projectLocus.screenBackgroundMusic.getVolume() < 1f) {
+            projectLocus.screenBackgroundMusic.setVolume(
+                    projectLocus.screenBackgroundMusic.getVolume() + delta
+            );
+        }
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
         backgroundCamera.position.set(
@@ -195,6 +230,17 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
                 statPositionX + 128f, statPositionY - 72f,
                 200f * (selectedDefinition.maxDamage / 2f), 16f);
 
+        if (isExitGame) {
+            exitGameSelectedText.draw(projectLocus.spriteBatch);
+        } else {
+            exitGameText.draw(projectLocus.spriteBatch);
+        }
+        if (isDoneSelection) {
+            doneSelectedText.draw(projectLocus.spriteBatch);
+        } else {
+            doneText.draw(projectLocus.spriteBatch);
+        }
+
         projectLocus.spriteBatch.end();
 
     }
@@ -230,6 +276,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void nextShip() {
+        projectLocus.flingHorizontalSound.play();
         selectedShipTypeIndex++;
         if (selectedShipTypeIndex == shipTypeArray.length) {
             selectedShipTypeIndex = 0;
@@ -240,6 +287,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void previousShip() {
+        projectLocus.flingHorizontalSound.play();
         selectedShipTypeIndex--;
         if (selectedShipTypeIndex < 0) {
             selectedShipTypeIndex = shipTypeArray.length - 1;
@@ -250,6 +298,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void nextShipColor() {
+        projectLocus.flingVerticalSound.play();
         selectedShipColorIndex++;
         if (selectedShipColorIndex == shipColorArray.length) {
             selectedShipColorIndex = 0;
@@ -259,6 +308,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     private void previousShipColor() {
+        projectLocus.flingVerticalSound.play();
         selectedShipColorIndex--;
         if (selectedShipColorIndex < 0) {
             selectedShipColorIndex = shipColorArray.length - 1;
@@ -270,6 +320,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     private void submit() {
         projectLocus.playerShipProperty.color = shipColorArray[selectedShipColorIndex];
         projectLocus.playerShipProperty.type = shipTypeArray[selectedShipTypeIndex];
+        projectLocus.screenTransitionSound.play();
         projectLocus.setScreen(new SelectModeScreen(projectLocus, this));
     }
 
@@ -277,15 +328,19 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     public boolean keyDown(int keycode) {
         switch (keycode) {
             case Input.Keys.A:
+            case Input.Keys.LEFT:
                 previousShip();
                 break;
             case Input.Keys.D:
+            case Input.Keys.RIGHT:
                 nextShip();
                 break;
             case Input.Keys.W:
+            case Input.Keys.UP:
                 previousShipColor();
                 break;
             case Input.Keys.S:
+            case Input.Keys.DOWN:
                 nextShipColor();
                 break;
             case Input.Keys.ENTER:
@@ -307,22 +362,34 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-//        Vector3 touchPoint = new Vector3(screenX, screenY, 0);
-//        foregroundCamera.unproject(touchPoint);
-//        if (arrowLeft.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-//            previousShip();
-//        } else if (arrowRight.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-//            nextShip();
-//        } else if (arrowUp.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-//            previousShipColor();
-//        } else if (arrowDown.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
-//            nextShipColor();
-//        }
+        Vector3 touchPoint = new Vector3(screenX, screenY, 0);
+        foregroundCamera.unproject(touchPoint);
+        if (exitGameText.getTextBoundingBox().contains(touchPoint)) {
+            isExitGame = true;
+        } else if (doneText.getTextBoundingBox().contains(touchPoint)) {
+            isDoneSelection = true;
+        } else if (arrowLeft.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+            previousShip();
+        } else if (arrowRight.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+            nextShip();
+        } else if (arrowUp.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+            previousShipColor();
+        } else if (arrowDown.getBoundingRectangle().contains(touchPoint.x, touchPoint.y)) {
+            nextShipColor();
+        }
         return false;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (isExitGame) {
+            isExitGame = false;
+            Gdx.app.exit();
+        }
+        if (isDoneSelection) {
+            isDoneSelection = false;
+            submit();
+        }
         return false;
     }
 
@@ -348,9 +415,6 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
-        if (count == 2) {
-            submit();
-        }
         return false;
     }
 
