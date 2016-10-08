@@ -1,5 +1,6 @@
 package com.locus.game.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.locus.game.ProjectLocus;
@@ -33,11 +34,16 @@ class MultiPlayerPlayScreenClient implements Screen {
     @Override
     public void show() {
         level.onShow();
-//        ProjectLocus.isPlayScreenBackgroundMusicPlaying =
-//                projectLocus.playScreenClientBackgroundMusic.isPlaying();
-//        projectLocus.playScreenClientBackgroundMusic.setVolume(0.8f);
-//        projectLocus.playScreenClientBackgroundMusic.setLooping(true);
-//        projectLocus.playScreenClientBackgroundMusic.play();
+        try {
+            if (projectLocus.lobbyScreenBackgroundMusic.isPlaying()) {
+                projectLocus.lobbyScreenBackgroundMusic.stop();
+            }
+            projectLocus.playScreenBackgroundMusic.setVolume(0.8f);
+            projectLocus.playScreenBackgroundMusic.setLooping(true);
+            projectLocus.playScreenBackgroundMusic.play();
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
+        }
     }
 
     @Override

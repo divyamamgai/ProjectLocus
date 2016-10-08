@@ -16,7 +16,7 @@ import com.locus.game.tools.Text;
  * Pause Screen
  */
 
-public class PauseScreen implements Screen, InputProcessor {
+class PauseScreen implements Screen, InputProcessor {
 
     private ProjectLocus projectLocus;
     private SelectModeScreen selectModeScreen;
@@ -27,7 +27,7 @@ public class PauseScreen implements Screen, InputProcessor {
     private Text pauseText, resumeText, resumeSelectedText, quitText, quitSelectedText;
     private boolean isResumePressed, isQuitPressed;
 
-    public PauseScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen, Screen screen) {
+    PauseScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen, Screen screen) {
         this.projectLocus = projectLocus;
         this.selectModeScreen = selectModeScreen;
         this.screen = screen;
@@ -154,7 +154,11 @@ public class PauseScreen implements Screen, InputProcessor {
                 if (isQuitPressed) {
                     projectLocus.screenTransitionSound.play();
                     isQuitPressed = false;
-                    projectLocus.playScreenHostBackgroundMusic.stop();
+                    try {
+                        projectLocus.playScreenBackgroundMusic.stop();
+                    } catch (Exception e) {
+                        Gdx.app.log("Sound Error", "Error - " + e.toString());
+                    }
                     projectLocus.setScreen(selectModeScreen);
                 }
                 break;
@@ -190,7 +194,11 @@ public class PauseScreen implements Screen, InputProcessor {
         if (isQuitPressed) {
             projectLocus.screenTransitionSound.play();
             isQuitPressed = false;
-            projectLocus.playScreenHostBackgroundMusic.stop();
+            try {
+                projectLocus.playScreenBackgroundMusic.stop();
+            } catch (Exception e) {
+                Gdx.app.log("Sound Error", "Error - " + e.toString());
+            }
             projectLocus.setScreen(selectModeScreen);
         }
         return false;

@@ -178,8 +178,8 @@ public class LoadingScreen implements Screen {
                     assetManager.get("music/screen.wav", Music.class);
             projectLocus.lobbyScreenBackgroundMusic =
                     assetManager.get("music/lobbyScreen.wav", Music.class);
-            projectLocus.playScreenHostBackgroundMusic = projectLocus.playScreenClientBackgroundMusic
-                    = assetManager.get("music/gamePlay.wav", Music.class);
+            projectLocus.playScreenBackgroundMusic =
+                    assetManager.get("music/gamePlay.wav", Music.class);
             projectLocus.flingVerticalSound =
                     assetManager.get("sounds/flingVertical.wav", Sound.class);
             projectLocus.flingHorizontalSound =

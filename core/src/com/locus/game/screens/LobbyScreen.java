@@ -52,7 +52,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         Failed
     }
 
-    private class PlayerDisplay {
+    class PlayerDisplay {
 
         private Sprite shipSprite;
         private Text readyText, numberText;
@@ -61,6 +61,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
             this.shipSprite = shipSprite;
             this.numberText = numberText;
             this.readyText = readyText;
+        }
+
+        Sprite getShipSprite() {
+            return shipSprite;
         }
 
     }
@@ -74,7 +78,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private Type type;
     private State state = State.Starting;
     private LinkedHashMap<Integer, Player> playerMap;
-    private ArrayList<PlayerDisplay> playerDisplayList;
+    ArrayList<PlayerDisplay> playerDisplayList;
     private MultiPlayerPlayScreen multiPlayerPlayScreen;
     private MultiPlayerPlayScreenClient multiPlayerPlayScreenClient;
     private Level.Property levelProperty;
@@ -314,9 +318,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
                 if (startGameIn <= 1) {
 
-                    ProjectLocus.isLobbyScreenMusicPlaying = false;
-                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
-                    projectLocus.lobbyScreenBackgroundMusic.stop();
+                    try {
+                        projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+                        projectLocus.lobbyScreenBackgroundMusic.stop();
+                    } catch (Exception e) {
+                        Gdx.app.log("Sound Error", "Error - " + e.toString());
+                    }
 
                     switch (type) {
                         case Host:
@@ -411,16 +418,17 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
-        if (!ProjectLocus.isLobbyScreenMusicPlaying) {
-            if (ProjectLocus.isScreenBackgroundMusicPlaying) {
-                projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
-            } else {
-                projectLocus.lobbyScreenBackgroundMusic.setVolume(0.5f);
+        try {
+            if (!projectLocus.lobbyScreenBackgroundMusic.isPlaying()) {
+                if (projectLocus.screenBackgroundMusic.isPlaying())
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+                else {
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(1f);
+                }
+                projectLocus.lobbyScreenBackgroundMusic.play();
             }
-            projectLocus.lobbyScreenBackgroundMusic.setLooping(true);
-            projectLocus.lobbyScreenBackgroundMusic.play();
-            ProjectLocus.isLobbyScreenMusicPlaying =
-                    projectLocus.lobbyScreenBackgroundMusic.isPlaying();
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
         }
     }
 
@@ -429,23 +437,25 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (ProjectLocus.isScreenBackgroundMusicPlaying) {
-            if (projectLocus.screenBackgroundMusic.getVolume() > 0) {
-                projectLocus.screenBackgroundMusic.setVolume(
-                        projectLocus.screenBackgroundMusic.getVolume() - delta
-                );
-            } else {
-                projectLocus.screenBackgroundMusic.setVolume(0f);
-                projectLocus.screenBackgroundMusic.stop();
-                ProjectLocus.isLobbyScreenMusicPlaying = true;
-                projectLocus.lobbyScreenBackgroundMusic.setVolume(
-                        projectLocus.lobbyScreenBackgroundMusic.getVolume() + delta);
-                if (projectLocus.lobbyScreenBackgroundMusic.getVolume() >= 0.5f) {
-                    ProjectLocus.isScreenBackgroundMusicPlaying = false;
-                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0.5f);
-                    projectLocus.lobbyScreenBackgroundMusic.play();
+        try {
+            if (projectLocus.screenBackgroundMusic.isPlaying()) {
+                if (projectLocus.screenBackgroundMusic.getVolume() > 0.05) {
+                    projectLocus.screenBackgroundMusic.setVolume(
+                            projectLocus.screenBackgroundMusic.getVolume() - delta
+                    );
+                } else {
+                    projectLocus.screenBackgroundMusic.setVolume(0f);
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(
+                            projectLocus.lobbyScreenBackgroundMusic.getVolume() + delta);
+                    if (projectLocus.lobbyScreenBackgroundMusic.getVolume() > 0.95f) {
+                        projectLocus.lobbyScreenBackgroundMusic.setVolume(1f);
+                        projectLocus.screenBackgroundMusic.stop();
+                        projectLocus.lobbyScreenBackgroundMusic.play();
+                    }
                 }
             }
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
         }
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;

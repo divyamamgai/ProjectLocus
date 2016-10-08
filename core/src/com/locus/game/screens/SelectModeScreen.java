@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * Multi Player Select Screen
  */
 
-public class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private class MenuOption {
 
@@ -135,13 +135,18 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
-        if (!projectLocus.isScreenBackgroundMusicPlaying) {
-            if (projectLocus.isLobbyScreenMusicPlaying) {
-                projectLocus.screenBackgroundMusic.setVolume(0f);
+        try {
+            if (!projectLocus.screenBackgroundMusic.isPlaying()) {
+                if (projectLocus.lobbyScreenBackgroundMusic.isPlaying() ||
+                        projectLocus.playScreenBackgroundMusic.isPlaying()) {
+                    projectLocus.screenBackgroundMusic.setVolume(0f);
+                } else {
+                    projectLocus.screenBackgroundMusic.setVolume(0.8f);
+                }
+                projectLocus.screenBackgroundMusic.play();
             }
-            projectLocus.screenBackgroundMusic.play();
-            projectLocus.isScreenBackgroundMusicPlaying =
-                    projectLocus.screenBackgroundMusic.isPlaying();
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
         }
     }
 
@@ -150,22 +155,40 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (ProjectLocus.isLobbyScreenMusicPlaying) {
-            if (projectLocus.lobbyScreenBackgroundMusic.getVolume() > 0) {
-                projectLocus.lobbyScreenBackgroundMusic.setVolume(
-                        projectLocus.lobbyScreenBackgroundMusic.getVolume() - delta);
-            } else {
-                projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
-                projectLocus.lobbyScreenBackgroundMusic.stop();
-                ProjectLocus.isScreenBackgroundMusicPlaying = true;
-                projectLocus.screenBackgroundMusic.setVolume(
-                        projectLocus.screenBackgroundMusic.getVolume() + delta);
-                if (projectLocus.screenBackgroundMusic.getVolume() >= 1f) {
-                    ProjectLocus.isLobbyScreenMusicPlaying = false;
-                    projectLocus.screenBackgroundMusic.setVolume(1f);
-                    projectLocus.screenBackgroundMusic.play();
+        try {
+            if (projectLocus.lobbyScreenBackgroundMusic.isPlaying()) {
+                if (projectLocus.lobbyScreenBackgroundMusic.getVolume() > 0.05) {
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(
+                            projectLocus.lobbyScreenBackgroundMusic.getVolume() - delta);
+                } else {
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+                    projectLocus.screenBackgroundMusic.setVolume(
+                            projectLocus.screenBackgroundMusic.getVolume() + delta);
+                    if (projectLocus.screenBackgroundMusic.getVolume() > 0.95f) {
+                        projectLocus.screenBackgroundMusic.setVolume(1f);
+                        projectLocus.lobbyScreenBackgroundMusic.stop();
+                        projectLocus.screenBackgroundMusic.play();
+                    }
                 }
             }
+
+            if (projectLocus.playScreenBackgroundMusic.isPlaying()) {
+                if (projectLocus.playScreenBackgroundMusic.getVolume() > 0.05) {
+                    projectLocus.playScreenBackgroundMusic.setVolume(
+                            projectLocus.playScreenBackgroundMusic.getVolume() - delta);
+                } else {
+                    projectLocus.playScreenBackgroundMusic.setVolume(0f);
+                    projectLocus.screenBackgroundMusic.setVolume(
+                            projectLocus.screenBackgroundMusic.getVolume() + delta);
+                    if (projectLocus.screenBackgroundMusic.getVolume() > 0.95f) {
+                        projectLocus.screenBackgroundMusic.setVolume(1f);
+                        projectLocus.playScreenBackgroundMusic.stop();
+                        projectLocus.screenBackgroundMusic.play();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
         }
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
@@ -255,7 +278,6 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
                 break;
             case 2:
                 projectLocus.screenTransitionSound.play();
-                ProjectLocus.isScreenBackgroundMusicPlaying = false;
                 projectLocus.screenBackgroundMusic.stop();
                 PracticePlayScreen practicePlayScreen = new PracticePlayScreen(projectLocus, this);
                 projectLocus.setScreen(practicePlayScreen);

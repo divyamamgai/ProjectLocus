@@ -51,14 +51,18 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
+        try {
+            if (!projectLocus.playScreenBackgroundMusic.isPlaying()) {
+                projectLocus.playScreenBackgroundMusic.setVolume(0.8f);
+                projectLocus.playScreenBackgroundMusic.setLooping(true);
+                projectLocus.playScreenBackgroundMusic.play();
+            }
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
+        }
+
         level.getInputMultiplexer().addProcessor(this);
         level.onShow();
-
-        if (!projectLocus.playScreenHostBackgroundMusic.isPlaying()) {
-            projectLocus.playScreenHostBackgroundMusic.setVolume(0.8f);
-            projectLocus.playScreenHostBackgroundMusic.setLooping(true);
-            projectLocus.playScreenHostBackgroundMusic.play();
-        }
     }
 
     @Override

@@ -54,7 +54,7 @@ public class ProjectLocus extends Game implements Disposable {
 
     public static final float GAME_COUNT_DOWN = 5f;
     public static final short MAX_PLAYER_COUNT = 8;
-//    public static final float ASTEROID_START_RADIUS =
+    //    public static final float ASTEROID_START_RADIUS =
     public static final float PLAYER_START_RADIUS = 155f;
     public static final float PLAYER_START_ANGLE_DELTA = 2f * MathUtils.PI / MAX_PLAYER_COUNT;
 
@@ -90,13 +90,10 @@ public class ProjectLocus extends Game implements Disposable {
     public Ship.Property playerShipProperty;
     public GameServer gameServer;
     public GameClient gameClient;
-    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenHostBackgroundMusic,
-            playScreenClientBackgroundMusic;
+    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
     public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound,
             primaryBulletSound, secondaryBulletBomberSound, secondaryBulletFighterSound,
             secondaryBulletSupersonicSound;
-    public static boolean isLobbyScreenMusicPlaying, isScreenBackgroundMusicPlaying,
-            isPlayScreenBackgroundMusicPlaying;
 
     @Override
     public void create() {

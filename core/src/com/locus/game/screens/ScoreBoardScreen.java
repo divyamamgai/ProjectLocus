@@ -20,6 +20,9 @@ import com.locus.game.network.ShipState;
 import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * Created by Rohit Yadav on 05-Oct-16.
@@ -32,13 +35,15 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
 
         private Sprite shipSprite;
         private Text playerScoreText, playerNumberText;
+        private short score;
 
-        PlayerResultData(Sprite shipSprite, Text playerReadyText, Text playerNumberText) {
+        PlayerResultData(Sprite shipSprite, Text playerNumberText, Text playerScoreText,
+                         short score) {
             this.shipSprite = shipSprite;
             this.playerNumberText = playerNumberText;
-            this.playerScoreText = playerReadyText;
+            this.playerScoreText = playerScoreText;
+            this.score = score;
         }
-
     }
 
     private float backgroundMovementAngleRad;
@@ -48,12 +53,12 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     private OrthographicCamera foregroundCamera, backgroundCamera;
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
-    private ArrayList<PlayerResultData> playerResultDataList;
+    private ArrayList<PlayerResultData> playerResultList;
 
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
 
-    private Text doneText;
+    private Text doneText, scoreBoardText;
     private boolean isTiledMapCreated;
 
     public ScoreBoardScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen,
@@ -70,7 +75,27 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 ProjectLocus.worldCameraHeight);
 
         doneText = new Text(projectLocus.font32, "DONE");
-        playerResultDataList = new ArrayList<PlayerResultData>();
+        scoreBoardText = new Text(projectLocus.font32, "SCOREBOARD");
+        playerResultList = new ArrayList<PlayerResultData>();
+
+        int i = 0;
+        for (ShipState shipState : shipStateList) {
+            playerResultList.add(
+                    new PlayerResultData(lobbyScreen.playerDisplayList.get(i).getShipSprite(),
+                            new Text(projectLocus.font24,
+                                    String.format(Locale.ENGLISH, "%01d", (i + 1))),
+                            new Text(projectLocus.font24,
+                                    String.format(Locale.ENGLISH, "%04d", shipState.score)),
+                            shipState.score));
+            i++;
+        }
+
+        Collections.sort(playerResultList, new Comparator<PlayerResultData>() {
+            @Override
+            public int compare(PlayerResultData o1, PlayerResultData o2) {
+                return (o2.score > o1.score) ? 1 : -1;
+            }
+        });
 
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
@@ -87,12 +112,12 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 rowHeight = ((ProjectLocus.screenCameraHeight - 80) - (3 * ROW_PADDING)) / 2;
 
         PlayerResultData playerResultData;
-        for (int i = 0; i < playerResultDataList.size(); i++) {
+        for (int i = 0; i < playerResultList.size(); i++) {
 
             row = i / 4;
             col = i % 4;
 
-            playerResultData = playerResultDataList.get(i);
+            playerResultData = playerResultList.get(i);
 
             playerResultData.shipSprite.setPosition(COLUMN_PADDING + (col * (colWidth + COLUMN_PADDING))
                             + ((colWidth - playerResultData.shipSprite.getWidth()) / 2),
@@ -117,17 +142,20 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING -
                         doneText.getHalfHeight());
 
+        scoreBoardText.setPosition(COLUMN_PADDING, ProjectLocus.screenCameraHeight -
+                MARGIN_TOP + ROW_PADDING - scoreBoardText.getHalfHeight());
+
     }
 
     private void drawScoreBoardScreen(SpriteBatch spriteBatch) {
 
-        for (PlayerResultData playerResultData : playerResultDataList) {
+        scoreBoardText.draw(spriteBatch);
+        for (PlayerResultData playerResultData : playerResultList) {
             playerResultData.playerNumberText.draw(spriteBatch);
             playerResultData.shipSprite.draw(spriteBatch);
             playerResultData.playerScoreText.draw(spriteBatch);
         }
         doneText.draw(spriteBatch);
-
     }
 
     @Override
@@ -199,6 +227,11 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         switch (keycode) {
             case Input.Keys.ENTER:
             case Input.Keys.BACK:
+                try {
+                    projectLocus.playScreenBackgroundMusic.stop();
+                } catch (Exception e) {
+                    Gdx.app.log("Sound Error", "Error - " + e.toString());
+                }
                 projectLocus.setScreen(lobbyScreen.selectModeScreen);
                 lobbyScreen.dispose();
                 break;
@@ -221,6 +254,11 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
         if (doneText.getTextBoundingBox().contains(touchPosition)) {
+            try {
+                projectLocus.playScreenBackgroundMusic.stop();
+            } catch (Exception e) {
+                Gdx.app.log("Sound Error", "Error - " + e.toString());
+            }
             projectLocus.setScreen(lobbyScreen.selectModeScreen);
             lobbyScreen.dispose();
         }

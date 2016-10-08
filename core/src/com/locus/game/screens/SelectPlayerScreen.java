@@ -166,15 +166,17 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCatchBackKey(true);
-        projectLocus.screenBackgroundMusic.setLooping(true);
-        if (!ProjectLocus.isScreenBackgroundMusicPlaying) {
-            projectLocus.screenBackgroundMusic.setVolume(0f);
-        } else {
-            projectLocus.screenBackgroundMusic.setVolume(0.8f);
+        try {
+            if (!projectLocus.screenBackgroundMusic.isPlaying()) {
+                projectLocus.screenBackgroundMusic.setVolume(0f);
+            } else {
+                projectLocus.screenBackgroundMusic.setVolume(0.8f);
+            }
+            projectLocus.screenBackgroundMusic.setLooping(true);
+            projectLocus.screenBackgroundMusic.play();
+        } catch (Exception e) {
+            Gdx.app.log("Sound Error", "Error - " + e.toString());
         }
-        projectLocus.screenBackgroundMusic.play();
-        ProjectLocus.isScreenBackgroundMusicPlaying =
-                projectLocus.screenBackgroundMusic.isPlaying();
     }
 
     @Override
