@@ -86,7 +86,6 @@ public class GameServer implements InputController.InputCallBack {
     }
 
     void onConnected(Connection connection) {
-        Gdx.app.log("isGameStarted", String.valueOf(isGameStarted));
         if (isGameStarted) {
             connection.close();
         }
@@ -102,6 +101,7 @@ public class GameServer implements InputController.InputCallBack {
             Ship ship = level.getShipAlive(connectionIDToShipIDMap.get(connectionID));
 
             if (ship != null) {
+
                 if (controllerState.isThrustEnabled) {
                     ship.applyThrust(controllerState.isThrustForward);
                 }
@@ -119,6 +119,10 @@ public class GameServer implements InputController.InputCallBack {
                         controllerState.doSecondaryReset
                 ));
             }
+
+        } else if (object instanceof Network.ShipKill) {
+
+            level.getShipAlive(((Network.ShipKill) object).shipID).kill();
 
         } else if (object instanceof Network.PlayerJoinRequest) {
 

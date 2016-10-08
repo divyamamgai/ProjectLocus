@@ -1,8 +1,8 @@
 package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -58,27 +58,37 @@ public class ClientShip extends ClientEntity {
         bulletPosition = new Vector2();
         primaryBulletCount = secondaryBulletCount = 0;
 
-    }
-
-    public void resurrect(Color color, ShipState shipState) {
-
-        setColor(color);
-
-        bodyX = toBodyX = shipState.bodyX;
-        bodyY = toBodyY = shipState.bodyY;
-        angleDeg = toAngleDeg = shipState.angleDeg;
-
-        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        setRotation(angleDeg);
-        body.setTransform(bodyX, bodyY, angleDeg * MathUtils.degreesToRadians);
+        isAlive = true;
 
     }
+
+//    public void resurrect(Color color, ShipState shipState) {
+//
+//        setColor(color);
+//
+//        body.setActive(true);
+//
+//        bodyX = toBodyX = shipState.bodyX;
+//        bodyY = toBodyY = shipState.bodyY;
+//        angleDeg = toAngleDeg = shipState.angleDeg;
+//
+//        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+//        setRotation(angleDeg);
+//        body.setTransform(bodyX, bodyY, angleDeg * MathUtils.degreesToRadians);
+//
+//        isAlive = true;
+//
+//    }
 
     public void update(ShipState shipState) {
         toBodyX = shipState.bodyX;
         toBodyY = shipState.bodyY;
         toAngleDeg = shipState.angleDeg;
         health = shipState.health;
+        if (health <= 0) {
+            killBody();
+            isAlive = false;
+        }
     }
 
     @Override
@@ -161,4 +171,16 @@ public class ClientShip extends ClientEntity {
         }
     }
 
+    public void kill() {
+        isAlive = false;
+        killBody();
+    }
+
+    public void killBody() {
+        body.setActive(false);
+    }
+
+    public Vector2 getBodyPosition() {
+        return body.getPosition();
+    }
 }

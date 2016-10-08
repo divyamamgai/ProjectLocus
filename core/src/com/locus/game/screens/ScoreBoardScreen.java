@@ -92,8 +92,8 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
 
         Collections.sort(playerResultList, new Comparator<PlayerResultData>() {
             @Override
-            public int compare(PlayerResultData o1, PlayerResultData o2) {
-                return (o2.score > o1.score) ? 1 : -1;
+            public int compare(PlayerResultData a, PlayerResultData b) {
+                return (b.score >= a.score) ? 1 : -1;
             }
         });
 
@@ -232,6 +232,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 } catch (Exception e) {
                     Gdx.app.log("Sound Error", "Error - " + e.toString());
                 }
+                projectLocus.screenTransitionSound.play();
                 projectLocus.setScreen(lobbyScreen.selectModeScreen);
                 lobbyScreen.dispose();
                 break;
@@ -259,6 +260,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
             } catch (Exception e) {
                 Gdx.app.log("Sound Error", "Error - " + e.toString());
             }
+            projectLocus.screenTransitionSound.play();
             projectLocus.setScreen(lobbyScreen.selectModeScreen);
             lobbyScreen.dispose();
         }

@@ -20,7 +20,6 @@ import com.locus.game.ProjectLocus;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
 import com.locus.game.network.ShipState;
-import com.locus.game.screens.PauseScreen;
 import com.locus.game.screens.SelectModeScreen;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
@@ -118,6 +117,7 @@ public class Level implements Disposable {
     private short outOfLevelTimer;
     private boolean playerIsOutOfLevel;
     private Text messageText, countDownText;
+    private TextureRegion redTransparentBackground;
 
     private short alivePlayerCount;
 
@@ -249,6 +249,9 @@ public class Level implements Disposable {
             inputMultiplexer.addProcessor(new GestureDetector(inputController));
         }
 
+        redTransparentBackground = projectLocus.uiTextureAtlas.
+                findRegion("redTransparentBackground");
+
     }
 
     public void onShow() {
@@ -333,6 +336,30 @@ public class Level implements Disposable {
             camera.position.x += (player.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
             camera.position.y += (player.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
             camera.update();
+            if (!LEVEL_CIRCLE.contains(player.getBodyPosition())) {
+                playerIsOutOfLevel = true;
+                outOfLevelTimePassed += delta;
+                if (outOfLevelTimePassed >= 1f) {
+                    if (--outOfLevelTimer <= 0) {
+                        // Kill the player.
+                        player.kill();
+                        player.killBody();
+                        shipDeadQueueMap.get(player.getShipType()).addLast(player);
+                        player = null;
+                        alivePlayerCount--;
+                        if (!isMultiPlayer) {
+                            projectLocus.setScreen(selectModeScreen);
+                        }
+                        playerIsOutOfLevel = false;
+                    }
+                    countDownText.setTextFast(String.valueOf(outOfLevelTimer));
+                    outOfLevelTimePassed = 0;
+                }
+            } else {
+                playerIsOutOfLevel = false;
+                outOfLevelTimer = 5;
+                outOfLevelTimePassed = 0;
+            }
         }
 
         planet.update();
@@ -378,32 +405,6 @@ public class Level implements Disposable {
             }
         }
 
-        if (player != null) {
-            if (!LEVEL_CIRCLE.contains(player.getBodyPosition())) {
-                playerIsOutOfLevel = true;
-                outOfLevelTimePassed += delta;
-                if (outOfLevelTimePassed >= 1f) {
-                    if (--outOfLevelTimer <= 0) {
-                        // Kill the player.
-                        player.kill();
-                        player.killBody();
-                        shipDeadQueueMap.get(player.getShipType()).addLast(player);
-                        player = null;
-                        alivePlayerCount--;
-                        if (!isMultiPlayer) {
-                            projectLocus.setScreen(selectModeScreen);
-                        }
-                    }
-                    countDownText.setTextFast(String.valueOf(outOfLevelTimer));
-                    outOfLevelTimePassed = 0;
-                }
-            } else {
-                playerIsOutOfLevel = false;
-                outOfLevelTimer = 5;
-                outOfLevelTimePassed = 0;
-            }
-        }
-
     }
 
     public synchronized void render(SpriteBatch spriteBatch) {
@@ -432,13 +433,16 @@ public class Level implements Disposable {
 
         spriteBatch.end();
 
-        spriteBatch.setProjectionMatrix(foregroundCamera.combined);
-        spriteBatch.begin();
         if (playerIsOutOfLevel) {
+            spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+            spriteBatch.begin();
+            spriteBatch.draw(redTransparentBackground,
+                    0, 0,
+                    ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
             messageText.draw(spriteBatch);
             countDownText.draw(spriteBatch);
+            spriteBatch.end();
         }
-        spriteBatch.end();
 
     }
 
@@ -448,10 +452,10 @@ public class Level implements Disposable {
         camera.update();
         messageText.setPosition(
                 ProjectLocus.screenCameraHalfWidth - messageText.getHalfWidth(),
-                ProjectLocus.screenCameraHeight - messageText.getHeight() - 32);
+                ProjectLocus.screenCameraHalfHeight + countDownText.getHeight() - 24);
         countDownText.setPosition(
                 ProjectLocus.screenCameraHalfWidth - countDownText.getHalfWidth(),
-                ProjectLocus.screenCameraHalfHeight + countDownText.getHalfHeight());
+                ProjectLocus.screenCameraHalfHeight - countDownText.getHalfHeight());
     }
 
     @Override

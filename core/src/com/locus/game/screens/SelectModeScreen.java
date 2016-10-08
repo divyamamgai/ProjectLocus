@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * Multi Player Select Screen
  */
 
-class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+public class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private class MenuOption {
 

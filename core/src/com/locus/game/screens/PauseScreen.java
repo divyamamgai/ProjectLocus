@@ -16,7 +16,7 @@ import com.locus.game.tools.Text;
  * Pause Screen
  */
 
-class PauseScreen implements Screen, InputProcessor {
+public class PauseScreen implements Screen, InputProcessor {
 
     private ProjectLocus projectLocus;
     private SelectModeScreen selectModeScreen;

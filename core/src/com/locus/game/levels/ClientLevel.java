@@ -10,8 +10,8 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Queue;
 import com.locus.game.ProjectLocus;
@@ -31,6 +31,7 @@ import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.Hud;
 import com.locus.game.tools.InputController;
+import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,21 +44,33 @@ import java.util.Iterator;
 public class ClientLevel {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
+    private static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
+            ProjectLocus.WORLD_HALF_HEIGHT, 512f);
 
-    private OrthographicCamera camera;
+    private OrthographicCamera camera, foregroundCamera;
     private ProjectLocus projectLocus;
     private Hud hud;
     private World world;
     private HashMap<Short, ClientShip> shipMap;
     private ArrayList<ClientBullet> bulletAliveList;
     private final HashMap<Bullet.Type, Queue<ClientBullet>> bulletDeadQueueMap;
-    private ClientShip player;
+    private ClientShip player, followShip;
     private ArrayList<ClientMoon> moonList;
     private TextureRegion barBackgroundTexture, barForegroundTexture;
     private ClientPlanet planet;
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
     private InputController inputController;
+
+    private float followShipTimePassed;
+    private ArrayList<ClientShip> followShipArray;
+    private int followShipIndex;
+    private TextureRegion redTransparentBackground;
+
+    private float outOfLevelTimePassed;
+    private short outOfLevelTimer;
+    private boolean playerIsOutOfLevel;
+    private Text messageText, countDownText;
 
     public ProjectLocus getProjectLocus() {
         return projectLocus;
@@ -118,10 +131,12 @@ public class ClientLevel {
 
         shipMap.put(shipState.ID, ship);
 
+        followShipArray.add(ship);
+
         hud.addPlayerData(shipState, isPlayer);
 
         if (isPlayer) {
-            player = ship;
+            player = followShip = ship;
             return ship;
         }
 
@@ -131,7 +146,8 @@ public class ClientLevel {
 
     public synchronized void removeShipAlive(short shipID) {
         if (shipMap.containsKey(shipID)) {
-            shipMap.remove(shipID);
+            ClientShip ship = shipMap.remove(shipID);
+            ship.killBody();
         }
     }
 
@@ -154,10 +170,19 @@ public class ClientLevel {
         bulletAliveList.add(bullet);
     }
 
-    public ClientLevel(ProjectLocus projectLocus, Hud hud, Level.Property property) {
+    public ClientLevel(ProjectLocus projectLocus, Hud hud, OrthographicCamera foregroundCamera,
+                       Level.Property property) {
 
         this.projectLocus = projectLocus;
         this.hud = hud;
+        this.foregroundCamera = foregroundCamera;
+
+        outOfLevelTimer = 5;
+        outOfLevelTimePassed = 0;
+        playerIsOutOfLevel = false;
+
+        messageText = new Text(projectLocus.font32, "Get Back To Planet Or Die In");
+        countDownText = new Text(projectLocus.font72, "5");
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
@@ -195,6 +220,13 @@ public class ClientLevel {
         inputMultiplexer.addProcessor(inputController);
         inputMultiplexer.addProcessor(new GestureDetector(inputController));
 
+        followShipArray = new ArrayList<ClientShip>();
+        followShipTimePassed = 15f;
+        followShipIndex = 0;
+
+        redTransparentBackground = projectLocus.uiTextureAtlas.
+                findRegion("redTransparentBackground");
+
     }
 
     public void onShow() {
@@ -203,11 +235,45 @@ public class ClientLevel {
 
     public synchronized void update(float delta) {
 
-        if (player != null) {
+        if (player != null && player.isAlive()) {
             inputController.update();
             camera.position.x += (player.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
             camera.position.y += (player.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
             camera.update();
+            if (!LEVEL_CIRCLE.contains(player.getBodyPosition())) {
+                playerIsOutOfLevel = true;
+                outOfLevelTimePassed += delta;
+                if (outOfLevelTimePassed >= 1f) {
+                    if (--outOfLevelTimer <= 0) {
+                        // Kill the player.
+                        player.kill();
+                        projectLocus.gameClient.sendShipKill(player.getID());
+                        playerIsOutOfLevel = false;
+                    }
+                    countDownText.setTextFast(String.valueOf(outOfLevelTimer));
+                    outOfLevelTimePassed = 0;
+                }
+            } else {
+                playerIsOutOfLevel = false;
+                outOfLevelTimer = 5;
+                outOfLevelTimePassed = 0;
+            }
+        } else {
+            camera.zoom = 1.5f;
+            camera.position.x += (followShip.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
+            camera.position.y += (followShip.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
+            camera.update();
+            followShipTimePassed += delta;
+            if (followShipTimePassed >= 15f) {
+                while (followShipArray.get(followShipIndex).isAlive()) {
+                    followShip = followShipArray.get(followShipIndex);
+                    followShipIndex++;
+                    if (followShipIndex == shipMap.size()) {
+                        followShipIndex = 0;
+                    }
+                }
+                followShipTimePassed = 0;
+            }
         }
 
         planet.interpolate(delta);
@@ -254,7 +320,9 @@ public class ClientLevel {
         }
 
         for (ClientEntity entity : shipMap.values()) {
-            entity.draw(spriteBatch, camera.frustum);
+            if (entity.isAlive()) {
+                entity.draw(spriteBatch, camera.frustum);
+            }
         }
 
         for (ClientBullet bullet : bulletAliveList) {
@@ -263,12 +331,29 @@ public class ClientLevel {
 
         spriteBatch.end();
 
+        if (playerIsOutOfLevel) {
+            spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+            spriteBatch.begin();
+            spriteBatch.draw(redTransparentBackground,
+                    0, 0,
+                    ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
+            messageText.draw(spriteBatch);
+            countDownText.draw(spriteBatch);
+            spriteBatch.end();
+        }
+
     }
 
     public void resize() {
         camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
         camera.position.set(player.getX(), player.getY(), 0);
+        messageText.setPosition(
+                ProjectLocus.screenCameraHalfWidth - messageText.getHalfWidth(),
+                ProjectLocus.screenCameraHalfHeight + countDownText.getHeight() - 24);
         camera.update();
+        countDownText.setPosition(
+                ProjectLocus.screenCameraHalfWidth - countDownText.getHalfWidth(),
+                ProjectLocus.screenCameraHalfHeight - countDownText.getHalfHeight());
     }
 
 }

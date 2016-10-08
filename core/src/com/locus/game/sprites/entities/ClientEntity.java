@@ -17,6 +17,7 @@ public abstract class ClientEntity extends Sprite {
     protected Body body;
     short ID;
     float health, bodyX, bodyY, angleDeg, toBodyX, toBodyY, toAngleDeg;
+    boolean isAlive;
 
     // Enable the constructors as per the needs.
 
@@ -44,6 +45,10 @@ public abstract class ClientEntity extends Sprite {
 
     public void setDefinition(EntityLoader.Definition definition) {
         this.definition = definition;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
     }
 
 }

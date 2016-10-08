@@ -59,6 +59,7 @@ class Network {
         kryo.register(GameState.class);
         kryo.register(ControllerState.class);
         kryo.register(FireState.class);
+        kryo.register(ShipKill.class);
     }
 
     static class PlayerJoinRequest {
@@ -253,6 +254,20 @@ class Network {
             this.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
             this.doPrimaryReset = doPrimaryReset;
             this.doSecondaryReset = doSecondaryReset;
+        }
+
+    }
+
+    static class ShipKill {
+
+        short shipID;
+
+        ShipKill() {
+
+        }
+
+        ShipKill(short shipID) {
+            this.shipID = shipID;
         }
 
     }

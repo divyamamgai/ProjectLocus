@@ -29,6 +29,7 @@ public class GameClient implements InputController.InputCallBack {
     private ClientLevel level;
     private Network.ControllerState controllerState;
     private ClientShip clientShip;
+    private boolean isGameEnded;
 
     public void setLevel(ClientLevel level) {
         this.level = level;
@@ -92,6 +93,8 @@ public class GameClient implements InputController.InputCallBack {
         Network.registerClasses(client);
 
         controllerState = new Network.ControllerState();
+
+        isGameEnded = false;
 
     }
 
@@ -168,6 +171,7 @@ public class GameClient implements InputController.InputCallBack {
             }
 
         } else if (object instanceof Network.EndGame) {
+            isGameEnded = true;
             stop();
             projectLocus.setScreen(new ScoreBoardScreen(projectLocus, lobbyScreen,
                     ((Network.EndGame) object).shipStateList));
@@ -177,13 +181,19 @@ public class GameClient implements InputController.InputCallBack {
 
     void onDisconnected() {
         stop();
-        projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.selectModeScreen,
-                "Host Disconnected"));
-        lobbyScreen.dispose();
+        if (!isGameEnded) {
+            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.selectModeScreen,
+                    "Host Disconnected"));
+            lobbyScreen.dispose();
+        }
     }
 
     public void sendReadyState(boolean isReady) {
         client.sendTCP(new Network.PlayerReadyRequest(isReady));
+    }
+
+    public void sendShipKill(short ID) {
+        client.sendTCP(new Network.ShipKill(ID));
     }
 
     public void stop() {

@@ -32,6 +32,10 @@ android {
             minSdkVersion 19
             targetSdkVersion 19
         }
+        Marshmallow {
+            minSdkVersion 23
+            targetSdkVersion 23
+        }
     }
 }
 // called every time gradle gets executed, takes the native dependencies of

@@ -425,6 +425,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 else {
                     projectLocus.lobbyScreenBackgroundMusic.setVolume(1f);
                 }
+                projectLocus.lobbyScreenBackgroundMusic.setLooping(true);
                 projectLocus.lobbyScreenBackgroundMusic.play();
             }
         } catch (Exception e) {
