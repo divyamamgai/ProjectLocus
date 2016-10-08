@@ -45,12 +45,12 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     private Ship.Type[] shipTypeArray = Ship.Type.values();
     private Color[] shipColorArray = {
             Color.WHITE,
-            Color.PINK,
+            new Color(200f / 255f, 150f / 255f, 80f / 255f, 1),
+            Color.SKY,
             Color.CYAN,
             Color.YELLOW,
             Color.CHARTREUSE,
-            Color.LIME,
-            Color.CORAL,
+            Color.ROYAL,
             Color.VIOLET
     };
     private InputMultiplexer inputMultiplexer;

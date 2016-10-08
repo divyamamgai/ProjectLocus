@@ -15,7 +15,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.locus.game.ProjectLocus;
 import com.locus.game.network.ShipState;
 import com.locus.game.tools.Text;
@@ -54,9 +53,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
 
-    private Text backToLobby;
-    private Vector3 backToLobbyBBMinimum, backToLobbyBBMaximum;
-    private BoundingBox backToLobbyBB;
+    private Text doneText;
     private boolean isTiledMapCreated;
 
     public ScoreBoardScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen,
@@ -72,10 +69,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
 
-        backToLobbyBBMinimum = new Vector3();
-        backToLobbyBBMaximum = new Vector3();
-        backToLobbyBB = new BoundingBox();
-        backToLobby = new Text(projectLocus.font32, "Back To Lobby");
+        doneText = new Text(projectLocus.font32, "DONE");
         playerResultDataList = new ArrayList<PlayerResultData>();
 
         inputMultiplexer = new InputMultiplexer();
@@ -118,17 +112,10 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
 
         }
 
-        backToLobbyBBMinimum.set(ProjectLocus.screenCameraWidth - COLUMN_PADDING
-                - backToLobby.getWidth() - 20, ProjectLocus.screenCameraHeight - MARGIN_TOP +
-                ROW_PADDING - backToLobby.getHalfHeight() - 20, 0);
-        backToLobbyBBMaximum.set(backToLobbyBBMinimum.x + backToLobby.getWidth() + 20,
-                backToLobbyBBMinimum.y + backToLobby.getHeight() + 20, 0);
-        backToLobbyBB.set(backToLobbyBBMinimum, backToLobbyBBMaximum);
-
-        backToLobby.setPosition(
-                ProjectLocus.screenCameraWidth - COLUMN_PADDING - backToLobby.getWidth(),
+        doneText.setPosition(
+                ProjectLocus.screenCameraWidth - COLUMN_PADDING - doneText.getWidth(),
                 ProjectLocus.screenCameraHeight - MARGIN_TOP + ROW_PADDING -
-                        backToLobby.getHalfHeight());
+                        doneText.getHalfHeight());
 
     }
 
@@ -139,7 +126,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
             playerResultData.shipSprite.draw(spriteBatch);
             playerResultData.playerScoreText.draw(spriteBatch);
         }
-        backToLobby.draw(spriteBatch);
+        doneText.draw(spriteBatch);
 
     }
 
@@ -233,7 +220,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
-        if (backToLobbyBB.contains(touchPosition)) {
+        if (doneText.getTextBoundingBox().contains(touchPosition)) {
             projectLocus.setScreen(lobbyScreen.selectModeScreen);
             lobbyScreen.dispose();
         }
