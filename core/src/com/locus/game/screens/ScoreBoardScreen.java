@@ -77,7 +77,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 ProjectLocus.worldCameraHeight);
 
         doneText = new Text(projectLocus.font32, "DONE");
-        scoreBoardText = new Text(projectLocus.font32, "SCOREBOARD");
+        scoreBoardText = new Text(projectLocus.font32, "STANDINGS");
         playerResultList = new ArrayList<PlayerResultData>();
 
         int i = 0;
