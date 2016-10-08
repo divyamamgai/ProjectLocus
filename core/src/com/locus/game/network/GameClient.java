@@ -1,14 +1,12 @@
 package com.locus.game.network;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
 import com.locus.game.screens.LobbyScreen;
 import com.locus.game.screens.ErrorScreen;
-import com.locus.game.sprites.bullets.Bullet;
+import com.locus.game.screens.ScoreBoardScreen;
 import com.locus.game.sprites.entities.ClientShip;
 import com.locus.game.tools.InputController;
 
@@ -30,7 +28,7 @@ public class GameClient implements InputController.InputCallBack {
     private LobbyScreen lobbyScreen;
     private ClientLevel level;
     private Network.ControllerState controllerState;
-    private ClientShip ship;
+    private ClientShip clientShip;
 
     public void setLevel(ClientLevel level) {
         this.level = level;
@@ -65,10 +63,10 @@ public class GameClient implements InputController.InputCallBack {
         client.sendTCP(controllerState);
 
         if (controllerState.isPrimaryBulletEnabled) {
-            ship.firePrimaryBullet();
+            clientShip.firePrimaryBullet();
         }
         if (controllerState.isSecondaryBulletEnabled) {
-            ship.fireSecondaryBullet();
+            clientShip.fireSecondaryBullet();
         }
 
     }
@@ -166,6 +164,10 @@ public class GameClient implements InputController.InputCallBack {
             level.getShipAlive(fireState.shipID).fire(fireState.isPrimaryBulletEnabled,
                     fireState.isSecondaryBulletEnabled);
 
+        } else if (object instanceof Network.RemoveShip) {
+
+            level.removeShipAlive(((Network.RemoveShip) object).shipID);
+
         } else if (object instanceof Network.UpdateLobby) {
 
             lobbyScreen.setPlayerMap(((Network.UpdateLobby) object).playerMap);
@@ -182,24 +184,28 @@ public class GameClient implements InputController.InputCallBack {
 
         } else if (object instanceof Network.StartGame) {
 
-            ArrayList<Network.CreateShip> createShipList =
-                    ((Network.StartGame) object).createShipList;
+            ArrayList<Network.AddShip> addShipList =
+                    ((Network.StartGame) object).addShipList;
 
             float startGameIn = ProjectLocus.GAME_COUNT_DOWN -
                     ((float) connection.getReturnTripTime() / 1000f);
 
             lobbyScreen.startGame(startGameIn);
 
-            for (Network.CreateShip createShip : createShipList) {
-                if (createShip.connectionID == connection.getID()) {
-                    ship = level.addShipAlive(createShip.property, createShip.shipState,
-                            createShip.connectionID == connection.getID());
+            for (Network.AddShip addShip : addShipList) {
+                if (addShip.connectionID == connection.getID()) {
+                    clientShip = level.addShipAlive(addShip.property, addShip.shipState,
+                            addShip.connectionID == connection.getID());
                 } else {
-                    level.addShipAlive(createShip.property, createShip.shipState,
-                            createShip.connectionID == connection.getID());
+                    level.addShipAlive(addShip.property, addShip.shipState,
+                            addShip.connectionID == connection.getID());
                 }
             }
 
+        } else if (object instanceof Network.EndGame) {
+            stop();
+            projectLocus.setScreen(new ScoreBoardScreen(projectLocus, lobbyScreen,
+                    ((Network.EndGame) object).shipStateList));
         }
 
     }

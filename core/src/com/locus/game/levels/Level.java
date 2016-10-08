@@ -10,6 +10,7 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
@@ -40,7 +41,6 @@ import java.util.Iterator;
 public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
-    private final boolean isMultiPlayer;
 
     public static class Property {
 
@@ -58,16 +58,42 @@ public class Level implements Disposable {
             this.backgroundType = backgroundType;
         }
 
+        public static Level.Property generateRandom() {
+            Level.Property property = new Level.Property();
+            Planet.Type[] planetTypeArray = Planet.Type.values();
+            property.planetType = planetTypeArray[MathUtils.random(0, planetTypeArray.length - 1)];
+            Moon.Type[] moonTypeArray = Moon.Type.values();
+            float[] moonRadiusArray = {200f, 250f, 300f, 350f, 400f};
+            int numberOfMoons = MathUtils.random(2, 4), moonRadiusIndex;
+            property.moonPropertyList = new ArrayList<Moon.Property>();
+            ArrayList<Integer> moonRadiusTakenList = new ArrayList<Integer>();
+            for (int i = 0; i < numberOfMoons; i++) {
+                moonRadiusIndex = MathUtils.random(0, 4);
+                while (moonRadiusTakenList.contains(moonRadiusIndex)) {
+                    moonRadiusIndex = MathUtils.random(0, 4);
+                }
+                moonRadiusTakenList.add(moonRadiusIndex);
+                property.moonPropertyList.add(
+                        new Moon.Property(
+                                moonTypeArray[MathUtils.random(0, moonTypeArray.length - 1)],
+                                moonRadiusArray[moonRadiusIndex],
+                                i * 90f));
+            }
+            property.backgroundType = MathUtils.random(0, 7);
+            return property;
+        }
+
     }
 
     private OrthographicCamera camera;
     private ProjectLocus projectLocus;
     private Hud hud;
     private Level.Property property;
+    private boolean isMultiPlayer;
     private World world;
     private ArrayList<Bullet> bulletAliveList;
     private HashMap<Bullet.Type, Queue<Bullet>> bulletDeadQueueMap;
-    private ArrayList<Ship> shipAliveList;
+    private HashMap<Short, Ship> shipAliveMap;
     private HashMap<Ship.Type, Queue<Ship>> shipDeadQueueMap;
     private ArrayList<Moon> moonList;
     private TextureRegion barBackgroundTexture, barForegroundTexture;
@@ -81,14 +107,12 @@ public class Level implements Disposable {
     private ArrayList<MoonState> moonStateList;
     private ArrayList<ShipState> shipStateList;
 
+    private short alivePlayerCount;
+
     private float timePassed;
 
     public ProjectLocus getProjectLocus() {
         return projectLocus;
-    }
-
-    public short getPlayerID() {
-        return player.getID();
     }
 
     public EntityLoader getEntityLoader() {
@@ -135,6 +159,10 @@ public class Level implements Disposable {
         return inputMultiplexer;
     }
 
+    public short getAlivePlayerCount() {
+        return alivePlayerCount;
+    }
+
     public Level(ProjectLocus projectLocus, Hud hud, Property property, boolean isMultiPlayer) {
 
         // Reset Entity Count
@@ -145,6 +173,7 @@ public class Level implements Disposable {
         this.property = property;
         this.isMultiPlayer = isMultiPlayer;
 
+        alivePlayerCount = 0;
         timePassed = 0;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
@@ -170,7 +199,7 @@ public class Level implements Disposable {
             bulletDeadQueueMap.put(bulletType, new Queue<Bullet>());
         }
 
-        shipAliveList = new ArrayList<Ship>();
+        shipAliveMap = new HashMap<Short, Ship>();
         shipStateList = new ArrayList<ShipState>();
 
         // We know that how many Type of Ships we have so we pass the capacity too.
@@ -194,6 +223,11 @@ public class Level implements Disposable {
         }
 
         inputMultiplexer = new InputMultiplexer();
+        if (isMultiPlayer) {
+            inputController = new InputController(projectLocus.gameServer, true);
+            inputMultiplexer.addProcessor(inputController);
+            inputMultiplexer.addProcessor(new GestureDetector(inputController));
+        }
 
     }
 
@@ -201,12 +235,12 @@ public class Level implements Disposable {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
-    public Ship getShipAlive(int shipIndex) {
-        return shipAliveList.get(shipIndex);
+    public Ship getShipAlive(short shipID) {
+        return shipAliveMap.get(shipID);
     }
 
-    public synchronized int addShipAlive(Ship.Property shipProperty, float x, float y, float angleRad,
-                                         boolean isPlayer) {
+    public synchronized short addShipAlive(Ship.Property shipProperty, float x, float y, float angleRad,
+                                           boolean isPlayer) {
 
         Ship ship;
         Queue<Ship> shipDeadQueue = shipDeadQueueMap.get(shipProperty.type);
@@ -218,7 +252,7 @@ public class Level implements Disposable {
             ship = new Ship(this, shipProperty, x, y, angleRad);
         }
 
-        shipAliveList.add(ship);
+        shipAliveMap.put(ship.getID(), ship);
         shipStateList.add(ship.getShipState());
 
         if (isMultiPlayer) {
@@ -226,20 +260,31 @@ public class Level implements Disposable {
         }
 
         if (isPlayer) {
-            inputController = new InputController((player = ship), true);
-            inputMultiplexer.clear();
-            inputMultiplexer.addProcessor(inputController);
-            inputMultiplexer.addProcessor(new GestureDetector(inputController));
+            player = ship;
+            // If it's single player we need to bind controls to the Player's Ship.
+            if (!isMultiPlayer) {
+                inputController = new InputController(ship, true);
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(inputController);
+                inputMultiplexer.addProcessor(new GestureDetector(inputController));
+            }
         }
 
+        alivePlayerCount++;
+
         // Return it's index for later use if needed.
-        return (shipAliveList.size() - 1);
+        return ship.getID();
 
     }
 
-    public synchronized void removeShipAlive(int shipIndex) {
-        if (shipIndex >= 0 && shipIndex < shipAliveList.size()) {
-            shipAliveList.remove(shipIndex);
+    public synchronized Ship removeShipAlive(short shipID) {
+        if (shipAliveMap.containsKey(shipID)) {
+            Ship ship = shipAliveMap.remove(shipID);
+            shipStateList.remove(ship.getShipState());
+            alivePlayerCount--;
+            return ship;
+        } else {
+            return null;
         }
     }
 
@@ -276,7 +321,7 @@ public class Level implements Disposable {
             moon.update();
         }
 
-        Iterator<Ship> shipIterator = shipAliveList.iterator();
+        Iterator<Ship> shipIterator = shipAliveMap.values().iterator();
         while (shipIterator.hasNext()) {
             Ship ship = shipIterator.next();
             if (ship.isAlive()) {
@@ -289,6 +334,7 @@ public class Level implements Disposable {
                 ship.killBody();
                 shipDeadQueueMap.get(ship.getShipType()).addLast(ship);
                 shipIterator.remove();
+                alivePlayerCount--;
             }
         }
 
@@ -330,7 +376,7 @@ public class Level implements Disposable {
             moon.draw(spriteBatch, camera.frustum);
         }
 
-        for (Entity entity : shipAliveList) {
+        for (Entity entity : shipAliveMap.values()) {
             entity.draw(spriteBatch, camera.frustum);
         }
 

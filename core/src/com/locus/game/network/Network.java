@@ -2,11 +2,9 @@ package com.locus.game.network;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.ShortArray;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.locus.game.levels.Level;
-import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
@@ -53,11 +51,14 @@ class Network {
         kryo.register(MoonState.class);
         kryo.register(Vector2.class);
         kryo.register(ShipState.class);
-        kryo.register(CreateShip.class);
+        kryo.register(AddShip.class);
+        kryo.register(RemoveShip.class);
         kryo.register(StartGame.class);
+        kryo.register(EndGame.class);
         kryo.register(short[].class);
         kryo.register(GameState.class);
         kryo.register(ControllerState.class);
+        kryo.register(FireState.class);
     }
 
     static class PlayerJoinRequest {
@@ -144,17 +145,17 @@ class Network {
 
     }
 
-    static class CreateShip {
+    static class AddShip {
 
         int connectionID;
         Ship.Property property;
         ShipState shipState;
 
-        CreateShip() {
+        AddShip() {
 
         }
 
-        CreateShip(int connectionID, Ship.Property property, ShipState shipState) {
+        AddShip(int connectionID, Ship.Property property, ShipState shipState) {
             this.connectionID = connectionID;
             this.property = property;
             this.shipState = shipState;
@@ -162,16 +163,44 @@ class Network {
 
     }
 
+    static class RemoveShip {
+
+        short shipID;
+
+        RemoveShip() {
+
+        }
+
+        RemoveShip(short shipID) {
+            this.shipID = shipID;
+        }
+
+    }
+
     static class StartGame {
 
-        ArrayList<CreateShip> createShipList;
+        ArrayList<AddShip> addShipList;
 
         StartGame() {
 
         }
 
-        StartGame(ArrayList<CreateShip> createShipList) {
-            this.createShipList = createShipList;
+        StartGame(ArrayList<AddShip> addShipList) {
+            this.addShipList = addShipList;
+        }
+
+    }
+
+    static class EndGame {
+
+        ArrayList<ShipState> shipStateList;
+
+        EndGame() {
+
+        }
+
+        EndGame(ArrayList<ShipState> shipStateList) {
+            this.shipStateList = shipStateList;
         }
 
     }

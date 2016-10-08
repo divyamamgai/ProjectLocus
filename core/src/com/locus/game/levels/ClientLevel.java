@@ -100,7 +100,11 @@ public class ClientLevel {
         ShipState shipState;
         while (shipStateIterator.hasNext()) {
             shipState = shipStateIterator.next();
-            shipMap.get(shipState.ID).update(shipState);
+            if (shipMap.containsKey(shipState.ID)) {
+                shipMap.get(shipState.ID).update(shipState);
+            } else {
+                Gdx.app.log("Client Level", "Does Not Contain Ship #" + shipState.ID);
+            }
         }
         hud.update(shipStateList);
     }
@@ -123,6 +127,12 @@ public class ClientLevel {
 
         return null;
 
+    }
+
+    public synchronized void removeShipAlive(short shipID) {
+        if (shipMap.containsKey(shipID)) {
+            shipMap.remove(shipID);
+        }
     }
 
     public synchronized ClientShip getShipAlive(short ID) {

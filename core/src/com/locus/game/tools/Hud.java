@@ -36,10 +36,10 @@ public class Hud {
             this.isPlayer = isPlayer;
             this.health = health;
 
+            this.playerIDText = new Text(projectLocus.font24,
+                    String.format(Locale.ENGLISH, "%01d", ID));
             this.playerScoreText = new Text(projectLocus.font24,
                     String.format(Locale.ENGLISH, "%04d", this.playerScore));
-            this.playerIDText = new Text(projectLocus.font24,
-                    String.format(Locale.ENGLISH, "%04d", ID));
         }
     }
 

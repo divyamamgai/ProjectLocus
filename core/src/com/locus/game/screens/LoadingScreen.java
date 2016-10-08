@@ -89,6 +89,7 @@ public class LoadingScreen implements Screen {
         assetManager.load("sprites/entities/0/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/1/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/2/pack.atlas", TextureAtlas.class);
+        assetManager.load("sprites/entities/3/pack.atlas", TextureAtlas.class);
         assetManager.load("music/screen.wav", Music.class);
         assetManager.load("music/lobbyScreen.wav", Music.class);
         assetManager.load("music/gamePlay.wav", Music.class);
@@ -211,6 +212,9 @@ public class LoadingScreen implements Screen {
                     TextureAtlas.class);
 
             projectLocus.moonTextureAtlas = assetManager.get("sprites/entities/2/pack.atlas",
+                    TextureAtlas.class);
+
+            projectLocus.asteroidTextureAtlas = assetManager.get("sprites/entities/3/pack.atlas",
                     TextureAtlas.class);
 
             projectLocus.entityLoader = new EntityLoader(projectLocus);

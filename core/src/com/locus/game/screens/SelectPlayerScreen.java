@@ -73,7 +73,8 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
         backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
 
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(
+                projectLocus.tiledMapList.get(MathUtils.random(0, 7)),
                 ProjectLocus.TILED_MAP_SCALE);
 
         logo = projectLocus.uiTextureAtlas.createSprite("logo");

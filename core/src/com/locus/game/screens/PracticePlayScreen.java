@@ -36,13 +36,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
         fpsText = new Text(projectLocus.font24, "60");
 
-        ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
-        moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
-        moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
-        moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
-
-        level = new Level(projectLocus, null,
-                new Level.Property(Planet.Type.Gas, moonPropertyList, 1), false);
+        level = new Level(projectLocus, null, Level.Property.generateRandom(), false);
 
         level.addShipAlive(projectLocus.playerShipProperty,
                 ProjectLocus.WORLD_HALF_WIDTH + 100f, ProjectLocus.WORLD_HALF_HEIGHT + 100f,

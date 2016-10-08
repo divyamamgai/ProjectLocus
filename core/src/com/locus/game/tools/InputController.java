@@ -34,6 +34,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     private InputCallBack inputCallBack;
     private static boolean isRotationEnabled, isThrustEnabled, isFireEnabled,
             isRotationClockwise, isThrustForward, isSetRotationPointer, isSetThrustPointer,
+            isPrimaryBulletPointerEnabled, isSecondaryBulletPointerEnabled,
             isPrimaryBulletEnabled, isSecondaryBulletEnabled;
     private boolean isHost;
     private static int thrustPointerID, rotationPointerID, firingPointerID;
@@ -49,6 +50,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         isRotationClockwise = isThrustForward = false;
         rotationPointerID = thrustPointerID = firingPointerID = -1;
         isSetRotationPointer = isSetThrustPointer = false;
+        isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
     }
 
     @Override
@@ -119,13 +121,15 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             initialXCoordinateRotation = touchPosition.x;
         }
         if (firingPointerID == pointer) {
-            if (isPrimaryBulletEnabled) {
-                isFireEnabled = (Math.abs(screenX - tapXCoordinate) < 20) && (Math.abs(screenY - tapYCoordinate) < 20);
-                isPrimaryBulletEnabled = false;
+            if (isPrimaryBulletPointerEnabled) {
+                isFireEnabled = isPrimaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
+                        && (Math.abs(screenY - tapYCoordinate) < 20);
+                isPrimaryBulletPointerEnabled = false;
             }
-            if (isSecondaryBulletEnabled) {
-                isFireEnabled = (Math.abs(screenX - tapXCoordinate) < 20) && (Math.abs(screenY - tapYCoordinate) < 20);
-                isSecondaryBulletEnabled = false;
+            if (isSecondaryBulletPointerEnabled) {
+                isFireEnabled = isSecondaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
+                        && (Math.abs(screenY - tapYCoordinate) < 20);
+                isSecondaryBulletPointerEnabled = false;
             }
         }
         return false;
@@ -142,7 +146,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             isSetThrustPointer = false;
         }
         if (firingPointerID == pointer) {
-            isFireEnabled = false;
+            isFireEnabled = isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
         }
         return false;
     }
@@ -200,8 +204,8 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         if (count == 1) {
             tapXCoordinate = x;
             tapYCoordinate = y;
-            isPrimaryBulletEnabled = true;
-            isSecondaryBulletEnabled = false;
+            isPrimaryBulletPointerEnabled = true;
+            isSecondaryBulletPointerEnabled = false;
             if (touchPosition.x > 0) {
                 firingPointerID = thrustPointerID;
             } else {
@@ -210,16 +214,16 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         } else if (count == 2) {
             tapXCoordinate = x;
             tapYCoordinate = y;
-            isSecondaryBulletEnabled = true;
-            isPrimaryBulletEnabled = false;
+            isSecondaryBulletPointerEnabled = true;
+            isPrimaryBulletPointerEnabled = false;
             if (touchPosition.x > 0) {
                 firingPointerID = thrustPointerID;
             } else {
                 firingPointerID = rotationPointerID;
             }
         } else {
-            isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
-            isFireEnabled = false;
+            isPrimaryBulletPointerEnabled = isSecondaryBulletPointerEnabled = false;
+            isFireEnabled = isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
         }
         return false;
     }

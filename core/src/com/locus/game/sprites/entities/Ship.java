@@ -196,6 +196,11 @@ public class Ship extends Entity implements InputController.InputCallBack {
         secondaryBulletCount++;
     }
 
+    public void fireReset() {
+        primaryBulletCount = 0;
+        secondaryBulletCount = 0;
+    }
+
     @Override
     public void applyRotation(boolean isClockwise) {
         body.applyAngularImpulse((isClockwise ? -1 : 1) * definition.rotationSpeed, true);
@@ -233,7 +238,6 @@ public class Ship extends Entity implements InputController.InputCallBack {
                               boolean isRotationEnabled, boolean isRotationClockwise,
                               boolean isFireEnabled, boolean isPrimaryBulletEnabled,
                               boolean isSecondaryBulletEnabled) {
-
     }
 
 }

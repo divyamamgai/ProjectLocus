@@ -153,4 +153,10 @@ public class ClientShip extends ClientEntity {
             fireSecondaryBullet();
         }
     }
+
+    public void fireReset() {
+        primaryBulletCount = 0;
+        secondaryBulletCount = 0;
+    }
+
 }

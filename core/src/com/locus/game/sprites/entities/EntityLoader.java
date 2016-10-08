@@ -135,6 +135,21 @@ public class EntityLoader implements Disposable {
                     bodyOrigin = new Vector2(radius, radius);
 
                     break;
+                case Asteroid:
+
+                    bodyDef.type = BodyDef.BodyType.DynamicBody;
+                    bodyDef.angularVelocity = entityJson.getFloat("angularVelocity");
+
+                    width = entityJson.getFloat("width");
+                    height = entityJson.getFloat("height");
+
+                    bodyOrigin = physicsLoader.getOrigin(path, width).cpy();
+
+                    textureRegion = projectLocus.asteroidTextureAtlas
+                            .findRegion(String.valueOf(secondaryType));
+
+
+                    break;
                 default:
                     Gdx.app.log("EntityLoader.Definition", "Type is invalid for - " + path);
             }

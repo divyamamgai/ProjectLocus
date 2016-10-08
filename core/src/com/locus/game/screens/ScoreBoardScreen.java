@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.locus.game.ProjectLocus;
+import com.locus.game.network.ShipState;
 import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
@@ -56,13 +57,14 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     private Text backToLobby;
     private Vector3 backToLobbyBBMinimum, backToLobbyBBMaximum;
     private BoundingBox backToLobbyBB;
+    private boolean isTiledMapCreated;
 
-    ScoreBoardScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen,
-                     float backgroundMovementAngleRad) {
+    public ScoreBoardScreen(ProjectLocus projectLocus, LobbyScreen lobbyScreen,
+                            ArrayList<ShipState> shipStateList) {
         this.projectLocus = projectLocus;
         this.lobbyScreen = lobbyScreen;
 
-        this.backgroundMovementAngleRad = backgroundMovementAngleRad;
+        backgroundMovementAngleRad = 0;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -70,18 +72,17 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
 
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
-                ProjectLocus.TILED_MAP_SCALE);
-
         backToLobbyBBMinimum = new Vector3();
         backToLobbyBBMaximum = new Vector3();
         backToLobbyBB = new BoundingBox();
-        backToLobby = new Text(projectLocus.font32, "Back To Lobby ->");
+        backToLobby = new Text(projectLocus.font32, "Back To Lobby");
         playerResultDataList = new ArrayList<PlayerResultData>();
 
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);
+
+        isTiledMapCreated = false;
 
     }
 
@@ -150,6 +151,13 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     @Override
     public void render(float delta) {
 
+        if (!isTiledMapCreated) {
+            tiledMapRenderer = new OrthogonalTiledMapRenderer(
+                    projectLocus.tiledMapList.get(MathUtils.random(0, 7)),
+                    ProjectLocus.TILED_MAP_SCALE);
+            isTiledMapCreated = true;
+        }
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         backgroundMovementAngleRad += delta * ProjectLocus.SCREEN_CAMERA_MOVEMENT_SPEED;
@@ -204,7 +212,8 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         switch (keycode) {
             case Input.Keys.ENTER:
             case Input.Keys.BACK:
-                projectLocus.setScreen(lobbyScreen);
+                projectLocus.setScreen(lobbyScreen.selectModeScreen);
+                lobbyScreen.dispose();
                 break;
         }
         return false;
@@ -225,7 +234,8 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
         if (backToLobbyBB.contains(touchPosition)) {
-            projectLocus.setScreen(lobbyScreen);
+            projectLocus.setScreen(lobbyScreen.selectModeScreen);
+            lobbyScreen.dispose();
         }
         return false;
     }

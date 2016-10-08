@@ -197,6 +197,61 @@
       "mass": 2500000,
       "angularVelocity": 0.075,
       "orbitalVelocity": 10
+    },
+    {
+      "type": 3,
+      "secondaryType": 0,
+      "density": 3,
+      "friction": 1,
+      "restitution": 0.1,
+      "width": 8,
+      "height": 8,
+      "mass": 15000,
+      "angularVelocity": 0.25
+    },
+    {
+      "type": 3,
+      "secondaryType": 1,
+      "density": 2,
+      "friction": 1,
+      "restitution": 0.1,
+      "width": 6,
+      "height": 6,
+      "mass": 10000,
+      "angularVelocity": 0.3
+    },
+    {
+      "type": 3,
+      "secondaryType": 2,
+      "density": 1,
+      "friction": 1,
+      "restitution": 0.1,
+      "width": 5,
+      "height": 3.7,
+      "mass": 8000,
+      "angularVelocity": 0.35
+    },
+    {
+      "type": 3,
+      "secondaryType": 3,
+      "density": 2,
+      "friction": 1,
+      "restitution": 0.1,
+      "width": 7,
+      "height": 7.73,
+      "mass": 12500,
+      "angularVelocity": 0.25
+    },
+    {
+      "type": 3,
+      "secondaryType": 4,
+      "density": 3,
+      "friction": 1,
+      "restitution": 0.1,
+      "width": 5.5,
+      "height": 4.95,
+      "mass": 9000,
+      "angularVelocity": 0.25
     }
   ]
 }

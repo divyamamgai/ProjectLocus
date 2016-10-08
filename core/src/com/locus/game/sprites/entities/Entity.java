@@ -19,7 +19,8 @@ public abstract class Entity extends Sprite {
 
         Ship,
         Planet,
-        Moon;
+        Moon,
+        Asteroid;
 
         public String toString() {
             return String.valueOf(ordinal());

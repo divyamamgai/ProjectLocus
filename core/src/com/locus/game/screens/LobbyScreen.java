@@ -15,16 +15,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.locus.game.ProjectLocus;
-import com.locus.game.levels.ClientLevel;
 import com.locus.game.levels.Level;
 import com.locus.game.network.GameClient;
 import com.locus.game.network.GameServer;
 import com.locus.game.network.Player;
-import com.locus.game.sprites.entities.Moon;
-import com.locus.game.sprites.entities.Planet;
 import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
@@ -40,6 +36,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
+
+    public void allReady() {
+
+    }
 
     public enum Type {
         Host,
@@ -69,7 +69,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     public SelectModeScreen selectModeScreen;
-
     private float backgroundMovementAngleRad;
     private ProjectLocus projectLocus;
     private OrthographicCamera foregroundCamera, backgroundCamera;
@@ -89,7 +88,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private boolean isPlayScreenCreated;
     private boolean isPlayerMapToBeUpdated;
     private boolean isReady;
-    private boolean isStartButtonEnabled;
     private boolean isGameToBeStarted;
     private boolean isGameStarted;
     private boolean isReadyToBeChanged;
@@ -114,10 +112,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         return multiPlayerPlayScreen.level;
     }
 
-    public ClientLevel getClientLevel() {
-        return multiPlayerPlayScreenClient.level;
-    }
-
     public void setState(State state) {
         this.state = state;
     }
@@ -138,11 +132,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     public void startGame(float in) {
-        isStartButtonEnabled = true;
-//        if (!isGameToBeStarted) {
-//            this.startGameIn = in;
-//            isGameToBeStarted = true;
-//        }
+        if (!isGameToBeStarted) {
+            this.startGameIn = in;
+            isGameToBeStarted = true;
+        }
     }
 
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
@@ -160,7 +153,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         backgroundCamera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
 
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(projectLocus.tiledMapList.get(0),
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(
+                projectLocus.tiledMapList.get(MathUtils.random(0, 7)),
                 ProjectLocus.TILED_MAP_SCALE);
 
         createPlayScreen = isPlayScreenCreated = isPlayerMapToBeUpdated = isGameToBeStarted =
@@ -187,12 +181,9 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         switch (type) {
             case Host:
 
-                ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
-                moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 250f, 0f));
-                moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
-                moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
+                projectLocus.gameServer = new GameServer(projectLocus);
 
-                levelProperty = new Level.Property(Planet.Type.Gas, moonPropertyList, 1);
+                levelProperty = Level.Property.generateRandom();
 
                 multiPlayerPlayScreen = new MultiPlayerPlayScreen(projectLocus, this);
 
@@ -202,7 +193,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 startGameIn = ProjectLocus.GAME_COUNT_DOWN;
 
                 state = State.Starting;
-                projectLocus.gameServer = new GameServer(projectLocus);
                 projectLocus.gameServer.start(this);
 
                 break;
@@ -514,6 +504,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     @Override
     public void dispose() {
+        if (projectLocus.gameServer != null) {
+            projectLocus.gameServer.stop();
+        }
+        if (projectLocus.gameClient != null) {
+            projectLocus.gameClient.stop();
+        }
     }
 
     @Override

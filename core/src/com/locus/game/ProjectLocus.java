@@ -84,6 +84,7 @@ public class ProjectLocus extends Game implements Disposable {
     public TextureAtlas shipTextureAtlas;
     public TextureAtlas planetTextureAtlas;
     public TextureAtlas moonTextureAtlas;
+    public TextureAtlas asteroidTextureAtlas;
     public BulletLoader bulletLoader;
     public EntityLoader entityLoader;
     public Ship.Property playerShipProperty;

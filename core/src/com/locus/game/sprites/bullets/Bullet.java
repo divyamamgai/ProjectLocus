@@ -59,7 +59,7 @@ public class Bullet extends Sprite {
 
     }
 
-    private Sound sound;
+//    private Sound sound;
     private Timer timer;
     private Ship ship;
     private Body body;
@@ -88,22 +88,22 @@ public class Bullet extends Sprite {
         timer = new Timer();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
 
-        switch (type) {
-            case Normal:
-                sound = level.getProjectLocus().primaryBulletSound;
-                break;
-            case Fighter:
-                sound = level.getProjectLocus().secondaryBulletFighterSound;
-                break;
-            case SuperSonic:
-                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
-                break;
-            case Bomber:
-                sound = level.getProjectLocus().secondaryBulletBomberSound;
-                break;
-        }
-
-        sound.play();
+//        switch (type) {
+//            case Normal:
+//                sound = level.getProjectLocus().primaryBulletSound;
+//                break;
+//            case Fighter:
+//                sound = level.getProjectLocus().secondaryBulletFighterSound;
+//                break;
+//            case SuperSonic:
+//                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
+//                break;
+//            case Bomber:
+//                sound = level.getProjectLocus().secondaryBulletBomberSound;
+//                break;
+//        }
+//
+//        sound.play();
 
     }
 
@@ -122,7 +122,7 @@ public class Bullet extends Sprite {
         timer.clear();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
 
-        sound.play();
+//        sound.play();
 
     }
 
