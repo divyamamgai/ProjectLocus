@@ -35,8 +35,16 @@ public class ClientShip extends ClientEntity {
     }
 
     public void resurrect(Color color, ShipState shipState) {
+
         setColor(color);
-        update(shipState);
+
+        bodyX = toBodyX = shipState.bodyX;
+        bodyY = toBodyY = shipState.bodyY;
+        angleDeg = toAngleDeg = shipState.angleDeg;
+
+        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+        setRotation(angleDeg);
+
     }
 
     public void update(ShipState shipState) {
@@ -49,7 +57,7 @@ public class ClientShip extends ClientEntity {
     @Override
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {
 
-        if (frustum.boundsInFrustum(bodyX, bodyY, 0,
+        if ((health > 0) && frustum.boundsInFrustum(bodyX, bodyY, 0,
                 definition.halfWidth, definition.halfHeight, 0)) {
 
             super.draw(spriteBatch);

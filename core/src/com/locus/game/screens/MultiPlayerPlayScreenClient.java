@@ -32,7 +32,7 @@ class MultiPlayerPlayScreenClient implements Screen {
 
     @Override
     public void show() {
-        level.bindController();
+        level.onShow();
     }
 
     @Override

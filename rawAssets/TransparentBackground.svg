@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="512"
-   height="64"
-   viewBox="0 0 512 64"
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="BarBackground.svg"
+   sodipodi:docname="TransparentBackground.svg"
    inkscape:export-filename="C:\Users\Divya Mamgai\Desktop\Health.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,13 +56,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-988.36216)">
+     transform="translate(0,-924.36216)">
     <rect
-       style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
+       style="opacity:0.66;fill:#333333;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
        id="rect4137"
-       width="512"
-       height="64"
+       width="128"
+       height="128"
        x="0"
-       y="988.36218" />
+       y="924.36218" />
   </g>
 </svg>

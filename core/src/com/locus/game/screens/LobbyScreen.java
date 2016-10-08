@@ -539,7 +539,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
-        if (readyText.getTextBoundingBox().contains(touchPosition)) {
+        if (readyText.getTextBoundingBox().contains(touchPosition) && !isGameToBeStarted) {
             if (isReady) {
                 switch (type) {
                     case Host:

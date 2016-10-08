@@ -87,6 +87,10 @@ public class Level implements Disposable {
 
 //    private Box2DDebugRenderer box2DDebugRenderer;
 
+    public short getPlayerID() {
+        return player.getID();
+    }
+
     public EntityLoader getEntityLoader() {
         return projectLocus.entityLoader;
     }
@@ -210,7 +214,7 @@ public class Level implements Disposable {
 
     }
 
-    public void bindController() {
+    public void onShow() {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
@@ -300,20 +304,24 @@ public class Level implements Disposable {
         }
 
         Iterator<Bullet> bulletIterator = bulletAliveList.iterator();
+        Iterator<BulletState> bulletStateIterator = bulletAliveStateList.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
+            bulletStateIterator.next();
             if (bullet.isAlive()) {
                 bullet.update();
             } else {
                 bullet.killBody();
                 bulletDeadQueueMap.get(bullet.getType()).addLast(bullet);
+                bulletKilledArray.add(bullet.getID());
                 bulletIterator.remove();
+                bulletStateIterator.remove();
             }
         }
 
         if (isMultiPlayer) {
             timePassed += delta;
-            if (timePassed >= 0.0033f) {
+            if (timePassed >= 0.005f) {
                 projectLocus.gameServer.sendGameState();
                 timePassed = 0;
             }
@@ -356,7 +364,7 @@ public class Level implements Disposable {
 
     public void resize() {
         camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        camera.position.set(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT, 0);
+        camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
     }
 

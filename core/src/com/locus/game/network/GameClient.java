@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
 import com.locus.game.screens.LobbyScreen;
+import com.locus.game.screens.ErrorScreen;
 import com.locus.game.tools.InputController;
 
 import java.io.IOException;
@@ -129,9 +130,8 @@ public class GameClient implements InputController.InputCallBack {
 
     }
 
-    void onConnected(Connection connection) {
+    void onConnected() {
         client.sendTCP(new Network.PlayerJoinRequest(projectLocus.playerShipProperty));
-        client.updateReturnTripTime();
     }
 
     void onReceived(Connection connection, Object object) {
@@ -143,8 +143,8 @@ public class GameClient implements InputController.InputCallBack {
             level.setPlanetState(gameState.planetState);
             level.setMoonStateList(gameState.moonStateList);
             level.setShipStateList(gameState.shipStateList);
-            level.setBulletAliveStateList(gameState.bulletAliveStateList);
             level.setBulletKilledArray(gameState.bulletKilledArray);
+            level.setBulletAliveStateList(gameState.bulletAliveStateList);
 
         } else if (object instanceof Network.UpdateLobby) {
 
@@ -152,7 +152,8 @@ public class GameClient implements InputController.InputCallBack {
 
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
 
-            projectLocus.setScreen(lobbyScreen.selectModeScreen);
+            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.selectModeScreen,
+                    ((Network.PlayerJoinRequestRejected) object).reason));
             lobbyScreen.dispose();
 
         } else if (object instanceof Network.LevelProperty) {
@@ -178,15 +179,15 @@ public class GameClient implements InputController.InputCallBack {
 
     }
 
-    void onDisconnected(Connection connection) {
+    void onDisconnected() {
         stop();
-        projectLocus.setScreen(lobbyScreen.selectModeScreen);
+        projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.selectModeScreen,
+                "Host Disconnected"));
         lobbyScreen.dispose();
     }
 
     public void sendReadyState(boolean isReady) {
         client.sendTCP(new Network.PlayerReadyRequest(isReady));
-        client.updateReturnTripTime();
     }
 
     public void stop() {

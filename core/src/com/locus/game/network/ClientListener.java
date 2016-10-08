@@ -18,18 +18,15 @@ class ClientListener extends Listener {
     }
 
     public void connected(Connection connection) {
-        Gdx.app.log("Client Connected", String.valueOf(connection.getID()));
-        gameClient.onConnected(connection);
+        gameClient.onConnected();
     }
 
     public void received(Connection connection, Object object) {
-        Gdx.app.log("Client Received", String.valueOf(connection.getID()));
         gameClient.onReceived(connection, object);
     }
 
     public void disconnected(Connection connection) {
-        Gdx.app.log("Client Disconnected", String.valueOf(connection.getID()));
-        gameClient.onDisconnected(connection);
+        gameClient.onDisconnected();
     }
 
 }

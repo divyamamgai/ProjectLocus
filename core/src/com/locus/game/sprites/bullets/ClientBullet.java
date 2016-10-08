@@ -22,7 +22,15 @@ public class ClientBullet extends Sprite {
 
     private BulletLoader.Definition definition;
 
-    public ClientBullet(ClientLevel level, Bullet.Type type, BulletState bulletState) {
+    private Bullet.Type type;
+
+    public Bullet.Type getType() {
+        return type;
+    }
+
+    public ClientBullet(ClientLevel level, BulletState bulletState) {
+
+        type = bulletState.type;
 
         setDefinition(level.getBulletLoader().get(type));
 
@@ -39,8 +47,13 @@ public class ClientBullet extends Sprite {
     }
 
     public void resurrect(BulletState bulletState) {
-        update(bulletState);
+
+        bodyX = toBodyX = bulletState.bodyX;
+        bodyY = toBodyY = bulletState.bodyY;
+
+        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
         setRotation(bulletState.angleDeg);
+
     }
 
     public void update(BulletState bulletState) {
@@ -55,10 +68,12 @@ public class ClientBullet extends Sprite {
         }
     }
 
-    public void interpolate(float delta) {
-        bodyX += (toBodyX - bodyX) * ProjectLocus.INTERPOLATION_FACTOR * delta;
-        bodyY += (toBodyY - bodyY) * ProjectLocus.INTERPOLATION_FACTOR * delta;
+    public boolean interpolate(float delta, boolean isDead) {
+        float dx = (toBodyX - bodyX), dy = (toBodyY - bodyY);
+        bodyX += dx * ProjectLocus.INTERPOLATION_FACTOR * 3f * delta;
+        bodyY += dy * ProjectLocus.INTERPOLATION_FACTOR * 3f * delta;
         setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+        return isDead && (Math.abs(dx) <= 0.3f || Math.abs(dy) <= 0.3f);
     }
 
 }

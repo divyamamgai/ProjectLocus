@@ -47,7 +47,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
     @Override
     public void show() {
         level.getInputMultiplexer().addProcessor(this);
-        level.bindController();
+        level.onShow();
     }
 
     @Override

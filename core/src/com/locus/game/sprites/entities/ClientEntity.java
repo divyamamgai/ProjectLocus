@@ -22,6 +22,10 @@ public abstract class ClientEntity extends Sprite {
         super();
     }
 
+    public short getID() {
+        return ID;
+    }
+
     public abstract void draw(SpriteBatch spriteBatch, Frustum frustum);
 
     public ClientLevel getLevel() {

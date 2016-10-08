@@ -17,7 +17,7 @@ import java.lang.String;
  * Error Screen
  */
 
-class ErrorScreen implements Screen, InputProcessor {
+public class ErrorScreen implements Screen, InputProcessor {
 
     private Text errorText, errorStringText, backText, backSelectedText;
     private ProjectLocus projectLocus;
@@ -27,25 +27,10 @@ class ErrorScreen implements Screen, InputProcessor {
     private InputMultiplexer inputMultiplexer;
     private SelectModeScreen selectModeScreen;
 
-    ErrorScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
-                String errorString) {
+    public ErrorScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
+                       String errorString) {
         this.projectLocus = projectLocus;
         this.selectModeScreen = selectModeScreen;
-
-        errorText = new Text(projectLocus.font72, "ERROR");
-        backText = new Text(projectLocus.font32, "BACK");
-        backSelectedText = new Text(projectLocus.font32Selected, "BACK");
-        errorStringText = new Text(projectLocus.font24, errorString);
-        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
-                ProjectLocus.screenCameraHeight);
-        isBackPressed = false;
-
-        inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(this);
-    }
-
-    ErrorScreen(ProjectLocus projectLocus, String errorString) {
-        this.projectLocus = projectLocus;
 
         errorText = new Text(projectLocus.font72, "ERROR");
         backText = new Text(projectLocus.font32, "BACK");
@@ -74,7 +59,6 @@ class ErrorScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
-        inputMultiplexer.clear();
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
@@ -153,7 +137,7 @@ class ErrorScreen implements Screen, InputProcessor {
         if (isBackPressed) {
             projectLocus.screenTransitionSound.play();
             isBackPressed = false;
-//            projectLocus.setScreen(selectModeScreen);
+            projectLocus.setScreen(selectModeScreen);
         }
         return false;
     }

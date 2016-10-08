@@ -28,7 +28,7 @@ public class ProjectLocus extends Game implements Disposable {
     public static final Vector2 GRAVITY = new Vector2(0, 0);
 
     // Gravitational Constant - (N(m^2))/(kg^2)
-    public static final float GRAVITATIONAL_CONSTANT = 0.000035f;
+    public static final float GRAVITATIONAL_CONSTANT = 0f;
 
     // Virtual Width of the Game World in meters.
     private static final float WORLD_WIDTH = 2048f;
@@ -40,7 +40,7 @@ public class ProjectLocus extends Game implements Disposable {
             WORLD_HEIGHT * WORLD_HEIGHT);
 
     // Desired FPS of the projectLocus and Box2D configuration variables.
-    public static final float FPS = 1 / 60f;
+    public static final float FPS = 1 / 30f;
     public static final short VELOCITY_ITERATIONS = 6;
     public static final short POSITION_ITERATIONS = 2;
 

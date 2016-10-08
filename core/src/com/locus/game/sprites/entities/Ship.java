@@ -143,6 +143,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     public void kill() {
         if (isAlive) {
             isAlive = false;
+            shipState.health = health;
         }
     }
 

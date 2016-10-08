@@ -45,6 +45,7 @@ public class ClientLevel {
     private ProjectLocus projectLocus;
     private HashMap<Short, ClientShip> shipMap;
     private HashMap<Short, ClientBullet> bulletMap;
+    private ArrayList<ClientBullet> bulletJustDiedList;
     private HashMap<Bullet.Type, Queue<ClientBullet>> bulletDeadQueueMap;
     private ClientShip player;
     private ArrayList<ClientMoon> moonList;
@@ -53,6 +54,10 @@ public class ClientLevel {
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
     private InputController inputController;
+
+    public short getPlayerID() {
+        return player.getID();
+    }
 
     public EntityLoader getEntityLoader() {
         return projectLocus.entityLoader;
@@ -99,18 +104,27 @@ public class ClientLevel {
             if (bulletMap.containsKey(bulletState.ID)) {
                 bulletMap.get(bulletState.ID).update(bulletState);
             } else {
-//                Queue<Bullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletState.);
-//                if (bulletDeadQueue.size > 0) {
-//                    bullet = bulletDeadQueue.removeFirst();
-//                    bullet.resurrect(ship, bulletPosition, angleRad);
-//                } else {
-//                    bullet = new Bullet(this, bulletType, ship, bulletPosition, angleRad);
-//                }
+                Queue<ClientBullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletState.type);
+                ClientBullet bullet;
+                if (bulletDeadQueue.size > 0) {
+                    bullet = bulletDeadQueue.removeFirst();
+                    bullet.resurrect(bulletState);
+                } else {
+                    bullet = new ClientBullet(this, bulletState);
+                }
+                bulletMap.put(bulletState.ID, bullet);
             }
         }
     }
 
     public synchronized void setBulletKilledArray(ShortArray bulletKilledArray) {
+        Short bulletID;
+        for (int i = 0; i < bulletKilledArray.size; i++) {
+            bulletID = bulletKilledArray.get(i);
+            if (bulletMap.containsKey(bulletID)) {
+                bulletJustDiedList.add(bulletMap.remove(bulletID));
+            }
+        }
     }
 
     public ClientLevel(ProjectLocus projectLocus, Level.Property property) {
@@ -136,6 +150,7 @@ public class ClientLevel {
         shipMap = new HashMap<Short, ClientShip>(ProjectLocus.MAX_PLAYER_COUNT);
 
         bulletMap = new HashMap<Short, ClientBullet>(ProjectLocus.MAX_BULLET_COUNT);
+        bulletJustDiedList = new ArrayList<ClientBullet>();
 
         // We know that how many Type of Bullets we have so we pass the capacity too.
         Bullet.Type[] bulletTypeArray = Bullet.Type.values();
@@ -167,7 +182,7 @@ public class ClientLevel {
 
     }
 
-    public void bindController() {
+    public void onShow() {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
@@ -188,6 +203,20 @@ public class ClientLevel {
 
         for (ClientShip ship : shipMap.values()) {
             ship.interpolate(delta);
+        }
+
+        for (ClientBullet bullet : bulletMap.values()) {
+            bullet.interpolate(delta, false);
+        }
+
+        Iterator<ClientBullet> bulletIterator = bulletJustDiedList.iterator();
+        ClientBullet bullet;
+        while (bulletIterator.hasNext()) {
+            bullet = bulletIterator.next();
+            if (bullet.interpolate(delta, true)) {
+                bulletDeadQueueMap.get(bullet.getType()).addLast(bullet);
+                bulletIterator.remove();
+            }
         }
 
     }
@@ -212,9 +241,13 @@ public class ClientLevel {
             entity.draw(spriteBatch, camera.frustum);
         }
 
-//        for (Bullet bullet : bulletAliveList) {
-//            bullet.draw(spriteBatch, camera.frustum);
-//        }
+        for (ClientBullet bullet : bulletMap.values()) {
+            bullet.draw(spriteBatch, camera.frustum);
+        }
+
+        for (ClientBullet bullet : bulletJustDiedList) {
+            bullet.draw(spriteBatch, camera.frustum);
+        }
 
         spriteBatch.end();
 
@@ -222,10 +255,8 @@ public class ClientLevel {
 
     public void resize() {
         camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
-        camera.position.set(ProjectLocus.WORLD_HALF_WIDTH, ProjectLocus.WORLD_HALF_HEIGHT, 0);
+        camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
     }
 
 }
-
-
