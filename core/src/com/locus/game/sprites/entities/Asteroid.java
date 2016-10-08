@@ -3,7 +3,6 @@ package com.locus.game.sprites.entities;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 

@@ -16,7 +16,7 @@ import com.locus.game.tools.Text;
  * Pause Screen
  */
 
-class PauseScreen implements Screen, InputProcessor {
+public class PauseScreen implements Screen, InputProcessor {
 
     private ProjectLocus projectLocus;
     private SelectModeScreen selectModeScreen;
@@ -27,7 +27,7 @@ class PauseScreen implements Screen, InputProcessor {
     private Text pauseText, resumeText, resumeSelectedText, quitText, quitSelectedText;
     private boolean isResumePressed, isQuitPressed;
 
-    PauseScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen, Screen screen) {
+    public PauseScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen, Screen screen) {
         this.projectLocus = projectLocus;
         this.selectModeScreen = selectModeScreen;
         this.screen = screen;

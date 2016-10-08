@@ -1,6 +1,5 @@
 package com.locus.game.tools;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -23,22 +22,24 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
         void applyRotation(boolean isClockwise);
 
-        void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled);
+        void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                  boolean doPrimaryReset, boolean doSecondaryReset);
 
         void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                            boolean isRotationEnabled, boolean isRotationClockwise,
-                           boolean isFireEnabled, boolean isPrimaryBulletEnabled,
-                           boolean isSecondaryBulletEnabled);
+                           boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                           boolean doPrimaryReset, boolean doSecondaryReset);
 
     }
 
     private float initialXCoordinateRotation, initialYCoordinateThrust, tapXCoordinate, tapYCoordinate;
     private OrthographicCamera camera;
     private InputCallBack inputCallBack;
-    private static boolean isRotationEnabled, isThrustEnabled, isFireEnabled,
+    private static boolean isRotationEnabled, isThrustEnabled,
             isRotationClockwise, isThrustForward, isSetRotationPointer, isSetThrustPointer,
             isPrimaryBulletPointerEnabled, isSecondaryBulletPointerEnabled,
-            isPrimaryBulletEnabled, isSecondaryBulletEnabled;
+            isPrimaryBulletEnabled, isSecondaryBulletEnabled,
+            wasPrimaryBulletEnabled, wasSecondaryBulletEnabled;
     private boolean isHost;
     private static int thrustPointerID, rotationPointerID, primaryBulletPointerID,
             secondaryBulletPointerID;
@@ -50,11 +51,12 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
                 ProjectLocus.screenCameraHeight);
         camera.position.set(ProjectLocus.screenCameraHalfWidth,
                 ProjectLocus.screenCameraHalfHeight, 0);
-        isRotationEnabled = isThrustEnabled = isFireEnabled = false;
-        isRotationClockwise = isThrustForward = false;
-        rotationPointerID = thrustPointerID = primaryBulletPointerID = secondaryBulletPointerID = -1;
-        isSetRotationPointer = isSetThrustPointer = false;
-        isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
+        rotationPointerID = thrustPointerID = primaryBulletPointerID =
+                secondaryBulletPointerID = -1;
+        isRotationEnabled = isThrustEnabled = isRotationClockwise = isThrustForward =
+                isSetRotationPointer = isSetThrustPointer = isPrimaryBulletEnabled =
+                        isSecondaryBulletEnabled = wasPrimaryBulletEnabled =
+                                wasSecondaryBulletEnabled = false;
     }
 
     @Override
@@ -85,7 +87,6 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             isSecondaryBulletEnabled = true;
             isPrimaryBulletEnabled = false;
         }
-        isFireEnabled = isPrimaryBulletEnabled || isSecondaryBulletEnabled;
         return false;
     }
 
@@ -108,7 +109,6 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
                 isPrimaryBulletEnabled = true;
             }
         }
-        isFireEnabled = isPrimaryBulletEnabled || isSecondaryBulletEnabled;
         return false;
     }
 
@@ -119,7 +119,6 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Gdx.app.log("TouchSample", "Touch Down");
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(touchPosition);
         if ((touchPosition.x > 0) && (!isSetThrustPointer)) {
@@ -134,14 +133,14 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         }
         if (primaryBulletPointerID == pointer) {
             if (isPrimaryBulletPointerEnabled) {
-                isFireEnabled = isPrimaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
+                isPrimaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
                         && (Math.abs(screenY - tapYCoordinate) < 20);
                 isPrimaryBulletPointerEnabled = false;
             }
         }
         if (secondaryBulletPointerID == pointer) {
             if (isSecondaryBulletPointerEnabled) {
-                isFireEnabled = isSecondaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
+                isSecondaryBulletEnabled = (Math.abs(screenX - tapXCoordinate) < 20)
                         && (Math.abs(screenY - tapYCoordinate) < 20);
                 isSecondaryBulletPointerEnabled = false;
             }
@@ -151,7 +150,6 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        Gdx.app.log("TouchSample", "Touch Up");
         if ((rotationPointerID == pointer) && (isSetRotationPointer)) {
             isRotationEnabled = false;
             isSetRotationPointer = false;
@@ -162,12 +160,10 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         }
         if (primaryBulletPointerID == pointer) {
             isPrimaryBulletEnabled = false;
-//            isFireEnabled = isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
         }
         if (secondaryBulletPointerID == pointer) {
             isSecondaryBulletEnabled = false;
         }
-        isFireEnabled = isPrimaryBulletEnabled || isSecondaryBulletEnabled;
         return false;
     }
 
@@ -222,10 +218,8 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         Vector3 touchPosition = new Vector3(x, y, 0);
         camera.unproject(touchPosition);
         if (count == 1) {
-            Gdx.app.log("TouchSample", "Tap Detected");
             tapXCoordinate = x;
             tapYCoordinate = y;
-            isFireEnabled = true;
             if (touchPosition.x > 0) {
                 primaryBulletPointerID = thrustPointerID;
                 isPrimaryBulletPointerEnabled = true;
@@ -235,7 +229,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             }
         } else {
             isPrimaryBulletPointerEnabled = isSecondaryBulletPointerEnabled = false;
-            isFireEnabled = isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
+            isPrimaryBulletEnabled = isSecondaryBulletEnabled = false;
         }
         return false;
     }
@@ -278,13 +272,38 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             if (isThrustEnabled) {
                 inputCallBack.applyThrust(isThrustForward);
             }
-            if (isFireEnabled) {
-                inputCallBack.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled);
+            if (isPrimaryBulletEnabled) {
+                inputCallBack.fire(true, false, false, wasSecondaryBulletEnabled);
+                wasSecondaryBulletEnabled = false;
+                wasPrimaryBulletEnabled = true;
+            } else if (isSecondaryBulletEnabled) {
+                inputCallBack.fire(false, true, wasPrimaryBulletEnabled, false);
+                wasPrimaryBulletEnabled = false;
+                wasSecondaryBulletEnabled = true;
             }
-        } else if (isRotationEnabled || isThrustEnabled || isFireEnabled) {
-            inputCallBack.applyControls(isThrustEnabled, isThrustForward,
-                    isRotationEnabled, isRotationClockwise,
-                    isFireEnabled, isPrimaryBulletEnabled, isSecondaryBulletEnabled);
+        } else if (isRotationEnabled || isThrustEnabled || isPrimaryBulletEnabled ||
+                isSecondaryBulletEnabled) {
+            if (isPrimaryBulletEnabled || isSecondaryBulletEnabled) {
+                if (isPrimaryBulletEnabled) {
+                    inputCallBack.applyControls(isThrustEnabled, isThrustForward,
+                            isRotationEnabled, isRotationClockwise, true, false, false,
+                            wasSecondaryBulletEnabled);
+                    wasSecondaryBulletEnabled = false;
+                    wasPrimaryBulletEnabled = true;
+                } else {
+                    inputCallBack.applyControls(isThrustEnabled, isThrustForward,
+                            isRotationEnabled, isRotationClockwise, false, true,
+                            wasPrimaryBulletEnabled, false);
+                    wasPrimaryBulletEnabled = false;
+                    wasSecondaryBulletEnabled = true;
+                }
+            } else {
+                inputCallBack.applyControls(isThrustEnabled, isThrustForward,
+                        isRotationEnabled, isRotationClockwise, false,
+                        false, wasPrimaryBulletEnabled,
+                        wasSecondaryBulletEnabled);
+                wasPrimaryBulletEnabled = wasSecondaryBulletEnabled = false;
+            }
         }
     }
 }

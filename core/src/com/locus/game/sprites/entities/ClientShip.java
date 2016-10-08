@@ -100,7 +100,7 @@ public class ClientShip extends ClientEntity {
 
     }
 
-    public void firePrimaryBullet() {
+    private void firePrimaryBullet() {
         if (primaryBulletCount == 0) {
             float angleRad = body.getAngle(), delta = Gdx.graphics.getDeltaTime() * 1.25f;
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(primaryBulletType)) {
@@ -118,7 +118,7 @@ public class ClientShip extends ClientEntity {
         primaryBulletCount++;
     }
 
-    public void fireSecondaryBullet() {
+    private void fireSecondaryBullet() {
         if (secondaryBulletCount == 0) {
             float angleRad = body.getAngle(), delta = Gdx.graphics.getDeltaTime() * 1.25f;
             for (Vector2 weaponPosition : definition.weaponPositionMap.get(secondaryBulletType)) {
@@ -130,7 +130,7 @@ public class ClientShip extends ClientEntity {
                                                 ProjectLocus.INTERPOLATION_FACTOR * delta),
                         angleRad);
             }
-        } else if (secondaryBulletCount >= 14) {
+        } else if (secondaryBulletCount >= 30) {
             secondaryBulletCount = -1;
         }
         secondaryBulletCount++;
@@ -145,18 +145,20 @@ public class ClientShip extends ClientEntity {
         body.setTransform(bodyX, bodyY, angleDeg * MathUtils.degreesToRadians);
     }
 
-    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                     boolean doPrimaryReset, boolean doSecondaryReset) {
+        if (doPrimaryReset) {
+            primaryBulletCount = 0;
+        }
+        if (doSecondaryReset) {
+            secondaryBulletCount = 0;
+        }
         if (isPrimaryBulletEnabled) {
             firePrimaryBullet();
         }
         if (isSecondaryBulletEnabled) {
             fireSecondaryBullet();
         }
-    }
-
-    public void fireReset() {
-        primaryBulletCount = 0;
-        secondaryBulletCount = 0;
     }
 
 }

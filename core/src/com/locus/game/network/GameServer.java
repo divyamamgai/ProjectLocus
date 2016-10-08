@@ -85,8 +85,11 @@ public class GameServer implements InputController.InputCallBack {
 
     }
 
-    void onConnected() {
-
+    void onConnected(Connection connection) {
+        Gdx.app.log("isGameStarted", String.valueOf(isGameStarted));
+        if (isGameStarted) {
+            connection.close();
+        }
     }
 
     void onReceived(Connection connection, Object object) {
@@ -98,19 +101,22 @@ public class GameServer implements InputController.InputCallBack {
             Network.ControllerState controllerState = (Network.ControllerState) object;
             Ship ship = level.getShipAlive(connectionIDToShipIDMap.get(connectionID));
 
-            if (controllerState.isThrustEnabled) {
-                ship.applyThrust(controllerState.isThrustForward);
-            }
-            if (controllerState.isRotationEnabled) {
-                ship.applyRotation(controllerState.isRotationClockwise);
-            }
-            if (controllerState.isFireEnabled) {
+            if (ship != null) {
+                if (controllerState.isThrustEnabled) {
+                    ship.applyThrust(controllerState.isThrustForward);
+                }
+                if (controllerState.isRotationEnabled) {
+                    ship.applyRotation(controllerState.isRotationClockwise);
+                }
                 ship.fire(controllerState.isPrimaryBulletEnabled,
-                        controllerState.isSecondaryBulletEnabled);
+                        controllerState.isSecondaryBulletEnabled,
+                        controllerState.doPrimaryReset, controllerState.doSecondaryReset);
                 server.sendToAllExceptTCP(connectionID, new Network.FireState(
                         ship.getID(),
                         controllerState.isPrimaryBulletEnabled,
-                        controllerState.isSecondaryBulletEnabled
+                        controllerState.isSecondaryBulletEnabled,
+                        controllerState.doPrimaryReset,
+                        controllerState.doSecondaryReset
                 ));
             }
 
@@ -312,17 +318,18 @@ public class GameServer implements InputController.InputCallBack {
     }
 
     @Override
-    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
-        hostShip.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled);
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                     boolean doPrimaryReset, boolean doSecondaryReset) {
+        hostShip.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled, doPrimaryReset,
+                doSecondaryReset);
         server.sendToAllTCP(new Network.FireState(hostShip.getID(), isPrimaryBulletEnabled,
-                isSecondaryBulletEnabled));
+                isSecondaryBulletEnabled, doPrimaryReset, doSecondaryReset));
     }
 
     @Override
     public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                               boolean isRotationEnabled, boolean isRotationClockwise,
-                              boolean isFireEnabled, boolean isPrimaryBulletEnabled,
-                              boolean isSecondaryBulletEnabled) {
-
+                              boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                              boolean doPrimaryReset, boolean doSecondaryReset) {
     }
 }

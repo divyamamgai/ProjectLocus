@@ -10,6 +10,7 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
@@ -19,6 +20,8 @@ import com.locus.game.ProjectLocus;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
 import com.locus.game.network.ShipState;
+import com.locus.game.screens.PauseScreen;
+import com.locus.game.screens.SelectModeScreen;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
@@ -29,6 +32,7 @@ import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
 import com.locus.game.tools.Hud;
 import com.locus.game.tools.InputController;
+import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +45,8 @@ import java.util.Iterator;
 public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
+    private static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
+            ProjectLocus.WORLD_HALF_HEIGHT, 512f);
 
     public static class Property {
 
@@ -85,9 +91,10 @@ public class Level implements Disposable {
 
     }
 
-    private OrthographicCamera camera;
+    private OrthographicCamera camera, foregroundCamera;
     private ProjectLocus projectLocus;
     private Hud hud;
+    private SelectModeScreen selectModeScreen;
     private Level.Property property;
     private boolean isMultiPlayer;
     private World world;
@@ -107,9 +114,14 @@ public class Level implements Disposable {
     private ArrayList<MoonState> moonStateList;
     private ArrayList<ShipState> shipStateList;
 
+    private float outOfLevelTimePassed;
+    private short outOfLevelTimer;
+    private boolean playerIsOutOfLevel;
+    private Text messageText, countDownText;
+
     private short alivePlayerCount;
 
-    private float timePassed;
+    private float gameStateUpdateTimePassed;
 
     public ProjectLocus getProjectLocus() {
         return projectLocus;
@@ -163,18 +175,26 @@ public class Level implements Disposable {
         return alivePlayerCount;
     }
 
-    public Level(ProjectLocus projectLocus, Hud hud, Property property, boolean isMultiPlayer) {
+    public Level(ProjectLocus projectLocus, Hud hud, OrthographicCamera foregroundCamera,
+                 SelectModeScreen selectModeScreen, Property property, boolean isMultiPlayer) {
 
         // Reset Entity Count
         Entity.EntityCount = 0;
 
         this.projectLocus = projectLocus;
         this.hud = hud;
+        this.foregroundCamera = foregroundCamera;
+        this.selectModeScreen = selectModeScreen;
         this.property = property;
         this.isMultiPlayer = isMultiPlayer;
 
+        outOfLevelTimer = 5;
         alivePlayerCount = 0;
-        timePassed = 0;
+        outOfLevelTimePassed = gameStateUpdateTimePassed = 0;
+        playerIsOutOfLevel = false;
+
+        messageText = new Text(projectLocus.font32, "Get Back To Planet Or Die In");
+        countDownText = new Text(projectLocus.font72, "5");
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
@@ -351,10 +371,36 @@ public class Level implements Disposable {
         }
 
         if (isMultiPlayer) {
-            timePassed += delta;
-            if (timePassed >= 0.0035f) {
+            gameStateUpdateTimePassed += delta;
+            if (gameStateUpdateTimePassed >= 0.0035f) {
                 projectLocus.gameServer.sendGameState();
-                timePassed = 0;
+                gameStateUpdateTimePassed = 0;
+            }
+        }
+
+        if (player != null) {
+            if (!LEVEL_CIRCLE.contains(player.getBodyPosition())) {
+                playerIsOutOfLevel = true;
+                outOfLevelTimePassed += delta;
+                if (outOfLevelTimePassed >= 1f) {
+                    if (--outOfLevelTimer <= 0) {
+                        // Kill the player.
+                        player.kill();
+                        player.killBody();
+                        shipDeadQueueMap.get(player.getShipType()).addLast(player);
+                        player = null;
+                        alivePlayerCount--;
+                        if (!isMultiPlayer) {
+                            projectLocus.setScreen(selectModeScreen);
+                        }
+                    }
+                    countDownText.setTextFast(String.valueOf(outOfLevelTimer));
+                    outOfLevelTimePassed = 0;
+                }
+            } else {
+                playerIsOutOfLevel = false;
+                outOfLevelTimer = 5;
+                outOfLevelTimePassed = 0;
             }
         }
 
@@ -386,12 +432,26 @@ public class Level implements Disposable {
 
         spriteBatch.end();
 
+        spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+        spriteBatch.begin();
+        if (playerIsOutOfLevel) {
+            messageText.draw(spriteBatch);
+            countDownText.draw(spriteBatch);
+        }
+        spriteBatch.end();
+
     }
 
     public void resize() {
         camera.setToOrtho(false, ProjectLocus.worldCameraWidth, ProjectLocus.worldCameraHeight);
         camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
+        messageText.setPosition(
+                ProjectLocus.screenCameraHalfWidth - messageText.getHalfWidth(),
+                ProjectLocus.screenCameraHeight - messageText.getHeight() - 32);
+        countDownText.setPosition(
+                ProjectLocus.screenCameraHalfWidth - countDownText.getHalfWidth(),
+                ProjectLocus.screenCameraHalfHeight + countDownText.getHalfHeight());
     }
 
     @Override

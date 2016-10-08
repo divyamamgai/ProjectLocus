@@ -34,43 +34,6 @@ public class GameClient implements InputController.InputCallBack {
         this.level = level;
     }
 
-    @Override
-    public void applyThrust(boolean isForward) {
-    }
-
-    @Override
-    public void applyRotation(boolean isClockwise) {
-    }
-
-    @Override
-    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
-    }
-
-    @Override
-    public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
-                              boolean isRotationEnabled, boolean isRotationClockwise,
-                              boolean isFireEnabled, boolean isPrimaryBulletEnabled,
-                              boolean isSecondaryBulletEnabled) {
-
-        controllerState.isThrustEnabled = isThrustEnabled;
-        controllerState.isThrustForward = isThrustForward;
-        controllerState.isRotationEnabled = isRotationEnabled;
-        controllerState.isRotationClockwise = isRotationClockwise;
-        controllerState.isFireEnabled = isFireEnabled;
-        controllerState.isPrimaryBulletEnabled = isPrimaryBulletEnabled;
-        controllerState.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
-
-        client.sendTCP(controllerState);
-
-        if (controllerState.isPrimaryBulletEnabled) {
-            clientShip.firePrimaryBullet();
-        }
-        if (controllerState.isSecondaryBulletEnabled) {
-            clientShip.fireSecondaryBullet();
-        }
-
-    }
-
     private class GameClientConnectRunnable implements Runnable {
 
         private LobbyScreen lobbyJoinScreen;
@@ -161,8 +124,10 @@ public class GameClient implements InputController.InputCallBack {
 
             Network.FireState fireState = (Network.FireState) object;
 
-            level.getShipAlive(fireState.shipID).fire(fireState.isPrimaryBulletEnabled,
-                    fireState.isSecondaryBulletEnabled);
+            ClientShip ship = level.getShipAlive(fireState.shipID);
+
+            ship.fire(fireState.isPrimaryBulletEnabled, fireState.isSecondaryBulletEnabled,
+                    fireState.doPrimaryReset, fireState.doSecondaryReset);
 
         } else if (object instanceof Network.RemoveShip) {
 
@@ -224,6 +189,41 @@ public class GameClient implements InputController.InputCallBack {
     public void stop() {
         client.close();
         client.stop();
+    }
+
+    @Override
+    public void applyThrust(boolean isForward) {
+    }
+
+    @Override
+    public void applyRotation(boolean isClockwise) {
+    }
+
+    @Override
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                     boolean doPrimaryReset, boolean doSecondaryReset) {
+    }
+
+    @Override
+    public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
+                              boolean isRotationEnabled, boolean isRotationClockwise,
+                              boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                              boolean doPrimaryReset, boolean doSecondaryReset) {
+
+        controllerState.isThrustEnabled = isThrustEnabled;
+        controllerState.isThrustForward = isThrustForward;
+        controllerState.isRotationEnabled = isRotationEnabled;
+        controllerState.isRotationClockwise = isRotationClockwise;
+        controllerState.isPrimaryBulletEnabled = isPrimaryBulletEnabled;
+        controllerState.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
+        controllerState.doPrimaryReset = doPrimaryReset;
+        controllerState.doSecondaryReset = doSecondaryReset;
+
+        client.sendTCP(controllerState);
+
+        clientShip.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled,
+                doPrimaryReset, doSecondaryReset);
+
     }
 
 }

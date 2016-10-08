@@ -126,4 +126,5 @@ public class Text {
         font.draw(spriteBatch, text, x, y);
     }
 
+
 }

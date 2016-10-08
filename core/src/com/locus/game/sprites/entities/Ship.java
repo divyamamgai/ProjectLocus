@@ -157,7 +157,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     public void kill() {
         if (isAlive) {
             isAlive = false;
-            shipState.health = health;
+            shipState.health = 0;
         }
     }
 
@@ -196,11 +196,6 @@ public class Ship extends Entity implements InputController.InputCallBack {
         secondaryBulletCount++;
     }
 
-    public void fireReset() {
-        primaryBulletCount = 0;
-        secondaryBulletCount = 0;
-    }
-
     @Override
     public void applyRotation(boolean isClockwise) {
         body.applyAngularImpulse((isClockwise ? -1 : 1) * definition.rotationSpeed, true);
@@ -224,7 +219,14 @@ public class Ship extends Entity implements InputController.InputCallBack {
     }
 
     @Override
-    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                     boolean doPrimaryReset, boolean doSecondaryReset) {
+        if (doPrimaryReset) {
+            primaryBulletCount = 0;
+        }
+        if (doSecondaryReset) {
+            secondaryBulletCount = 0;
+        }
         if (isPrimaryBulletEnabled) {
             firePrimaryBullet();
         }
@@ -236,8 +238,8 @@ public class Ship extends Entity implements InputController.InputCallBack {
     @Override
     public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                               boolean isRotationEnabled, boolean isRotationClockwise,
-                              boolean isFireEnabled, boolean isPrimaryBulletEnabled,
-                              boolean isSecondaryBulletEnabled) {
+                              boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                              boolean doPrimaryReset, boolean doSecondaryReset) {
     }
 
 }

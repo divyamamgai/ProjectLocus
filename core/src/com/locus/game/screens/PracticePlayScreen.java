@@ -36,7 +36,8 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
         fpsText = new Text(projectLocus.font24, "60");
 
-        level = new Level(projectLocus, null, Level.Property.generateRandom(), false);
+        level = new Level(projectLocus, null, foregroundCamera, selectModeScreen,
+                Level.Property.generateRandom(), false);
 
         level.addShipAlive(projectLocus.playerShipProperty,
                 ProjectLocus.WORLD_HALF_WIDTH + 100f, ProjectLocus.WORLD_HALF_HEIGHT + 100f,

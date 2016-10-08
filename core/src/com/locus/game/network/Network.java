@@ -223,9 +223,10 @@ class Network {
         boolean isThrustForward;
         boolean isRotationEnabled;
         boolean isRotationClockwise;
-        boolean isFireEnabled;
         boolean isPrimaryBulletEnabled;
         boolean isSecondaryBulletEnabled;
+        boolean doPrimaryReset;
+        boolean doSecondaryReset;
 
         ControllerState() {
 
@@ -238,15 +239,20 @@ class Network {
         short shipID;
         boolean isPrimaryBulletEnabled;
         boolean isSecondaryBulletEnabled;
+        boolean doPrimaryReset;
+        boolean doSecondaryReset;
 
         FireState() {
 
         }
 
-        FireState(short shipID, boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
+        FireState(short shipID, boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled,
+                  boolean doPrimaryReset, boolean doSecondaryReset) {
             this.shipID = shipID;
             this.isPrimaryBulletEnabled = isPrimaryBulletEnabled;
             this.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
+            this.doPrimaryReset = doPrimaryReset;
+            this.doSecondaryReset = doSecondaryReset;
         }
 
     }

@@ -76,44 +76,46 @@ public class CollisionDetector implements ContactListener {
                 }
             }
         } else {
-            Entity entityA = (Entity) objectA;
-            Entity entityB = (Entity) objectB;
-            switch (entityA.getDefinition().type) {
-                case Ship:
-                    float speed2;
-                    switch (entityB.getDefinition().type) {
-                        case Ship:
-                            break;
-                        case Planet:
-                            speed2 = entityA.getBody().getLinearVelocity().len2();
-                            entityA.reduceHealth(speed2 > 900f ? 75f : 25f);
-                            break;
-                        case Moon:
-                            speed2 = entityA.getBody().getLinearVelocity().len2();
-                            entityA.reduceHealth(speed2 > 900f ? 30f : 10f);
-                            break;
-                    }
-                    break;
-                case Planet:
-                    switch (entityB.getDefinition().type) {
-                        case Ship:
-                            break;
-                        case Planet:
-                            break;
-                        case Moon:
-                            break;
-                    }
-                    break;
-                case Moon:
-                    switch (entityB.getDefinition().type) {
-                        case Ship:
-                            break;
-                        case Planet:
-                            break;
-                        case Moon:
-                            break;
-                    }
-                    break;
+            if (objectA != null && objectB != null) {
+                Entity entityA = (Entity) objectA;
+                Entity entityB = (Entity) objectB;
+                switch (entityA.getDefinition().type) {
+                    case Ship:
+                        float speed2;
+                        switch (entityB.getDefinition().type) {
+                            case Ship:
+                                break;
+                            case Planet:
+                                speed2 = entityA.getBody().getLinearVelocity().len2();
+                                entityA.reduceHealth(speed2 > 900f ? 75f : 25f);
+                                break;
+                            case Moon:
+                                speed2 = entityA.getBody().getLinearVelocity().len2();
+                                entityA.reduceHealth(speed2 > 900f ? 30f : 10f);
+                                break;
+                        }
+                        break;
+                    case Planet:
+                        switch (entityB.getDefinition().type) {
+                            case Ship:
+                                break;
+                            case Planet:
+                                break;
+                            case Moon:
+                                break;
+                        }
+                        break;
+                    case Moon:
+                        switch (entityB.getDefinition().type) {
+                            case Ship:
+                                break;
+                            case Planet:
+                                break;
+                            case Moon:
+                                break;
+                        }
+                        break;
+                }
             }
         }
     }

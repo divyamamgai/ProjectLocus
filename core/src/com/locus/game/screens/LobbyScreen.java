@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -36,10 +37,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
-
-    public void allReady() {
-
-    }
 
     public enum Type {
         Host,
@@ -83,6 +80,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private Level.Property levelProperty;
     private Text startingText, searchingText, connectingText, failedText, clientLobbyText,
             hostLobbyText, readyText, timerText;
+    private TextureRegion transparentBackgroundTexture;
 
     private boolean createPlayScreen;
     private boolean isPlayScreenCreated;
@@ -138,6 +136,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         }
     }
 
+    public void allReady() {
+
+    }
+
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
                 LobbyScreen.Type type) {
 
@@ -156,6 +158,9 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         tiledMapRenderer = new OrthogonalTiledMapRenderer(
                 projectLocus.tiledMapList.get(MathUtils.random(0, 7)),
                 ProjectLocus.TILED_MAP_SCALE);
+
+        transparentBackgroundTexture = projectLocus.uiTextureAtlas
+                .findRegion("transparentBackground");
 
         createPlayScreen = isPlayScreenCreated = isPlayerMapToBeUpdated = isGameToBeStarted =
                 isGameStarted = isReady = false;
@@ -365,23 +370,54 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
             playerDisplay.readyText.draw(spriteBatch);
         }
 
-        readyText.draw(projectLocus.spriteBatch);
+        readyText.draw(spriteBatch);
 
         if (isGameToBeStarted && !isGameStarted) {
+            spriteBatch.draw(transparentBackgroundTexture, 0, 0,
+                    ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
             timerText.draw(spriteBatch);
         }
 
+    }
+
+    private void toggleReady() {
+        if (!isGameToBeStarted) {
+            if (isReady) {
+                projectLocus.screenTransitionSound.play();
+                switch (type) {
+                    case Host:
+                        projectLocus.gameServer.sendReadyState(isReady = false);
+                        break;
+                    case Client:
+                        projectLocus.gameClient.sendReadyState(isReady = false);
+                        break;
+                }
+                readyText.setFont(projectLocus.font32Red);
+            } else {
+                projectLocus.flingHorizontalSound.play();
+                switch (type) {
+                    case Host:
+                        projectLocus.gameServer.sendReadyState(isReady = true);
+                        break;
+                    case Client:
+                        projectLocus.gameClient.sendReadyState(isReady = true);
+                        break;
+                }
+                readyText.setFont(projectLocus.font32Green);
+            }
+        }
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
         if (!ProjectLocus.isLobbyScreenMusicPlaying) {
-            if (ProjectLocus.isScreenBackgroundMusicPlaying)
+            if (ProjectLocus.isScreenBackgroundMusicPlaying) {
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
-            else {
+            } else {
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(0.5f);
             }
+            projectLocus.lobbyScreenBackgroundMusic.setLooping(true);
             projectLocus.lobbyScreenBackgroundMusic.play();
             ProjectLocus.isLobbyScreenMusicPlaying =
                     projectLocus.lobbyScreenBackgroundMusic.isPlaying();
@@ -515,6 +551,9 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public boolean keyDown(int keycode) {
         switch (keycode) {
+            case Input.Keys.ENTER:
+                toggleReady();
+                break;
             case Input.Keys.BACK:
             case Input.Keys.ESCAPE:
             case Input.Keys.BACKSPACE:
@@ -557,29 +596,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (isReadyToBeChanged) {
-            if (isReady) {
-                projectLocus.screenTransitionSound.play();
-                switch (type) {
-                    case Host:
-                        projectLocus.gameServer.sendReadyState(isReady = false);
-                        break;
-                    case Client:
-                        projectLocus.gameClient.sendReadyState(isReady = false);
-                        break;
-                }
-                readyText.setFont(projectLocus.font32Red);
-            } else {
-                projectLocus.flingHorizontalSound.play();
-                switch (type) {
-                    case Host:
-                        projectLocus.gameServer.sendReadyState(isReady = true);
-                        break;
-                    case Client:
-                        projectLocus.gameClient.sendReadyState(isReady = true);
-                        break;
-                }
-                readyText.setFont(projectLocus.font32Green);
-            }
+            toggleReady();
             isReadyToBeChanged = false;
         }
         return false;

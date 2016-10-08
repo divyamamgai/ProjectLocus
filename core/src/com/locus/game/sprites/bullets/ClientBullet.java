@@ -1,6 +1,5 @@
 package com.locus.game.sprites.bullets;
 
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
@@ -47,7 +46,7 @@ public class ClientBullet extends Sprite {
     private Body body;
     private BulletLoader.Definition definition;
     private boolean isAlive = true;
-    private Sound sound;
+//    private Sound sound;
 
     public ClientBullet(ClientLevel level, Bullet.Type type, ClientShip ship, Vector2 position,
                         float angleRad) {
@@ -72,22 +71,22 @@ public class ClientBullet extends Sprite {
         timer = new Timer();
         timer.scheduleTask(new ClientBulletDieTask(this), definition.life);
 
-        switch (type) {
-            case Normal:
-                sound = level.getProjectLocus().primaryBulletSound;
-                break;
-            case Fighter:
-                sound = level.getProjectLocus().secondaryBulletFighterSound;
-                break;
-            case SuperSonic:
-                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
-                break;
-            case Bomber:
-                sound = level.getProjectLocus().secondaryBulletBomberSound;
-                break;
-        }
-
-        sound.play();
+//        switch (type) {
+//            case Normal:
+//                sound = level.getProjectLocus().primaryBulletSound;
+//                break;
+//            case Fighter:
+//                sound = level.getProjectLocus().secondaryBulletFighterSound;
+//                break;
+//            case SuperSonic:
+//                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
+//                break;
+//            case Bomber:
+//                sound = level.getProjectLocus().secondaryBulletBomberSound;
+//                break;
+//        }
+//
+//        sound.play();
 
     }
 
@@ -105,8 +104,8 @@ public class ClientBullet extends Sprite {
 
         timer.clear();
         timer.scheduleTask(new ClientBulletDieTask(this), definition.life);
-        
-        sound.play();
+
+//        sound.play();
 
     }
 
