@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -54,6 +55,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
     private ArrayList<PlayerResultData> playerResultList;
+    private TextureRegion goldMedalTexture, silverMedalTexture, bronzeMedalTexture;
 
     private static final int ROW_PADDING = 50, COLUMN_PADDING = 50, SHIP_PADDING = 34,
             MARGIN_TOP = 80;
@@ -102,6 +104,10 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         inputMultiplexer.addProcessor(this);
 
         isTiledMapCreated = false;
+
+        goldMedalTexture = projectLocus.uiTextureAtlas.findRegion("goldMedal");
+        silverMedalTexture = projectLocus.uiTextureAtlas.findRegion("silverMedal");
+        bronzeMedalTexture = projectLocus.uiTextureAtlas.findRegion("bronzeMedal");
 
     }
 

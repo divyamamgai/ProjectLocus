@@ -24,44 +24,65 @@ barForeground
   orig: 512, 64
   offset: 0, 0
   index: -1
+bronzeMedal
+  rotate: false
+  xy: 1027, 168
+  size: 170, 256
+  orig: 170, 256
+  offset: 0, 0
+  index: -1
+goldMedal
+  rotate: false
+  xy: 1199, 168
+  size: 170, 256
+  orig: 170, 256
+  offset: 0, 0
+  index: -1
+silverMedal
+  rotate: false
+  xy: 1371, 168
+  size: 170, 256
+  orig: 170, 256
+  offset: 0, 0
+  index: -1
 arrowDown
   rotate: false
-  xy: 1027, 296
+  xy: 515, 1
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 arrowUp
   rotate: false
-  xy: 1027, 166
+  xy: 773, 1
   size: 256, 128
   orig: 256, 128
   offset: 0, 0
   index: -1
 arrowLeft
   rotate: false
-  xy: 1285, 168
+  xy: 1543, 234
   size: 128, 256
   orig: 128, 256
   offset: 0, 0
   index: -1
 arrowRight
   rotate: false
-  xy: 1415, 168
+  xy: 1673, 234
   size: 128, 256
   orig: 128, 256
   offset: 0, 0
   index: -1
 redTransparentBackground
   rotate: false
-  xy: 515, 1
+  xy: 1803, 362
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 transparentBackground
   rotate: false
-  xy: 645, 1
+  xy: 1803, 232
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
