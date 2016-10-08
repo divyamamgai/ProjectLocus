@@ -76,13 +76,13 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
     private ArrayList<MenuOption> menuOptionList;
     private int selectedMenuOption;
     private InputMultiplexer inputMultiplexer;
-    private boolean toSubmit;
+    private boolean toSubmit, isPreviousMenuOptionSelected, isNextMenuOptionSelected;
 
     SelectModeScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
 
         this.projectLocus = projectLocus;
         this.selectPlayerScreen = selectPlayerScreen;
-        toSubmit = false;
+        toSubmit = isPreviousMenuOptionSelected = isNextMenuOptionSelected = false;
         backgroundMovementAngleRad = selectPlayerScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
@@ -298,19 +298,17 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
         switch (keycode) {
             case Input.Keys.W:
             case Input.Keys.UP:
+                isPreviousMenuOptionSelected = true;
                 previousMenuOption();
                 break;
             case Input.Keys.S:
             case Input.Keys.DOWN:
+                isNextMenuOptionSelected = true;
                 nextMenuOption();
                 break;
             case Input.Keys.ENTER:
+                toSubmit = true;
                 submit();
-                break;
-            case Input.Keys.BACK:
-                // Go back to previous Screen.
-//                selectedMenuOption = 3;
-//                submit();
                 break;
         }
         return false;
@@ -318,6 +316,28 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
 
     @Override
     public boolean keyUp(int keycode) {
+        switch (keycode) {
+            case Input.Keys.W:
+            case Input.Keys.UP:
+                if (isPreviousMenuOptionSelected) {
+                    isPreviousMenuOptionSelected = false;
+                    previousMenuOption();
+                }
+                break;
+            case Input.Keys.S:
+            case Input.Keys.DOWN:
+                if (isNextMenuOptionSelected) {
+                    isNextMenuOptionSelected = false;
+                    nextMenuOption();
+                }
+                break;
+            case Input.Keys.ENTER:
+                if (toSubmit) {
+                    toSubmit = false;
+                    submit();
+                }
+                break;
+        }
         return false;
     }
 
@@ -364,7 +384,7 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
                 menuOptionList.get(selectedMenuOption).isSelected = false;
                 selectedMenuOption = menuOptionList.indexOf(menuOption);
                 menuOptionList.get(selectedMenuOption).isSelected = true;
-                submit();
+                toSubmit = true;
                 break;
             }
         }
