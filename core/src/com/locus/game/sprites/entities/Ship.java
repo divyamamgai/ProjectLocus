@@ -46,9 +46,12 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     private Vector2 thrustVelocity;
     private Vector2 bulletPosition;
-    private short bulletsFired;
     private Ship.Type type;
     private ShipState shipState;
+
+    private short primaryBulletCount, secondaryBulletCount;
+    private Bullet.Type primaryBulletType;
+    private Bullet.Type secondaryBulletType;
 
     public Ship(Level level, Ship.Property property, float x, float y, float angleRad) {
 
@@ -71,13 +74,26 @@ public class Ship extends Entity implements InputController.InputCallBack {
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
 
         thrustVelocity = new Vector2();
-        bulletPosition = new Vector2();
-        bulletsFired = 0;
 
         shipState = new ShipState();
         shipState.ID = ID;
 
         update();
+
+        primaryBulletType = Bullet.Type.Normal;
+        switch (type) {
+            case Fighter:
+                secondaryBulletType = Bullet.Type.Fighter;
+                break;
+            case SuperSonic:
+                secondaryBulletType = Bullet.Type.SuperSonic;
+                break;
+            case Bomber:
+                secondaryBulletType = Bullet.Type.Bomber;
+                break;
+        }
+        bulletPosition = new Vector2();
+        primaryBulletCount = secondaryBulletCount = 0;
 
     }
 
@@ -88,7 +104,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
     public void resurrect(Color color, float x, float y, float angleRad) {
 
         isAlive = true;
-        bulletsFired = 0;
+        primaryBulletCount = 0;
         health = definition.maxHealth;
 
         body.setActive(true);
@@ -126,8 +142,6 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
             super.draw(spriteBatch);
 
-            float percentageHealth = health / definition.maxHealth;
-
             spriteBatch.draw(level.getBarBackgroundTexture(),
                     bodyPosition.x - definition.halfWidth - 0.2f, bodyPosition.y + 2.8f,
                     definition.width + 0.4f, 0.9f);
@@ -152,19 +166,34 @@ public class Ship extends Entity implements InputController.InputCallBack {
         body.setActive(false);
     }
 
-    private void fireBullet(Bullet.Type type) {
-        if (bulletsFired == 0) {
+    private void firePrimaryBullet() {
+        if (primaryBulletCount == 0) {
             Vector2 bodyPosition = body.getPosition();
             float angleRad = body.getAngle();
-            for (Vector2 weaponPosition : definition.weaponPositionMap.get(type)) {
-                level.addBulletAlive(type, this,
+            for (Vector2 weaponPosition : definition.weaponPositionMap.get(primaryBulletType)) {
+                level.addBulletAlive(primaryBulletType, this,
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
-        } else if (bulletsFired >= 10) {
-            bulletsFired = -1;
+        } else if (primaryBulletCount >= 14) {
+            primaryBulletCount = -1;
         }
-        bulletsFired++;
+        primaryBulletCount++;
+    }
+
+    private void fireSecondaryBullet() {
+        if (secondaryBulletCount == 0) {
+            Vector2 bodyPosition = body.getPosition();
+            float angleRad = body.getAngle();
+            for (Vector2 weaponPosition : definition.weaponPositionMap.get(secondaryBulletType)) {
+                level.addBulletAlive(secondaryBulletType, this,
+                        bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
+                        angleRad);
+            }
+        } else if (secondaryBulletCount >= 30) {
+            secondaryBulletCount = -1;
+        }
+        secondaryBulletCount++;
     }
 
     @Override
@@ -190,14 +219,20 @@ public class Ship extends Entity implements InputController.InputCallBack {
     }
 
     @Override
-    public void fire() {
-        fireBullet(Bullet.Type.Normal);
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
+        if (isPrimaryBulletEnabled) {
+            firePrimaryBullet();
+        }
+        if (isSecondaryBulletEnabled) {
+            fireSecondaryBullet();
+        }
     }
 
     @Override
     public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                               boolean isRotationEnabled, boolean isRotationClockwise,
-                              boolean isFireEnabled) {
+                              boolean isFireEnabled, boolean isPrimaryBulletEnabled,
+                              boolean isSecondaryBulletEnabled) {
 
     }
 

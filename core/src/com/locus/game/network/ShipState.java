@@ -9,6 +9,7 @@ public class ShipState {
 
     public short ID, score;
     public float bodyX, bodyY, angleDeg, health;
+    public boolean isFireEnabled;
 
     public ShipState() {
         bodyX = 0;
@@ -16,6 +17,7 @@ public class ShipState {
         angleDeg = 0;
         health = 0;
         score = 0;
+        isFireEnabled = false;
     }
 
     ShipState(short ID, float bodyX, float bodyY, float angleDeg, float health) {
@@ -25,6 +27,7 @@ public class ShipState {
         this.angleDeg = angleDeg;
         this.health = health;
         score = 0;
+        isFireEnabled = false;
     }
 
 }

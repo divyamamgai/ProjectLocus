@@ -56,9 +56,6 @@ class Network {
         kryo.register(CreateShip.class);
         kryo.register(StartGame.class);
         kryo.register(short[].class);
-        kryo.register(ShortArray.class);
-        kryo.register(Bullet.Type.class);
-        kryo.register(BulletState.class);
         kryo.register(GameState.class);
         kryo.register(ControllerState.class);
     }
@@ -184,8 +181,6 @@ class Network {
         PlanetState planetState;
         ArrayList<MoonState> moonStateList;
         ArrayList<ShipState> shipStateList;
-        ArrayList<BulletState> bulletAliveStateList;
-        ShortArray bulletKilledArray;
 
         GameState() {
 
@@ -200,9 +195,29 @@ class Network {
         boolean isRotationEnabled;
         boolean isRotationClockwise;
         boolean isFireEnabled;
+        boolean isPrimaryBulletEnabled;
+        boolean isSecondaryBulletEnabled;
 
         ControllerState() {
 
+        }
+
+    }
+
+    static class FireState {
+
+        short shipID;
+        boolean isPrimaryBulletEnabled;
+        boolean isSecondaryBulletEnabled;
+
+        FireState() {
+
+        }
+
+        FireState(short shipID, boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
+            this.shipID = shipID;
+            this.isPrimaryBulletEnabled = isPrimaryBulletEnabled;
+            this.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
         }
 
     }

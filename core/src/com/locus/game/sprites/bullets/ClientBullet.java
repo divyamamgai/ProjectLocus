@@ -1,11 +1,15 @@
 package com.locus.game.sprites.bullets;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
-import com.locus.game.ProjectLocus;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.utils.Timer;
 import com.locus.game.levels.ClientLevel;
-import com.locus.game.network.BulletState;
+import com.locus.game.sprites.entities.ClientShip;
 
 /**
  * Created by Divya Mamgai on 9/19/2016.
@@ -14,66 +18,121 @@ import com.locus.game.network.BulletState;
 
 public class ClientBullet extends Sprite {
 
-    private float bodyX, bodyY, toBodyX, toBodyY;
+    public ClientShip getShip() {
+        return ship;
+    }
+
+    public void setShip(ClientShip ship) {
+        this.ship = ship;
+    }
+
+    public BulletLoader.Definition getDefinition() {
+        return definition;
+    }
 
     public void setDefinition(BulletLoader.Definition definition) {
         this.definition = definition;
     }
 
-    private BulletLoader.Definition definition;
-
-    private Bullet.Type type;
-
-    public Bullet.Type getType() {
-        return type;
+    public boolean isAlive() {
+        return isAlive;
     }
 
-    public ClientBullet(ClientLevel level, BulletState bulletState) {
+    public Bullet.Type getType() {
+        return definition.type;
+    }
 
-        type = bulletState.type;
+    private Timer timer;
+    private ClientShip ship;
+    private Body body;
+    private BulletLoader.Definition definition;
+    private boolean isAlive = true;
+    private Sound sound;
 
+    public ClientBullet(ClientLevel level, Bullet.Type type, ClientShip ship, Vector2 position,
+                        float angleRad) {
+
+        setShip(ship);
         setDefinition(level.getBulletLoader().get(type));
 
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
+
+        body = level.getWorld().createBody(definition.bodyDef);
+        body.setTransform(position.x, position.y, angleRad);
+        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
+        body.setUserData(this);
+        definition.attachFixture(body);
+
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
+        setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
-        bodyX = toBodyX = bulletState.bodyX;
-        bodyY = toBodyY = bulletState.bodyY;
+        update();
 
-        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        setRotation(bulletState.angleDeg);
+        timer = new Timer();
+        timer.scheduleTask(new ClientBulletDieTask(this), definition.life);
+
+        switch (type) {
+            case Normal:
+                sound = level.getProjectLocus().primaryBulletSound;
+                break;
+            case Fighter:
+                sound = level.getProjectLocus().secondaryBulletFighterSound;
+                break;
+            case SuperSonic:
+                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
+                break;
+            case Bomber:
+                sound = level.getProjectLocus().secondaryBulletBomberSound;
+                break;
+        }
+
+        sound.play();
 
     }
 
-    public void resurrect(BulletState bulletState) {
+    public void resurrect(ClientShip ship, Vector2 position, float angleRad) {
 
-        bodyX = toBodyX = bulletState.bodyX;
-        bodyY = toBodyY = bulletState.bodyY;
+        this.ship = ship;
 
-        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        setRotation(bulletState.angleDeg);
+        isAlive = true;
+
+        body.setActive(true);
+        body.setTransform(position.x, position.y, angleRad);
+        body.setLinearVelocity((new Vector2(0, definition.speed)).rotateRad(angleRad));
+
+        setRotation(angleRad * MathUtils.radiansToDegrees);
+
+        timer.clear();
+        timer.scheduleTask(new ClientBulletDieTask(this), definition.life);
+        
+        sound.play();
 
     }
 
-    public void update(BulletState bulletState) {
-        toBodyX = bulletState.bodyX;
-        toBodyY = bulletState.bodyY;
+    public void update() {
+        Vector2 bulletPosition = body.getPosition().sub(definition.bodyOrigin);
+        setPosition(bulletPosition.x, bulletPosition.y);
     }
 
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {
-        if (frustum.boundsInFrustum(bodyX, bodyY, 0,
+        Vector2 bodyPosition = body.getPosition();
+        if (frustum.boundsInFrustum(bodyPosition.x, bodyPosition.y, 0,
                 definition.halfWidth, definition.halfHeight, 0)) {
             super.draw(spriteBatch);
         }
     }
 
-    public boolean interpolate(float delta, boolean isDead) {
-        float dx = (toBodyX - bodyX), dy = (toBodyY - bodyY);
-        bodyX += dx * ProjectLocus.INTERPOLATION_FACTOR * 3f * delta;
-        bodyY += dy * ProjectLocus.INTERPOLATION_FACTOR * 3f * delta;
-        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
-        return isDead && (Math.abs(dx) <= 0.3f || Math.abs(dy) <= 0.3f);
+    public void kill() {
+        if (isAlive) {
+            timer.clear();
+            isAlive = false;
+        }
+    }
+
+    public void killBody() {
+        body.setAwake(false);
+        body.setActive(false);
     }
 
 }

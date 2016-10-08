@@ -2,6 +2,7 @@ package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
+import com.badlogic.gdx.math.MathUtils;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
 import com.locus.game.network.PlanetState;
@@ -17,17 +18,21 @@ public class ClientPlanet extends ClientEntity {
 
         setLevel(level);
         setDefinition(level.getEntityLoader().get(Entity.Type.Planet, type.ordinal()));
-
-        bodyX = ProjectLocus.WORLD_HALF_WIDTH;
-        bodyY = ProjectLocus.WORLD_HALF_HEIGHT;
-
         setRegion(definition.textureRegion);
         setSize(definition.width, definition.height);
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
-        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
 
+
+        bodyX = ProjectLocus.WORLD_HALF_WIDTH;
+        bodyY = ProjectLocus.WORLD_HALF_HEIGHT;
         angleDeg = 0;
         toAngleDeg = 0;
+
+        setPosition(bodyX - definition.bodyOrigin.x, bodyY - definition.bodyOrigin.y);
+
+        body = level.getWorld().createBody(definition.bodyDef);
+        body.setTransform(bodyX, bodyY, 0);
+        definition.attachFixture(body);
 
     }
 
@@ -46,5 +51,6 @@ public class ClientPlanet extends ClientEntity {
     public void interpolate(float delta) {
         angleDeg += (toAngleDeg - angleDeg) * ProjectLocus.INTERPOLATION_FACTOR * delta;
         setRotation(angleDeg);
+        body.setTransform(bodyX, bodyY, angleDeg * MathUtils.degreesToRadians);
     }
 }

@@ -18,7 +18,7 @@ class HostListener extends Listener {
     }
 
     public void connected(Connection connection) {
-        gameServer.onConnected(connection);
+        gameServer.onConnected();
     }
 
     public void received(Connection connection, Object object) {

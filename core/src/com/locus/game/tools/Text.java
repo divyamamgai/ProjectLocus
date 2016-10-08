@@ -92,6 +92,10 @@ public class Text {
 
     }
 
+    public void setTextFast(String text) {
+        this.text = text;
+    }
+    
     public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;

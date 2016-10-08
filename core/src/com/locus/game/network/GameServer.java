@@ -33,7 +33,7 @@ public class GameServer {
 
         this.projectLocus = projectLocus;
 
-        server = new Server(10240, 10240);
+        server = new Server();
         Network.registerClasses(server);
 
         playerMap = new LinkedHashMap<Integer, Player>();
@@ -101,7 +101,7 @@ public class GameServer {
 
     }
 
-    void onConnected(Connection connection) {
+    void onConnected() {
 
     }
 
@@ -121,7 +121,13 @@ public class GameServer {
                 ship.applyRotation(controllerState.isRotationClockwise);
             }
             if (controllerState.isFireEnabled) {
-                ship.fire();
+                ship.fire(controllerState.isPrimaryBulletEnabled,
+                        controllerState.isSecondaryBulletEnabled);
+                server.sendToAllExceptTCP(connectionID, new Network.FireState(
+                        ship.getID(),
+                        controllerState.isPrimaryBulletEnabled,
+                        controllerState.isSecondaryBulletEnabled
+                ));
             }
 
         } else if (object instanceof Network.PlayerJoinRequest) {
@@ -243,12 +249,8 @@ public class GameServer {
         gameState.planetState = level.getPlanetState();
         gameState.moonStateList = level.getMoonStateList();
         gameState.shipStateList = level.getShipStateList();
-        gameState.bulletKilledArray = level.getBulletKilledArray();
-        gameState.bulletAliveStateList = level.getBulletAliveStateList();
 
         server.sendToAllTCP(gameState);
-
-        gameState.bulletKilledArray.clear();
 
     }
 

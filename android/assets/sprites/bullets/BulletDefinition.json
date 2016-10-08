@@ -2,34 +2,34 @@
   "bullets": [
     {
       "type": 0,
-      "density": 0.2,
+      "density": 0,
       "width": 1,
       "height": 3,
-      "speed": 300,
+      "speed": 120,
       "damage": 20
     },
     {
       "type": 1,
-      "density": 0.3,
+      "density": 0.1,
       "width": 1,
       "height": 5.85,
-      "speed": 500,
+      "speed": 120,
       "damage": 60
     },
     {
       "type": 2,
-      "density": 0.3,
+      "density": 0.1,
       "width": 1,
       "height": 8.84,
-      "speed": 400,
+      "speed": 120,
       "damage": 40
     },
     {
       "type": 3,
-      "density": 0.3,
-      "width": 2,
-      "height": 2,
-      "speed": 400,
+      "density": 0.1,
+      "width": 3,
+      "height": 3,
+      "speed": 120,
       "damage": 30
     }
   ]

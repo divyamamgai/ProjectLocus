@@ -40,7 +40,7 @@ public class ProjectLocus extends Game implements Disposable {
             WORLD_HEIGHT * WORLD_HEIGHT);
 
     // Desired FPS of the projectLocus and Box2D configuration variables.
-    public static final float FPS = 1 / 30f;
+    public static final float FPS = 1 / 60f;
     public static final short VELOCITY_ITERATIONS = 6;
     public static final short POSITION_ITERATIONS = 2;
 
@@ -90,7 +90,9 @@ public class ProjectLocus extends Game implements Disposable {
     public GameServer gameServer;
     public GameClient gameClient;
     public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
-    public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound;
+    public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound,
+            primaryBulletSound, secondaryBulletBomberSound, secondaryBulletFighterSound,
+            secondaryBulletSupersonicSound;
     public boolean isLobbyScreenMusicPlaying, isScreenBackgroundMusicPlaying,
             isPlayScreenBackgroundMusicPlaying;
 

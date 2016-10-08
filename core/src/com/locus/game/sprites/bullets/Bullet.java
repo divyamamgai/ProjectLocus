@@ -1,5 +1,6 @@
 package com.locus.game.sprites.bullets;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
@@ -8,7 +9,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Timer;
 import com.locus.game.levels.Level;
-import com.locus.game.network.BulletState;
 import com.locus.game.sprites.entities.Ship;
 
 /**
@@ -17,12 +17,6 @@ import com.locus.game.sprites.entities.Ship;
  */
 
 public class Bullet extends Sprite {
-
-    public static short BulletCount = 0;
-
-    public short getID() {
-        return ID;
-    }
 
     public Ship getShip() {
         return ship;
@@ -52,10 +46,6 @@ public class Bullet extends Sprite {
         return definition.type;
     }
 
-    public BulletState getBulletState() {
-        return bulletState;
-    }
-
     public enum Type {
 
         Normal,
@@ -69,17 +59,14 @@ public class Bullet extends Sprite {
 
     }
 
-    private short ID;
+    private Sound sound;
     private Timer timer;
     private Ship ship;
     private Body body;
     private BulletLoader.Definition definition;
     private boolean isAlive = true;
-    private BulletState bulletState;
 
     public Bullet(Level level, Type type, Ship ship, Vector2 position, float angleRad) {
-
-        ID = BulletCount++;
 
         setShip(ship);
         setDefinition(level.getBulletLoader().get(type));
@@ -96,15 +83,27 @@ public class Bullet extends Sprite {
         setOrigin(definition.bodyOrigin.x, definition.bodyOrigin.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
-        bulletState = new BulletState();
-        bulletState.ID = ID;
-        bulletState.angleDeg = getRotation();
-        bulletState.type = type;
-
         update();
 
         timer = new Timer();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
+
+        switch (type) {
+            case Normal:
+                sound = level.getProjectLocus().primaryBulletSound;
+                break;
+            case Fighter:
+                sound = level.getProjectLocus().secondaryBulletFighterSound;
+                break;
+            case SuperSonic:
+                sound = level.getProjectLocus().secondaryBulletSupersonicSound;
+                break;
+            case Bomber:
+                sound = level.getProjectLocus().secondaryBulletBomberSound;
+                break;
+        }
+
+        sound.play();
 
     }
 
@@ -120,24 +119,16 @@ public class Bullet extends Sprite {
 
         setRotation(angleRad * MathUtils.radiansToDegrees);
 
-        bulletState.angleDeg = getRotation();
-
         timer.clear();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
+
+        sound.play();
 
     }
 
     public void update() {
-
-        Vector2 bodyPosition = body.getPosition();
-
-        bulletState.bodyX = bodyPosition.x;
-        bulletState.bodyY = bodyPosition.y;
-
-        Vector2 bulletPosition = bodyPosition.sub(definition.bodyOrigin);
-
+        Vector2 bulletPosition = body.getPosition().sub(definition.bodyOrigin);
         setPosition(bulletPosition.x, bulletPosition.y);
-
     }
 
     public void draw(SpriteBatch spriteBatch, Frustum frustum) {

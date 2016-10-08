@@ -1,13 +1,16 @@
 package com.locus.game.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
+import com.locus.game.tools.Text;
 
 import java.util.ArrayList;
 
@@ -20,11 +23,18 @@ class PracticePlayScreen implements Screen, InputProcessor {
     public ProjectLocus projectLocus;
     private SelectModeScreen selectModeScreen;
     private Level level;
+    private OrthographicCamera foregroundCamera;
+    private Text fpsText;
 
     PracticePlayScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen) {
 
         this.projectLocus = projectLocus;
         this.selectModeScreen = selectModeScreen;
+
+        foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+
+        fpsText = new Text(projectLocus.font24, "60");
 
         ArrayList<Moon.Property> moonPropertyList = new ArrayList<Moon.Property>();
         moonPropertyList.add(new Moon.Property(Moon.Type.Organic, 200f, 0f));
@@ -46,6 +56,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
+//        projectLocus.screenBackgroundMusic.stop();
         level.getInputMultiplexer().addProcessor(this);
         level.onShow();
     }
@@ -55,13 +66,23 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
         level.update(delta);
         level.render(projectLocus.spriteBatch);
-//        level.render(projectLocus.spriteBatch, delta);
+
+        fpsText.setTextFast(String.valueOf(Gdx.graphics.getFramesPerSecond()));
+
+        projectLocus.spriteBatch.setProjectionMatrix(foregroundCamera.combined);
+        projectLocus.spriteBatch.begin();
+        fpsText.draw(projectLocus.spriteBatch);
+        projectLocus.spriteBatch.end();
 
     }
 
     @Override
     public void resize(int width, int height) {
         ProjectLocus.resizeCamera(width, height);
+        foregroundCamera.setToOrtho(false, ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
+        fpsText.setPosition(ProjectLocus.screenCameraWidth - fpsText.getWidth() - 8,
+                ProjectLocus.screenCameraHeight - fpsText.getHeight());
         level.resize();
     }
 

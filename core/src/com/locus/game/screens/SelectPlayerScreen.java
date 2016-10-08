@@ -127,12 +127,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         isDoneSelection = false;
         isExitGame = false;
-
-        projectLocus.flingHorizontalSound =
-                Gdx.audio.newSound(Gdx.files.internal("sounds/flingHorizontalSound.wav"));
-        projectLocus.flingVerticalSound =
-                Gdx.audio.newSound(Gdx.files.internal("sounds/flingVerticalSound.wav"));
-
+        
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);

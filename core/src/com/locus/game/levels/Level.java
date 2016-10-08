@@ -14,9 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Queue;
-import com.badlogic.gdx.utils.ShortArray;
 import com.locus.game.ProjectLocus;
-import com.locus.game.network.BulletState;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
 import com.locus.game.network.ShipState;
@@ -28,6 +26,7 @@ import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Moon;
 import com.locus.game.sprites.entities.Planet;
 import com.locus.game.sprites.entities.Ship;
+import com.locus.game.tools.Hud;
 import com.locus.game.tools.InputController;
 
 import java.util.ArrayList;
@@ -61,9 +60,10 @@ public class Level implements Disposable {
 
     }
 
-    private InputController inputController;
     private OrthographicCamera camera;
     private ProjectLocus projectLocus;
+    private Hud hud;
+    private Level.Property property;
     private World world;
     private ArrayList<Bullet> bulletAliveList;
     private HashMap<Bullet.Type, Queue<Bullet>> bulletDeadQueueMap;
@@ -75,17 +75,17 @@ public class Level implements Disposable {
     private Planet planet;
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
-    private Level.Property property;
+    private InputController inputController;
 
     private PlanetState planetState;
     private ArrayList<MoonState> moonStateList;
     private ArrayList<ShipState> shipStateList;
-    private ArrayList<BulletState> bulletAliveStateList;
-    private ShortArray bulletKilledArray;
 
     private float timePassed;
 
-//    private Box2DDebugRenderer box2DDebugRenderer;
+    public ProjectLocus getProjectLocus() {
+        return projectLocus;
+    }
 
     public short getPlayerID() {
         return player.getID();
@@ -131,25 +131,17 @@ public class Level implements Disposable {
         return shipStateList;
     }
 
-    public ArrayList<BulletState> getBulletAliveStateList() {
-        return bulletAliveStateList;
-    }
-
-    public ShortArray getBulletKilledArray() {
-        return bulletKilledArray;
-    }
-
     public InputMultiplexer getInputMultiplexer() {
         return inputMultiplexer;
     }
 
-    public Level(ProjectLocus projectLocus, Property property, boolean isMultiPlayer) {
+    public Level(ProjectLocus projectLocus, Hud hud, Property property, boolean isMultiPlayer) {
 
-        // Reset Entity and Bullet Count
+        // Reset Entity Count
         Entity.EntityCount = 0;
-        Bullet.BulletCount = 0;
 
         this.projectLocus = projectLocus;
+        this.hud = hud;
         this.property = property;
         this.isMultiPlayer = isMultiPlayer;
 
@@ -162,13 +154,6 @@ public class Level implements Disposable {
         world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
 
-//        box2DDebugRenderer = new Box2DDebugRenderer();
-//        box2DDebugRenderer.setDrawAABBs(true);
-//        box2DDebugRenderer.setDrawBodies(true);
-//        box2DDebugRenderer.setDrawContacts(true);
-//        box2DDebugRenderer.setDrawInactiveBodies(true);
-//        box2DDebugRenderer.setDrawVelocities(true);
-
         TiledMap tiledMap = projectLocus.tiledMapList.get(property.backgroundType);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, ProjectLocus.TILED_MAP_SCALE);
 
@@ -176,8 +161,6 @@ public class Level implements Disposable {
         barForegroundTexture = projectLocus.uiTextureAtlas.findRegion("barForeground");
 
         bulletAliveList = new ArrayList<Bullet>();
-        bulletAliveStateList = new ArrayList<BulletState>();
-        bulletKilledArray = new ShortArray();
 
         // We know that how many Type of Bullets we have so we pass the capacity too.
         Bullet.Type[] bulletTypeArray = Bullet.Type.values();
@@ -238,6 +221,10 @@ public class Level implements Disposable {
         shipAliveList.add(ship);
         shipStateList.add(ship.getShipState());
 
+        if (isMultiPlayer) {
+            hud.addPlayerData(ship.getShipState(), isPlayer);
+        }
+
         if (isPlayer) {
             inputController = new InputController((player = ship), true);
             inputMultiplexer.clear();
@@ -256,8 +243,8 @@ public class Level implements Disposable {
         }
     }
 
-    public synchronized void addBulletAlive(Bullet.Type bulletType, Ship ship, Vector2 bulletPosition,
-                                            float angleRad) {
+    public synchronized void addBulletAlive(Bullet.Type bulletType, Ship ship,
+                                            Vector2 bulletPosition, float angleRad) {
         Bullet bullet;
         Queue<Bullet> bulletDeadQueue = bulletDeadQueueMap.get(bulletType);
 
@@ -269,10 +256,12 @@ public class Level implements Disposable {
         }
 
         bulletAliveList.add(bullet);
-        bulletAliveStateList.add(bullet.getBulletState());
     }
 
     public synchronized void update(float delta) {
+
+        world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
+                ProjectLocus.POSITION_ITERATIONS);
 
         if (player != null && player.isAlive()) {
             inputController.update();
@@ -304,31 +293,24 @@ public class Level implements Disposable {
         }
 
         Iterator<Bullet> bulletIterator = bulletAliveList.iterator();
-        Iterator<BulletState> bulletStateIterator = bulletAliveStateList.iterator();
         while (bulletIterator.hasNext()) {
             Bullet bullet = bulletIterator.next();
-            bulletStateIterator.next();
             if (bullet.isAlive()) {
                 bullet.update();
             } else {
                 bullet.killBody();
                 bulletDeadQueueMap.get(bullet.getType()).addLast(bullet);
-                bulletKilledArray.add(bullet.getID());
                 bulletIterator.remove();
-                bulletStateIterator.remove();
             }
         }
 
         if (isMultiPlayer) {
             timePassed += delta;
-            if (timePassed >= 0.005f) {
+            if (timePassed >= 0.0035f) {
                 projectLocus.gameServer.sendGameState();
                 timePassed = 0;
             }
         }
-
-        world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
-                ProjectLocus.POSITION_ITERATIONS);
 
     }
 
@@ -357,8 +339,6 @@ public class Level implements Disposable {
         }
 
         spriteBatch.end();
-
-//        box2DDebugRenderer.render(world, camera.combined);
 
     }
 

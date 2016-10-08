@@ -31,7 +31,7 @@ public abstract class Entity extends Sprite {
     protected Level level;
     protected EntityLoader.Definition definition;
     Body body;
-    float health;
+    float health, percentageHealth;
     boolean isAlive = true;
 
     public short getID() {
@@ -76,12 +76,16 @@ public abstract class Entity extends Sprite {
 
     void setHealth(float health) {
         this.health = health;
+        percentageHealth = health / definition.maxHealth;
     }
 
     public void reduceHealth(float by) {
         health -= by;
         if (health <= 0) {
             kill();
+            percentageHealth = 0;
+        } else {
+            percentageHealth = health / definition.maxHealth;
         }
     }
 

@@ -20,11 +20,12 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
         void applyRotation(boolean isClockwise);
 
-        void fire();
+        void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled);
 
         void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                            boolean isRotationEnabled, boolean isRotationClockwise,
-                           boolean isFireEnabled);
+                           boolean isFireEnabled, boolean isPrimaryBulletEnabled,
+                           boolean isSecondaryBulletEnabled);
 
     }
 
@@ -52,45 +53,49 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
 
     @Override
     public boolean keyDown(int keycode) {
-        switch (keycode) {
-            case Input.Keys.W:
-                isThrustEnabled = true;
-                isThrustForward = true;
-                break;
-            case Input.Keys.S:
-                isThrustEnabled = true;
-                isThrustForward = false;
-                break;
-            case Input.Keys.A:
-                isRotationEnabled = true;
-                isRotationClockwise = false;
-                break;
-            case Input.Keys.D:
-                isRotationEnabled = true;
-                isRotationClockwise = true;
-                break;
-            case Input.Keys.SPACE:
-                isFireEnabled = true;
-                break;
+        if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
+            isThrustEnabled = true;
+            isThrustForward = true;
         }
+        if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+            isThrustEnabled = true;
+            isThrustForward = false;
+        }
+        if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
+            isRotationEnabled = true;
+            isRotationClockwise = false;
+        }
+        if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+            isRotationEnabled = true;
+            isRotationClockwise = true;
+        }
+        if (keycode == Input.Keys.SPACE) {
+            isPrimaryBulletEnabled = true;
+        }
+        if (keycode == Input.Keys.CONTROL_LEFT || keycode == Input.Keys.CONTROL_RIGHT) {
+            isSecondaryBulletEnabled = true;
+        }
+        isFireEnabled = isPrimaryBulletEnabled || isSecondaryBulletEnabled;
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        switch (keycode) {
-            case Input.Keys.W:
-            case Input.Keys.S:
-                isThrustEnabled = false;
-                break;
-            case Input.Keys.A:
-            case Input.Keys.D:
-                isRotationEnabled = false;
-                break;
-            case Input.Keys.SPACE:
-                isFireEnabled = false;
-                break;
+        if (keycode == Input.Keys.W || keycode == Input.Keys.UP ||
+                keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+            isThrustEnabled = false;
         }
+        if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT ||
+                keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+            isRotationEnabled = false;
+        }
+        if (keycode == Input.Keys.SPACE) {
+            isPrimaryBulletEnabled = false;
+        }
+        if (keycode == Input.Keys.CONTROL_LEFT || keycode == Input.Keys.CONTROL_RIGHT) {
+            isSecondaryBulletEnabled = false;
+        }
+        isFireEnabled = isPrimaryBulletEnabled || isSecondaryBulletEnabled;
         return false;
     }
 
@@ -258,12 +263,12 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
                 inputCallBack.applyThrust(isThrustForward);
             }
             if (isFireEnabled) {
-                inputCallBack.fire();
+                inputCallBack.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled);
             }
         } else if (isRotationEnabled || isThrustEnabled || isFireEnabled) {
             inputCallBack.applyControls(isThrustEnabled, isThrustForward,
                     isRotationEnabled, isRotationClockwise,
-                    isFireEnabled);
+                    isFireEnabled, isPrimaryBulletEnabled, isSecondaryBulletEnabled);
         }
     }
 }

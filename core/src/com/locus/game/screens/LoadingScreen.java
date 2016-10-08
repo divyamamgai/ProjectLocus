@@ -89,11 +89,15 @@ public class LoadingScreen implements Screen {
         assetManager.load("sprites/entities/0/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/1/pack.atlas", TextureAtlas.class);
         assetManager.load("sprites/entities/2/pack.atlas", TextureAtlas.class);
-        assetManager.load("sounds/BackgroundMusic1.mp3", Music.class);
-        assetManager.load("sounds/LobbyScreenMusic.mp3", Music.class);
-        assetManager.load("sounds/flingHorizontalSound.wav", Sound.class);
-        assetManager.load("sounds/flingVerticalSound.wav", Sound.class);
-        assetManager.load("sounds/ScreenTransition.wav", Sound.class);
+        assetManager.load("music/screen.wav", Music.class);
+        assetManager.load("music/lobbyScreen.wav", Music.class);
+        assetManager.load("sounds/flingHorizontal.wav", Sound.class);
+        assetManager.load("sounds/flingVertical.wav", Sound.class);
+        assetManager.load("sounds/screenTransition.wav", Sound.class);
+        assetManager.load("sounds/primaryBullet.wav", Sound.class);
+        assetManager.load("sounds/secondaryBulletBomber.wav", Sound.class);
+        assetManager.load("sounds/secondaryBulletFighter.wav", Sound.class);
+        assetManager.load("sounds/secondaryBulletSupersonic.wav", Sound.class);
 
         for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
             assetManager.load("backgrounds/" + String.valueOf(backgroundType) + ".tmx",
@@ -169,15 +173,23 @@ public class LoadingScreen implements Screen {
                     BitmapFont.class);
 
             projectLocus.screenBackgroundMusic =
-                    assetManager.get("sounds/BackgroundMusic1.mp3", Music.class);
+                    assetManager.get("music/screen.wav", Music.class);
             projectLocus.lobbyScreenBackgroundMusic =
-                    assetManager.get("sounds/LobbyScreenMusic.mp3", Music.class);
+                    assetManager.get("music/lobbyScreen.wav", Music.class);
             projectLocus.flingVerticalSound =
-                    assetManager.get("sounds/flingVerticalSound.wav", Sound.class);
+                    assetManager.get("sounds/flingVertical.wav", Sound.class);
             projectLocus.flingHorizontalSound =
-                    assetManager.get("sounds/flingHorizontalSound.wav", Sound.class);
+                    assetManager.get("sounds/flingHorizontal.wav", Sound.class);
             projectLocus.screenTransitionSound =
-                    assetManager.get("sounds/ScreenTransition.wav", Sound.class);
+                    assetManager.get("sounds/screenTransition.wav", Sound.class);
+            projectLocus.primaryBulletSound =
+                    assetManager.get("sounds/primaryBullet.wav", Sound.class);
+            projectLocus.secondaryBulletBomberSound =
+                    assetManager.get("sounds/secondaryBulletBomber.wav", Sound.class);
+            projectLocus.secondaryBulletFighterSound =
+                    assetManager.get("sounds/secondaryBulletFighter.wav", Sound.class);
+            projectLocus.secondaryBulletSupersonicSound =
+                    assetManager.get("sounds/secondaryBulletSupersonic.wav", Sound.class);
 
             for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
                 projectLocus.tiledMapList.add(assetManager.get("backgrounds/" +

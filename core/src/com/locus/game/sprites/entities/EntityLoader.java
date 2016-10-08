@@ -42,7 +42,7 @@ public class EntityLoader implements Disposable {
         float radius, mass, gravitationalMass, thrustSpeed, rotationSpeed, maxSpeed2,
                 orbitalVelocity;
         Vector2 bodyOrigin;
-        HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
+        public HashMap<Bullet.Type, ArrayList<Vector2>> weaponPositionMap;
         CircleShape circleShape;
 
         Definition(ProjectLocus projectLocus, Entity.Type type, int secondaryType, JsonValue entityJson) {

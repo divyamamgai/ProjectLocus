@@ -1,11 +1,15 @@
 package com.locus.game.network;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.ClientLevel;
 import com.locus.game.screens.LobbyScreen;
 import com.locus.game.screens.ErrorScreen;
+import com.locus.game.sprites.bullets.Bullet;
+import com.locus.game.sprites.entities.ClientShip;
 import com.locus.game.tools.InputController;
 
 import java.io.IOException;
@@ -26,6 +30,7 @@ public class GameClient implements InputController.InputCallBack {
     private LobbyScreen lobbyScreen;
     private ClientLevel level;
     private Network.ControllerState controllerState;
+    private ClientShip ship;
 
     public void setLevel(ClientLevel level) {
         this.level = level;
@@ -40,21 +45,31 @@ public class GameClient implements InputController.InputCallBack {
     }
 
     @Override
-    public void fire() {
+    public void fire(boolean isPrimaryBulletEnabled, boolean isSecondaryBulletEnabled) {
     }
 
     @Override
     public void applyControls(boolean isThrustEnabled, boolean isThrustForward,
                               boolean isRotationEnabled, boolean isRotationClockwise,
-                              boolean isFireEnabled) {
+                              boolean isFireEnabled, boolean isPrimaryBulletEnabled,
+                              boolean isSecondaryBulletEnabled) {
 
         controllerState.isThrustEnabled = isThrustEnabled;
         controllerState.isThrustForward = isThrustForward;
         controllerState.isRotationEnabled = isRotationEnabled;
         controllerState.isRotationClockwise = isRotationClockwise;
         controllerState.isFireEnabled = isFireEnabled;
+        controllerState.isPrimaryBulletEnabled = isPrimaryBulletEnabled;
+        controllerState.isSecondaryBulletEnabled = isSecondaryBulletEnabled;
 
-        client.sendUDP(controllerState);
+        client.sendTCP(controllerState);
+
+        if (controllerState.isPrimaryBulletEnabled) {
+            ship.firePrimaryBullet();
+        }
+        if (controllerState.isSecondaryBulletEnabled) {
+            ship.fireSecondaryBullet();
+        }
 
     }
 
@@ -112,7 +127,7 @@ public class GameClient implements InputController.InputCallBack {
 
         this.projectLocus = projectLocus;
 
-        client = new Client(10240, 10240);
+        client = new Client();
         Network.registerClasses(client);
 
         controllerState = new Network.ControllerState();
@@ -143,8 +158,13 @@ public class GameClient implements InputController.InputCallBack {
             level.setPlanetState(gameState.planetState);
             level.setMoonStateList(gameState.moonStateList);
             level.setShipStateList(gameState.shipStateList);
-            level.setBulletKilledArray(gameState.bulletKilledArray);
-            level.setBulletAliveStateList(gameState.bulletAliveStateList);
+
+        } else if (object instanceof Network.FireState) {
+
+            Network.FireState fireState = (Network.FireState) object;
+
+            level.getShipAlive(fireState.shipID).fire(fireState.isPrimaryBulletEnabled,
+                    fireState.isSecondaryBulletEnabled);
 
         } else if (object instanceof Network.UpdateLobby) {
 
@@ -171,8 +191,13 @@ public class GameClient implements InputController.InputCallBack {
             lobbyScreen.startGame(startGameIn);
 
             for (Network.CreateShip createShip : createShipList) {
-                level.addShipAlive(createShip.property, createShip.shipState,
-                        createShip.connectionID == connection.getID());
+                if (createShip.connectionID == connection.getID()) {
+                    ship = level.addShipAlive(createShip.property, createShip.shipState,
+                            createShip.connectionID == connection.getID());
+                } else {
+                    level.addShipAlive(createShip.property, createShip.shipState,
+                            createShip.connectionID == connection.getID());
+                }
             }
 
         }
