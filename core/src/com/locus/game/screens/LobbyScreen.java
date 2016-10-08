@@ -137,6 +137,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         if (!isGameToBeStarted) {
             this.startGameIn = in;
             isGameToBeStarted = true;
+            projectLocus.countdownSound.play();
         }
     }
 

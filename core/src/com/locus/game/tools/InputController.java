@@ -78,10 +78,8 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
             isRotationClockwise = true;
         }
         if (keycode == Input.Keys.SPACE) {
-            if (!isSecondaryBulletEnabled) {
-                isPrimaryBulletEnabled = true;
-                isSecondaryBulletEnabled = false;
-            }
+            isPrimaryBulletEnabled = true;
+            isSecondaryBulletEnabled = false;
         }
         if (keycode == Input.Keys.CONTROL_LEFT || keycode == Input.Keys.CONTROL_RIGHT) {
             isSecondaryBulletEnabled = true;
@@ -105,9 +103,6 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
         }
         if (keycode == Input.Keys.CONTROL_LEFT || keycode == Input.Keys.CONTROL_RIGHT) {
             isSecondaryBulletEnabled = false;
-            if (input.isKeyPressed(Input.Keys.SPACE)) {
-                isPrimaryBulletEnabled = true;
-            }
         }
         return false;
     }

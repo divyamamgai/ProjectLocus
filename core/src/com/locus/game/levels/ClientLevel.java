@@ -69,7 +69,7 @@ public class ClientLevel {
 
     private float outOfLevelTimePassed;
     private short outOfLevelTimer;
-    private boolean playerIsOutOfLevel;
+    private boolean playerIsOutOfLevel, isPlayerDyingSoundPlaying;
     private Text messageText, countDownText;
 
     public ProjectLocus getProjectLocus() {
@@ -183,6 +183,9 @@ public class ClientLevel {
 
         messageText = new Text(projectLocus.font32, "Get Back To Planet Or Die In");
         countDownText = new Text(projectLocus.font72, "5");
+        redTransparentBackground = projectLocus.uiTextureAtlas.
+                findRegion("redTransparentBackground");
+        isPlayerDyingSoundPlaying = false;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
                 ProjectLocus.worldCameraHeight);
@@ -224,9 +227,6 @@ public class ClientLevel {
         followShipTimePassed = 15f;
         followShipIndex = 0;
 
-        redTransparentBackground = projectLocus.uiTextureAtlas.
-                findRegion("redTransparentBackground");
-
     }
 
     public void onShow() {
@@ -243,6 +243,14 @@ public class ClientLevel {
             if (!LEVEL_CIRCLE.contains(player.getBodyPosition())) {
                 playerIsOutOfLevel = true;
                 outOfLevelTimePassed += delta;
+                if (outOfLevelTimePassed >= 1f && !isPlayerDyingSoundPlaying) {
+                    try {
+                        projectLocus.dyingSound.play();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    isPlayerDyingSoundPlaying = true;
+                }
                 if (outOfLevelTimePassed >= 1f) {
                     if (--outOfLevelTimer <= 0) {
                         // Kill the player.
@@ -257,6 +265,13 @@ public class ClientLevel {
                 playerIsOutOfLevel = false;
                 outOfLevelTimer = 5;
                 outOfLevelTimePassed = 0;
+                isPlayerDyingSoundPlaying = false;
+                try {
+                    projectLocus.dyingSound.stop();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                countDownText.setTextFast("5");
             }
         } else {
             camera.zoom = 1.5f;

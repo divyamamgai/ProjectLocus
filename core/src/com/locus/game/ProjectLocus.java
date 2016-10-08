@@ -93,7 +93,7 @@ public class ProjectLocus extends Game implements Disposable {
     public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
     public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound,
             primaryBulletSound, secondaryBulletBomberSound, secondaryBulletFighterSound,
-            secondaryBulletSupersonicSound;
+            secondaryBulletSupersonicSound, dyingSound, countdownSound;
 
     @Override
     public void create() {

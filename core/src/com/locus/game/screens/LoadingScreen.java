@@ -100,6 +100,8 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/secondaryBulletBomber.wav", Sound.class);
         assetManager.load("sounds/secondaryBulletFighter.wav", Sound.class);
         assetManager.load("sounds/secondaryBulletSupersonic.wav", Sound.class);
+        assetManager.load("sounds/dying.wav", Sound.class);
+        assetManager.load("sounds/countdown.wav", Sound.class);
 
         for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
             assetManager.load("backgrounds/" + String.valueOf(backgroundType) + ".tmx",
@@ -194,6 +196,10 @@ public class LoadingScreen implements Screen {
                     assetManager.get("sounds/secondaryBulletFighter.wav", Sound.class);
             projectLocus.secondaryBulletSupersonicSound =
                     assetManager.get("sounds/secondaryBulletSupersonic.wav", Sound.class);
+            projectLocus.dyingSound =
+                    assetManager.get("sounds/dying.wav", Sound.class);
+            projectLocus.countdownSound =
+                    assetManager.get("sounds/countdown.wav", Sound.class);
 
             for (Integer backgroundType = 2; backgroundType <= 8; backgroundType++) {
                 projectLocus.tiledMapList.add(assetManager.get("backgrounds/" +
