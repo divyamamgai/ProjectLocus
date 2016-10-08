@@ -127,7 +127,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         isDoneSelection = false;
         isExitGame = false;
-        
+
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(new GestureDetector(this));
         inputMultiplexer.addProcessor(this);
@@ -165,11 +165,14 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCatchBackKey(true);
-        if (!projectLocus.isScreenBackgroundMusicPlaying) {
+        projectLocus.screenBackgroundMusic.setLooping(true);
+        if (!ProjectLocus.isScreenBackgroundMusicPlaying) {
             projectLocus.screenBackgroundMusic.setVolume(0f);
+        } else {
+            projectLocus.screenBackgroundMusic.setVolume(0.8f);
         }
         projectLocus.screenBackgroundMusic.play();
-        projectLocus.isScreenBackgroundMusicPlaying =
+        ProjectLocus.isScreenBackgroundMusicPlaying =
                 projectLocus.screenBackgroundMusic.isPlaying();
     }
 

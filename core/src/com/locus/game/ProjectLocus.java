@@ -89,11 +89,12 @@ public class ProjectLocus extends Game implements Disposable {
     public Ship.Property playerShipProperty;
     public GameServer gameServer;
     public GameClient gameClient;
-    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
+    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenHostBackgroundMusic,
+            playScreenClientBackgroundMusic;
     public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound,
             primaryBulletSound, secondaryBulletBomberSound, secondaryBulletFighterSound,
             secondaryBulletSupersonicSound;
-    public boolean isLobbyScreenMusicPlaying, isScreenBackgroundMusicPlaying,
+    public static boolean isLobbyScreenMusicPlaying, isScreenBackgroundMusicPlaying,
             isPlayScreenBackgroundMusicPlaying;
 
     @Override

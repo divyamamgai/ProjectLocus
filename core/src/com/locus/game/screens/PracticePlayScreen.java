@@ -41,7 +41,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
         moonPropertyList.add(new Moon.Property(Moon.Type.DarkIce, 300f, MathUtils.PI));
         moonPropertyList.add(new Moon.Property(Moon.Type.Iron, 400f, ProjectLocus.PI_BY_TWO));
 
-        level = new Level(projectLocus,
+        level = new Level(projectLocus, null,
                 new Level.Property(Planet.Type.Gas, moonPropertyList, 1), false);
 
         level.addShipAlive(projectLocus.playerShipProperty,
@@ -56,9 +56,14 @@ class PracticePlayScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
-//        projectLocus.screenBackgroundMusic.stop();
         level.getInputMultiplexer().addProcessor(this);
         level.onShow();
+
+        if (!projectLocus.playScreenHostBackgroundMusic.isPlaying()) {
+            projectLocus.playScreenHostBackgroundMusic.setVolume(0.8f);
+            projectLocus.playScreenHostBackgroundMusic.setLooping(true);
+            projectLocus.playScreenHostBackgroundMusic.play();
+        }
     }
 
     @Override
@@ -112,6 +117,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
             case Input.Keys.ESCAPE:
             case Input.Keys.P:
             case Input.Keys.BACKSPACE:
+            case Input.Keys.BACK:
                 projectLocus.setScreen(new PauseScreen(projectLocus, selectModeScreen, this));
                 break;
         }

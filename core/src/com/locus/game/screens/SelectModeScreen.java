@@ -76,11 +76,13 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
     private ArrayList<MenuOption> menuOptionList;
     private int selectedMenuOption;
     private InputMultiplexer inputMultiplexer;
+    private boolean toSubmit;
 
     SelectModeScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
 
         this.projectLocus = projectLocus;
         this.selectPlayerScreen = selectPlayerScreen;
+        toSubmit = false;
         backgroundMovementAngleRad = selectPlayerScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
@@ -147,18 +149,20 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (projectLocus.isLobbyScreenMusicPlaying) {
+        if (ProjectLocus.isLobbyScreenMusicPlaying) {
             if (projectLocus.lobbyScreenBackgroundMusic.getVolume() > 0) {
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(
                         projectLocus.lobbyScreenBackgroundMusic.getVolume() - delta);
             } else {
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
-                projectLocus.isScreenBackgroundMusicPlaying = true;
+                projectLocus.lobbyScreenBackgroundMusic.stop();
+                ProjectLocus.isScreenBackgroundMusicPlaying = true;
                 projectLocus.screenBackgroundMusic.setVolume(
                         projectLocus.screenBackgroundMusic.getVolume() + delta);
                 if (projectLocus.screenBackgroundMusic.getVolume() >= 1f) {
-                    projectLocus.isLobbyScreenMusicPlaying = false;
+                    ProjectLocus.isLobbyScreenMusicPlaying = false;
                     projectLocus.screenBackgroundMusic.setVolume(1f);
+                    projectLocus.screenBackgroundMusic.play();
                 }
             }
         }
@@ -250,6 +254,8 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
                 break;
             case 2:
                 projectLocus.screenTransitionSound.play();
+                ProjectLocus.isScreenBackgroundMusicPlaying = false;
+                projectLocus.screenBackgroundMusic.stop();
                 PracticePlayScreen practicePlayScreen = new PracticePlayScreen(projectLocus, this);
                 projectLocus.setScreen(practicePlayScreen);
                 break;
@@ -304,6 +310,10 @@ class SelectModeScreen implements Screen, InputProcessor, GestureDetector.Gestur
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (toSubmit) {
+            toSubmit = false;
+            submit();
+        }
         return false;
     }
 

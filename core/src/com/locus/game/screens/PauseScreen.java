@@ -1,6 +1,7 @@
 package com.locus.game.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
@@ -119,6 +120,45 @@ class PauseScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
+        switch (keycode) {
+            case Input.Keys.DOWN:
+                projectLocus.flingVerticalSound.play();
+                if (!isResumePressed && !isQuitPressed) {
+                    isResumePressed = true;
+                } else if (isResumePressed) {
+                    isQuitPressed = true;
+                    isResumePressed = false;
+                } else {
+                    isResumePressed = true;
+                    isQuitPressed = false;
+                }
+                break;
+            case Input.Keys.UP:
+                projectLocus.flingVerticalSound.play();
+                if (!isResumePressed && !isQuitPressed) {
+                    isQuitPressed = true;
+                } else if (isResumePressed) {
+                    isQuitPressed = true;
+                    isResumePressed = false;
+                } else {
+                    isResumePressed = true;
+                    isQuitPressed = false;
+                }
+                break;
+            case Input.Keys.ENTER:
+                if (isResumePressed) {
+                    projectLocus.flingHorizontalSound.play();
+                    isResumePressed = false;
+                    projectLocus.setScreen(screen);
+                }
+                if (isQuitPressed) {
+                    projectLocus.screenTransitionSound.play();
+                    isQuitPressed = false;
+                    projectLocus.playScreenHostBackgroundMusic.stop();
+                    projectLocus.setScreen(selectModeScreen);
+                }
+                break;
+        }
         return false;
     }
 
@@ -150,6 +190,7 @@ class PauseScreen implements Screen, InputProcessor {
         if (isQuitPressed) {
             projectLocus.screenTransitionSound.play();
             isQuitPressed = false;
+            projectLocus.playScreenHostBackgroundMusic.stop();
             projectLocus.setScreen(selectModeScreen);
         }
         return false;

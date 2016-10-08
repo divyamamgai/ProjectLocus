@@ -95,7 +95,7 @@ public class Text {
     public void setTextFast(String text) {
         this.text = text;
     }
-    
+
     public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
@@ -112,6 +112,10 @@ public class Text {
 
         setText(text);
 
+    }
+
+    public void setFontFast(BitmapFont font) {
+        this.font = font;
     }
 
     public void draw(SpriteBatch spriteBatch, float x, float y) {

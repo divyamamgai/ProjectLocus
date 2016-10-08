@@ -89,8 +89,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     private boolean isPlayScreenCreated;
     private boolean isPlayerMapToBeUpdated;
     private boolean isReady;
+    private boolean isStartButtonEnabled;
     private boolean isGameToBeStarted;
     private boolean isGameStarted;
+    private boolean isReadyToBeChanged;
     private float startGameIn;
     private long previousTime;
     private float searchingSecond;
@@ -136,10 +138,11 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     }
 
     public void startGame(float in) {
-        if (!isGameToBeStarted) {
-            this.startGameIn = in;
-            isGameToBeStarted = true;
-        }
+        isStartButtonEnabled = true;
+//        if (!isGameToBeStarted) {
+//            this.startGameIn = in;
+//            isGameToBeStarted = true;
+//        }
     }
 
     LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
@@ -316,6 +319,10 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
                 if (startGameIn <= 1) {
 
+                    ProjectLocus.isLobbyScreenMusicPlaying = false;
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+                    projectLocus.lobbyScreenBackgroundMusic.stop();
+
                     switch (type) {
                         case Host:
                             projectLocus.screenTransitionSound.play();
@@ -335,6 +342,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 previousTime = TimeUtils.millis();
 
                 startGameIn -= 1f;
+
+                projectLocus.flingVerticalSound.play();
 
                 timerText.setText(String.format(Locale.ENGLISH, "%02d",
                         MathUtils.ceil(startGameIn)));
@@ -377,12 +386,14 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     @Override
     public void show() {
         Gdx.input.setInputProcessor(inputMultiplexer);
-        if (!projectLocus.isLobbyScreenMusicPlaying) {
-            if (projectLocus.isScreenBackgroundMusicPlaying) {
+        if (!ProjectLocus.isLobbyScreenMusicPlaying) {
+            if (ProjectLocus.isScreenBackgroundMusicPlaying)
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(0f);
+            else {
+                projectLocus.lobbyScreenBackgroundMusic.setVolume(0.5f);
             }
             projectLocus.lobbyScreenBackgroundMusic.play();
-            projectLocus.isLobbyScreenMusicPlaying =
+            ProjectLocus.isLobbyScreenMusicPlaying =
                     projectLocus.lobbyScreenBackgroundMusic.isPlaying();
         }
     }
@@ -392,19 +403,21 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (projectLocus.isScreenBackgroundMusicPlaying) {
+        if (ProjectLocus.isScreenBackgroundMusicPlaying) {
             if (projectLocus.screenBackgroundMusic.getVolume() > 0) {
-                projectLocus.screenBackgroundMusic.setVolume(projectLocus.screenBackgroundMusic.getVolume()
-                        - delta);
+                projectLocus.screenBackgroundMusic.setVolume(
+                        projectLocus.screenBackgroundMusic.getVolume() - delta
+                );
             } else {
                 projectLocus.screenBackgroundMusic.setVolume(0f);
-                projectLocus.isLobbyScreenMusicPlaying = true;
+                projectLocus.screenBackgroundMusic.stop();
+                ProjectLocus.isLobbyScreenMusicPlaying = true;
                 projectLocus.lobbyScreenBackgroundMusic.setVolume(
                         projectLocus.lobbyScreenBackgroundMusic.getVolume() + delta);
-                if (projectLocus.lobbyScreenBackgroundMusic.getVolume() >= 1f) {
-                    projectLocus.lobbyScreenBackgroundMusic.setVolume(1f);
-                    projectLocus.isScreenBackgroundMusicPlaying = false;
-
+                if (projectLocus.lobbyScreenBackgroundMusic.getVolume() >= 0.5f) {
+                    ProjectLocus.isScreenBackgroundMusicPlaying = false;
+                    projectLocus.lobbyScreenBackgroundMusic.setVolume(0.5f);
+                    projectLocus.lobbyScreenBackgroundMusic.play();
                 }
             }
         }
@@ -539,8 +552,17 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 touchPosition = new Vector3(screenX, screenY, 0);
         foregroundCamera.unproject(touchPosition);
-        if (readyText.getTextBoundingBox().contains(touchPosition) && !isGameToBeStarted) {
+        if (readyText.getTextBoundingBox().contains(touchPosition)) {
+            isReadyToBeChanged = true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (isReadyToBeChanged) {
             if (isReady) {
+                projectLocus.screenTransitionSound.play();
                 switch (type) {
                     case Host:
                         projectLocus.gameServer.sendReadyState(isReady = false);
@@ -551,6 +573,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 }
                 readyText.setFont(projectLocus.font32Red);
             } else {
+                projectLocus.flingHorizontalSound.play();
                 switch (type) {
                     case Host:
                         projectLocus.gameServer.sendReadyState(isReady = true);
@@ -561,12 +584,8 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                 }
                 readyText.setFont(projectLocus.font32Green);
             }
+            isReadyToBeChanged = false;
         }
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         return false;
     }
 

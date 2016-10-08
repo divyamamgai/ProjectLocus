@@ -1,6 +1,7 @@
 package com.locus.game.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
@@ -114,6 +115,24 @@ public class ErrorScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
+
+        switch (keycode) {
+            case Input.Keys.DOWN:
+                projectLocus.flingVerticalSound.play();
+                isBackPressed = true;
+                break;
+            case Input.Keys.UP:
+                projectLocus.flingVerticalSound.play();
+                isBackPressed = false;
+                break;
+            case Input.Keys.ENTER:
+                if (isBackPressed) {
+                    projectLocus.screenTransitionSound.play();
+                    projectLocus.setScreen(selectModeScreen);
+                    isBackPressed = false;
+                }
+                break;
+        }
         return false;
     }
 

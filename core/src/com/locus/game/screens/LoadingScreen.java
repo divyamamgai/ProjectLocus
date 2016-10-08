@@ -91,6 +91,7 @@ public class LoadingScreen implements Screen {
         assetManager.load("sprites/entities/2/pack.atlas", TextureAtlas.class);
         assetManager.load("music/screen.wav", Music.class);
         assetManager.load("music/lobbyScreen.wav", Music.class);
+        assetManager.load("music/gamePlay.wav", Music.class);
         assetManager.load("sounds/flingHorizontal.wav", Sound.class);
         assetManager.load("sounds/flingVertical.wav", Sound.class);
         assetManager.load("sounds/screenTransition.wav", Sound.class);
@@ -176,6 +177,8 @@ public class LoadingScreen implements Screen {
                     assetManager.get("music/screen.wav", Music.class);
             projectLocus.lobbyScreenBackgroundMusic =
                     assetManager.get("music/lobbyScreen.wav", Music.class);
+            projectLocus.playScreenHostBackgroundMusic = projectLocus.playScreenClientBackgroundMusic
+                    = assetManager.get("music/gamePlay.wav", Music.class);
             projectLocus.flingVerticalSound =
                     assetManager.get("sounds/flingVertical.wav", Sound.class);
             projectLocus.flingHorizontalSound =

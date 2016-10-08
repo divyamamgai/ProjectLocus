@@ -21,18 +21,23 @@ class MultiPlayerPlayScreenClient implements Screen {
 
         this.projectLocus = projectLocus;
 
-        level = new ClientLevel(projectLocus, lobbyScreen.getLevelProperty());
-
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
 
         hud = new Hud(projectLocus, Hud.Type.Survival, foregroundCamera);
+
+        level = new ClientLevel(projectLocus, hud, lobbyScreen.getLevelProperty());
 
     }
 
     @Override
     public void show() {
         level.onShow();
+//        ProjectLocus.isPlayScreenBackgroundMusicPlaying =
+//                projectLocus.playScreenClientBackgroundMusic.isPlaying();
+//        projectLocus.playScreenClientBackgroundMusic.setVolume(0.8f);
+//        projectLocus.playScreenClientBackgroundMusic.setLooping(true);
+//        projectLocus.playScreenClientBackgroundMusic.play();
     }
 
     @Override
@@ -41,7 +46,6 @@ class MultiPlayerPlayScreenClient implements Screen {
         level.update(delta);
         level.render(projectLocus.spriteBatch);
 
-        hud.updateTimer(delta);
         hud.draw(projectLocus.spriteBatch);
 
     }

@@ -21,18 +21,23 @@ class MultiPlayerPlayScreen implements Screen {
 
         this.projectLocus = projectLocus;
 
-        level = new Level(projectLocus, lobbyScreen.getLevelProperty(), true);
-
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
 
         hud = new Hud(projectLocus, Hud.Type.Survival, foregroundCamera);
+
+        level = new Level(projectLocus, hud, lobbyScreen.getLevelProperty(), true);
 
     }
 
     @Override
     public void show() {
         level.onShow();
+//        ProjectLocus.isPlayScreenBackgroundMusicPlaying =
+//                projectLocus.playScreenHostBackgroundMusic.isPlaying();
+//        projectLocus.playScreenHostBackgroundMusic.setVolume(0.8f);
+//        projectLocus.playScreenHostBackgroundMusic.setLooping(true);
+//        projectLocus.playScreenHostBackgroundMusic.play();
     }
 
     @Override
@@ -41,7 +46,7 @@ class MultiPlayerPlayScreen implements Screen {
         level.update(delta);
         level.render(projectLocus.spriteBatch);
 
-        hud.updateTimer(delta);
+        hud.update(level.getShipStateList());
         hud.draw(projectLocus.spriteBatch);
 
     }
