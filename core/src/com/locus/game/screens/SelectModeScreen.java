@@ -299,16 +299,13 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
             case Input.Keys.W:
             case Input.Keys.UP:
                 isPreviousMenuOptionSelected = true;
-                previousMenuOption();
                 break;
             case Input.Keys.S:
             case Input.Keys.DOWN:
                 isNextMenuOptionSelected = true;
-                nextMenuOption();
                 break;
             case Input.Keys.ENTER:
                 toSubmit = true;
-                submit();
                 break;
         }
         return false;

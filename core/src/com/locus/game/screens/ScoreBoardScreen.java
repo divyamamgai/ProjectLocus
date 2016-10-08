@@ -155,10 +155,31 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
 
     private void drawScoreBoardScreen(SpriteBatch spriteBatch) {
 
+        int i = 0;
         scoreBoardText.draw(spriteBatch);
         for (PlayerResultData playerResultData : playerResultList) {
             playerResultData.playerNumberText.draw(spriteBatch);
             playerResultData.shipSprite.draw(spriteBatch);
+            if (i < 3) {
+                switch (i) {
+                    case 0:
+                        spriteBatch.draw(goldMedalTexture,
+                                playerResultData.shipSprite.getX() - 16,
+                                playerResultData.shipSprite.getY() - 24, 32, 48);
+                        break;
+                    case 1:
+                        spriteBatch.draw(silverMedalTexture,
+                                playerResultData.shipSprite.getX() - 16,
+                                playerResultData.shipSprite.getY() - 24, 32, 48);
+                        break;
+                    case 2:
+                        spriteBatch.draw(bronzeMedalTexture,
+                                playerResultData.shipSprite.getX() - 16,
+                                playerResultData.shipSprite.getY() - 24, 32, 48);
+                        break;
+                }
+                i++;
+            }
             playerResultData.playerScoreText.draw(spriteBatch);
         }
         doneText.draw(spriteBatch);
