@@ -137,6 +137,9 @@ public class EntityLoader implements Disposable {
                     break;
                 case Asteroid:
 
+                    fixtureDef.filter.categoryBits = CollisionDetector.CATEGORY_ASTEROID;
+                    fixtureDef.filter.maskBits = CollisionDetector.MASK_ASTEROID;
+
                     bodyDef.type = BodyDef.BodyType.DynamicBody;
                     bodyDef.angularVelocity = entityJson.getFloat("angularVelocity");
 
@@ -147,7 +150,8 @@ public class EntityLoader implements Disposable {
 
                     textureRegion = projectLocus.asteroidTextureAtlas
                             .findRegion(String.valueOf(secondaryType));
-
+                    
+                    maxHealth = entityJson.getFloat("maxHealth");
 
                     break;
                 default:

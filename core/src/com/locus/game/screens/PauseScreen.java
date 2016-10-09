@@ -19,7 +19,7 @@ import com.locus.game.tools.Text;
 public class PauseScreen implements Screen, InputProcessor {
 
     private ProjectLocus projectLocus;
-    private SelectModeScreen selectModeScreen;
+    private MainMenuScreen mainMenuScreen;
     private Screen screen;
     private OrthographicCamera foregroundCamera;
     private InputMultiplexer inputMultiplexer;
@@ -27,9 +27,9 @@ public class PauseScreen implements Screen, InputProcessor {
     private Text pauseText, resumeText, resumeSelectedText, quitText, quitSelectedText;
     private boolean isResumePressed, isQuitPressed;
 
-    PauseScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen, Screen screen) {
+    PauseScreen(ProjectLocus projectLocus, MainMenuScreen mainMenuScreen, Screen screen) {
         this.projectLocus = projectLocus;
-        this.selectModeScreen = selectModeScreen;
+        this.mainMenuScreen = mainMenuScreen;
         this.screen = screen;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
@@ -159,7 +159,7 @@ public class PauseScreen implements Screen, InputProcessor {
                     } catch (Exception e) {
                         Gdx.app.log("Sound Error", "Error - " + e.toString());
                     }
-                    projectLocus.setScreen(selectModeScreen);
+                    projectLocus.setScreen(mainMenuScreen);
                 }
                 break;
         }
@@ -199,7 +199,7 @@ public class PauseScreen implements Screen, InputProcessor {
             } catch (Exception e) {
                 Gdx.app.log("Sound Error", "Error - " + e.toString());
             }
-            projectLocus.setScreen(selectModeScreen);
+            projectLocus.setScreen(mainMenuScreen);
         }
         return false;
     }

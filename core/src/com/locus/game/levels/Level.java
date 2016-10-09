@@ -21,10 +21,11 @@ import com.locus.game.ProjectLocus;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
 import com.locus.game.network.ShipState;
-import com.locus.game.screens.SelectModeScreen;
+import com.locus.game.screens.MainMenuScreen;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
+import com.locus.game.sprites.entities.Asteroid;
 import com.locus.game.sprites.entities.Entity;
 import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Moon;
@@ -45,7 +46,7 @@ import java.util.Iterator;
 public class Level implements Disposable {
 
     private static final float CAMERA_FOLLOW_SPEED = 4f;
-    private static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
+    public static final Circle LEVEL_CIRCLE = new Circle(ProjectLocus.WORLD_HALF_WIDTH,
             ProjectLocus.WORLD_HALF_HEIGHT, 512f);
 
     public static class Property {
@@ -94,12 +95,14 @@ public class Level implements Disposable {
     private OrthographicCamera camera, foregroundCamera;
     private ProjectLocus projectLocus;
     private Hud hud;
-    private SelectModeScreen selectModeScreen;
+    private MainMenuScreen mainMenuScreen;
     private Level.Property property;
     private boolean isMultiPlayer;
     private World world;
     private ArrayList<Bullet> bulletAliveList;
     private HashMap<Bullet.Type, Queue<Bullet>> bulletDeadQueueMap;
+    private ArrayList<Asteroid> asteroidAliveList;
+    private HashMap<Asteroid.Type, Queue<Asteroid>> asteroidDeadQueueMap;
     private HashMap<Short, Ship> shipAliveMap;
     private HashMap<Ship.Type, Queue<Ship>> shipDeadQueueMap;
     private ArrayList<Moon> moonList;
@@ -128,6 +131,8 @@ public class Level implements Disposable {
     private short alivePlayerCount;
 
     private float gameStateUpdateTimePassed;
+
+//    private Box2DDebugRenderer box2DDebugRenderer;
 
     public ProjectLocus getProjectLocus() {
         return projectLocus;
@@ -182,7 +187,7 @@ public class Level implements Disposable {
     }
 
     public Level(ProjectLocus projectLocus, Hud hud, OrthographicCamera foregroundCamera,
-                 SelectModeScreen selectModeScreen, Property property, boolean isMultiPlayer) {
+                 MainMenuScreen mainMenuScreen, Property property, boolean isMultiPlayer) {
 
         // Reset Entity Count
         Entity.EntityCount = 0;
@@ -190,7 +195,7 @@ public class Level implements Disposable {
         this.projectLocus = projectLocus;
         this.hud = hud;
         this.foregroundCamera = foregroundCamera;
-        this.selectModeScreen = selectModeScreen;
+        this.mainMenuScreen = mainMenuScreen;
         this.property = property;
         this.isMultiPlayer = isMultiPlayer;
 
@@ -212,6 +217,7 @@ public class Level implements Disposable {
         // Box2D Variables
         world = new World(ProjectLocus.GRAVITY, true);
         world.setContactListener(new CollisionDetector());
+//        box2DDebugRenderer = new Box2DDebugRenderer();
 
         TiledMap tiledMap = projectLocus.tiledMapList.get(property.backgroundType);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, ProjectLocus.TILED_MAP_SCALE);
@@ -227,6 +233,16 @@ public class Level implements Disposable {
         // Initialize the bulletDeadQueueMap with the available Bullet Types.
         for (Bullet.Type bulletType : bulletTypeArray) {
             bulletDeadQueueMap.put(bulletType, new Queue<Bullet>());
+        }
+
+        asteroidAliveList = new ArrayList<Asteroid>();
+
+        // We know that how many Type of Asteroids we have so we pass the capacity too.
+        Asteroid.Type[] asteroidTypeArray = Asteroid.Type.values();
+        asteroidDeadQueueMap = new HashMap<Asteroid.Type, Queue<Asteroid>>(asteroidTypeArray.length);
+        // Initialize the asteroidDeadQueueMap with the available Asteroid Types.
+        for (Asteroid.Type asteroidType : asteroidTypeArray) {
+            asteroidDeadQueueMap.put(asteroidType, new Queue<Asteroid>());
         }
 
         shipAliveMap = new HashMap<Short, Ship>();
@@ -338,6 +354,21 @@ public class Level implements Disposable {
         bulletAliveList.add(bullet);
     }
 
+    public synchronized void addAsteroidAlive(Asteroid.Type asteroidType,
+                                              Asteroid.Property asteroidProperty) {
+        Asteroid asteroid;
+        Queue<Asteroid> asteroidDeadQueue = asteroidDeadQueueMap.get(asteroidType);
+
+        if (asteroidDeadQueue.size > 0) {
+            asteroid = asteroidDeadQueue.removeFirst();
+            asteroid.resurrect(asteroidProperty);
+        } else {
+            asteroid = new Asteroid(this, asteroidType, asteroidProperty);
+        }
+
+        asteroidAliveList.add(asteroid);
+    }
+
     public synchronized void update(float delta) {
 
         world.step(ProjectLocus.FPS, ProjectLocus.VELOCITY_ITERATIONS,
@@ -368,7 +399,7 @@ public class Level implements Disposable {
                         player = null;
                         alivePlayerCount--;
                         if (!isMultiPlayer) {
-                            projectLocus.setScreen(selectModeScreen);
+                            projectLocus.setScreen(mainMenuScreen);
                         }
                         playerIsOutOfLevel = false;
                     }
@@ -393,7 +424,7 @@ public class Level implements Disposable {
                 }
                 countDownText.setTextFast("5");
             }
-        } else {
+        } else if (isMultiPlayer) {
             camera.zoom = 1.5f;
             camera.position.x += (followShip.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
             camera.position.y += (followShip.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
@@ -446,6 +477,18 @@ public class Level implements Disposable {
             }
         }
 
+        Iterator<Asteroid> asteroidIterator = asteroidAliveList.iterator();
+        while (asteroidIterator.hasNext()) {
+            Asteroid asteroid = asteroidIterator.next();
+            if (asteroid.isAlive()) {
+                asteroid.update();
+            } else {
+                asteroid.killBody();
+                asteroidDeadQueueMap.get(asteroid.getAsteroidType()).addLast(asteroid);
+                asteroidIterator.remove();
+            }
+        }
+
         if (isMultiPlayer) {
             gameStateUpdateTimePassed += delta;
             if (gameStateUpdateTimePassed >= 0.0035f) {
@@ -480,6 +523,10 @@ public class Level implements Disposable {
             bullet.draw(spriteBatch, camera.frustum);
         }
 
+        for (Asteroid asteroid : asteroidAliveList) {
+            asteroid.draw(spriteBatch, camera.frustum);
+        }
+
         spriteBatch.end();
 
         if (playerIsOutOfLevel) {
@@ -490,6 +537,8 @@ public class Level implements Disposable {
             countDownText.draw(spriteBatch);
             spriteBatch.end();
         }
+
+//        box2DDebugRenderer.render(world, camera.combined);
 
     }
 

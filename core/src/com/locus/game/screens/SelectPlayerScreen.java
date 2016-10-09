@@ -328,7 +328,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
         projectLocus.playerShipProperty.color = shipColorArray[selectedShipColorIndex];
         projectLocus.playerShipProperty.type = shipTypeArray[selectedShipTypeIndex];
         projectLocus.screenTransitionSound.play();
-        projectLocus.setScreen(new SelectModeScreen(projectLocus, this));
+        projectLocus.setScreen(new MainMenuScreen(projectLocus, this));
     }
 
     @Override

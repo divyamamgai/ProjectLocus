@@ -207,7 +207,8 @@
       "width": 8,
       "height": 8,
       "mass": 15000,
-      "angularVelocity": 0.25
+      "angularVelocity": 0.25,
+      "maxHealth": 60
     },
     {
       "type": 3,
@@ -218,7 +219,8 @@
       "width": 6,
       "height": 6,
       "mass": 10000,
-      "angularVelocity": 0.3
+      "angularVelocity": 0.3,
+      "maxHealth": 45
     },
     {
       "type": 3,
@@ -229,7 +231,8 @@
       "width": 5,
       "height": 3.7,
       "mass": 8000,
-      "angularVelocity": 0.35
+      "angularVelocity": 0.35,
+      "maxHealth": 30
     },
     {
       "type": 3,
@@ -240,7 +243,8 @@
       "width": 7,
       "height": 7.73,
       "mass": 12500,
-      "angularVelocity": 0.25
+      "angularVelocity": 0.25,
+      "maxHealth": 50
     },
     {
       "type": 3,
@@ -251,7 +255,8 @@
       "width": 5.5,
       "height": 4.95,
       "mass": 9000,
-      "angularVelocity": 0.25
+      "angularVelocity": 0.25,
+      "maxHealth": 40
     }
   ]
 }

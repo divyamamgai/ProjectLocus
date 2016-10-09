@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * Multi Player Select Screen
  */
 
-public class SelectModeScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+public class MainMenuScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private class MenuOption {
 
@@ -78,7 +78,7 @@ public class SelectModeScreen implements Screen, InputProcessor, GestureDetector
     private InputMultiplexer inputMultiplexer;
     private boolean toSubmit, isPreviousMenuOptionSelected, isNextMenuOptionSelected;
 
-    SelectModeScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
+    MainMenuScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
 
         this.projectLocus = projectLocus;
         this.selectPlayerScreen = selectPlayerScreen;

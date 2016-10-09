@@ -52,7 +52,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         Failed
     }
 
-    class PlayerDisplay {
+    public class PlayerDisplay {
 
         private Sprite shipSprite;
         private Text readyText, numberText;
@@ -69,7 +69,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     }
 
-    public SelectModeScreen selectModeScreen;
+    public MainMenuScreen mainMenuScreen;
     private float backgroundMovementAngleRad;
     private ProjectLocus projectLocus;
     private OrthographicCamera foregroundCamera, backgroundCamera;
@@ -145,14 +145,14 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     }
 
-    LobbyScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen,
+    LobbyScreen(ProjectLocus projectLocus, MainMenuScreen mainMenuScreen,
                 LobbyScreen.Type type) {
 
         this.projectLocus = projectLocus;
-        this.selectModeScreen = selectModeScreen;
+        this.mainMenuScreen = mainMenuScreen;
         this.type = type;
 
-        backgroundMovementAngleRad = selectModeScreen.backgroundMovementAngleRad;
+        backgroundMovementAngleRad = mainMenuScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -577,9 +577,9 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                         projectLocus.gameClient.stop();
                         break;
                 }
-                selectModeScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                mainMenuScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(selectModeScreen);
+                projectLocus.setScreen(mainMenuScreen);
                 break;
         }
         return false;

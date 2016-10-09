@@ -119,8 +119,8 @@ public class Moon extends Entity {
 
         gravityCircle.setPosition(bodyPosition);
 
-        Vector2 planetPosition = bodyPosition.sub(definition.bodyOrigin);
-        setPosition(planetPosition.x, planetPosition.y);
+        Vector2 moonPosition = bodyPosition.sub(definition.bodyOrigin);
+        setPosition(moonPosition.x, moonPosition.y);
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
 
         moonState.angleDeg = getRotation();

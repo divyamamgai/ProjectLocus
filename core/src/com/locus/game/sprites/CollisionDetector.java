@@ -61,6 +61,17 @@ public class CollisionDetector implements ContactListener {
                         case Planet:
                         case Moon:
                             break;
+                        case Asteroid:
+                            entity.reduceHealth(bullet.getDamage());
+                            switch (bullet.getType()) {
+                                case Normal:
+                                    bullet.getShip().getShipState().score += 5;
+                                    break;
+                                default:
+                                    bullet.getShip().getShipState().score += 15;
+                                    break;
+                            }
+                            break;
                         default:
                             entity.reduceHealth(bullet.getDamage());
                             switch (bullet.getType()) {
@@ -81,37 +92,64 @@ public class CollisionDetector implements ContactListener {
                 Entity entityB = (Entity) objectB;
                 switch (entityA.getDefinition().type) {
                     case Ship:
-                        float speed2;
                         switch (entityB.getDefinition().type) {
                             case Ship:
                                 break;
                             case Planet:
-                                speed2 = entityA.getBody().getLinearVelocity().len2();
-                                entityA.reduceHealth(speed2 > 900f ? 75f : 25f);
+                                entityA.reduceHealth(
+                                        entityA.getBody().getLinearVelocity().len2()
+                                                > 900f ? 75f : 25f);
                                 break;
                             case Moon:
-                                speed2 = entityA.getBody().getLinearVelocity().len2();
-                                entityA.reduceHealth(speed2 > 900f ? 30f : 10f);
+                                entityA.reduceHealth(entityA.getBody().getLinearVelocity().len2()
+                                        > 900f ? 30f : 15f);
+                                break;
+                            case Asteroid:
+                                entityA.reduceHealth(entityA.getBody().getLinearVelocity().len2()
+                                        > 900f ? 20f : 10f);
+                                entityB.kill();
                                 break;
                         }
                         break;
                     case Planet:
                         switch (entityB.getDefinition().type) {
                             case Ship:
+                                entityB.reduceHealth(entityB.getBody().getLinearVelocity().len2()
+                                        > 900f ? 75f : 25f);
                                 break;
                             case Planet:
                                 break;
                             case Moon:
+                                break;
+                            case Asteroid:
+                                entityB.kill();
                                 break;
                         }
                         break;
                     case Moon:
                         switch (entityB.getDefinition().type) {
                             case Ship:
+                                entityB.reduceHealth(entityB.getBody().getLinearVelocity().len2()
+                                        > 900f ? 30f : 15f);
                                 break;
                             case Planet:
                                 break;
                             case Moon:
+                                break;
+                            case Asteroid:
+                                entityB.kill();
+                                break;
+                        }
+                        break;
+                    case Asteroid:
+                        switch (entityB.getDefinition().type) {
+                            case Ship:
+                                entityB.reduceHealth(entityB.getBody().getLinearVelocity().len2()
+                                        > 900f ? 20f : 10f);
+                            case Planet:
+                            case Moon:
+                            case Asteroid:
+                                entityA.kill();
                                 break;
                         }
                         break;

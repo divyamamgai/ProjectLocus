@@ -24,11 +24,13 @@ import java.util.ArrayList;
 
 public class ProjectLocus extends Game implements Disposable {
 
+    public static final boolean isBulletSoundEnabled = false;
+
     // GRAVITY in metres/seconds^2
     public static final Vector2 GRAVITY = new Vector2(0, 0);
 
     // Gravitational Constant - (N(m^2))/(kg^2)
-    public static final float GRAVITATIONAL_CONSTANT = 0f;
+    public static final float GRAVITATIONAL_CONSTANT = 0.00003f;
 
     // Virtual Width of the Game World in meters.
     private static final float WORLD_WIDTH = 2048f;

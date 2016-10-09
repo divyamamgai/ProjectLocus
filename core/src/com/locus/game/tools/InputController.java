@@ -8,8 +8,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.locus.game.ProjectLocus;
 
-import static com.badlogic.gdx.Gdx.input;
-
 /**
  * Created by Rohit Yadav on 26-Sep-16.
  * Input Controller
@@ -212,7 +210,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     public boolean tap(float x, float y, int count, int button) {
         Vector3 touchPosition = new Vector3(x, y, 0);
         camera.unproject(touchPosition);
-        if (count == 1) {
+        if (count >= 1 && count <= 2) {
             tapXCoordinate = x;
             tapYCoordinate = y;
             if (touchPosition.x > 0) {

@@ -1,6 +1,5 @@
 package com.locus.game.network;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
@@ -302,7 +301,7 @@ public class GameServer implements InputController.InputCallBack {
     private void allLeft() {
         if (!isGameEnded) {
             stop();
-            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.selectModeScreen,
+            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.mainMenuScreen,
                     "All Clients Disconnected"));
             lobbyScreen.dispose();
         }

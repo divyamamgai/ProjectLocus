@@ -260,7 +260,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                     Gdx.app.log("Sound Error", "Error - " + e.toString());
                 }
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(lobbyScreen.selectModeScreen);
+                projectLocus.setScreen(lobbyScreen.mainMenuScreen);
                 lobbyScreen.dispose();
                 break;
         }
@@ -288,7 +288,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 Gdx.app.log("Sound Error", "Error - " + e.toString());
             }
             projectLocus.screenTransitionSound.play();
-            projectLocus.setScreen(lobbyScreen.selectModeScreen);
+            projectLocus.setScreen(lobbyScreen.mainMenuScreen);
             lobbyScreen.dispose();
         }
         return false;

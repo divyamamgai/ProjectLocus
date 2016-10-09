@@ -54,7 +54,6 @@ public class LoadingScreen implements Screen {
         FileHandleResolver fileHandleResolver = new InternalFileHandleResolver();
         assetManager.setLoader(FreeTypeFontGenerator.class,
                 new FreeTypeFontGeneratorLoader(fileHandleResolver));
-//        assetManager.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(fileHandleResolver));
         assetManager.setLoader(TiledMap.class, new TmxMapLoader(fileHandleResolver));
 
         assetManager.load("backgrounds/1.tmx", TiledMap.class);
@@ -183,19 +182,23 @@ public class LoadingScreen implements Screen {
             projectLocus.playScreenBackgroundMusic =
                     assetManager.get("music/gamePlay.wav", Music.class);
             projectLocus.flingVerticalSound =
-                    assetManager.get("sounds/flingVertical.wav", Sound.class);
+                    assetManager.get("sounds/flingVertical.wav",
+                            Sound.class);
             projectLocus.flingHorizontalSound =
-                    assetManager.get("sounds/flingHorizontal.wav", Sound.class);
+                    assetManager.get("sounds/flingHorizontal.wav",
+                            Sound.class);
             projectLocus.screenTransitionSound =
-                    assetManager.get("sounds/screenTransition.wav", Sound.class);
-            projectLocus.primaryBulletSound =
-                    assetManager.get("sounds/primaryBullet.wav", Sound.class);
-            projectLocus.secondaryBulletBomberSound =
-                    assetManager.get("sounds/secondaryBulletBomber.wav", Sound.class);
-            projectLocus.secondaryBulletFighterSound =
-                    assetManager.get("sounds/secondaryBulletFighter.wav", Sound.class);
-            projectLocus.secondaryBulletSupersonicSound =
-                    assetManager.get("sounds/secondaryBulletSupersonic.wav", Sound.class);
+                    assetManager.get("sounds/screenTransition.wav",
+                            Sound.class);
+            if (ProjectLocus.isBulletSoundEnabled) {
+                projectLocus.primaryBulletSound = assetManager.get("sounds/primaryBullet.wav", Sound.class);
+                projectLocus.secondaryBulletBomberSound =
+                        assetManager.get("sounds/secondaryBulletBomber.wav", Sound.class);
+                projectLocus.secondaryBulletFighterSound =
+                        assetManager.get("sounds/secondaryBulletFighter.wav", Sound.class);
+                projectLocus.secondaryBulletSupersonicSound =
+                        assetManager.get("sounds/secondaryBulletSupersonic.wav", Sound.class);
+            }
             projectLocus.dyingSound =
                     assetManager.get("sounds/dying.wav", Sound.class);
             projectLocus.countdownSound =

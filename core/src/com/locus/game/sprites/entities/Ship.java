@@ -105,7 +105,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         isAlive = true;
         primaryBulletCount = 0;
-        health = definition.maxHealth;
+        setHealth(definition.maxHealth);
 
         body.setActive(true);
         body.setTransform(x, y, angleRad);

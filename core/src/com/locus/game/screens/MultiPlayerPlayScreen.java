@@ -27,7 +27,7 @@ class MultiPlayerPlayScreen implements Screen {
 
         hud = new Hud(projectLocus, Hud.Type.Survival, foregroundCamera);
 
-        level = new Level(projectLocus, hud, foregroundCamera, lobbyScreen.selectModeScreen,
+        level = new Level(projectLocus, hud, foregroundCamera, lobbyScreen.mainMenuScreen,
                 lobbyScreen.getLevelProperty(), true);
 
     }

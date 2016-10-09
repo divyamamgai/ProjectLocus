@@ -5,14 +5,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
-import com.locus.game.sprites.entities.Moon;
-import com.locus.game.sprites.entities.Planet;
+import com.locus.game.sprites.entities.AddAsteroidTask;
+import com.locus.game.sprites.entities.Asteroid;
 import com.locus.game.tools.Text;
-
-import java.util.ArrayList;
 
 /**
  * Created by Divya Mamgai on 9/6/2016.
@@ -21,22 +19,23 @@ import java.util.ArrayList;
 class PracticePlayScreen implements Screen, InputProcessor {
 
     public ProjectLocus projectLocus;
-    private SelectModeScreen selectModeScreen;
+    private MainMenuScreen mainMenuScreen;
     private Level level;
     private OrthographicCamera foregroundCamera;
     private Text fpsText;
+    private Timer timer;
 
-    PracticePlayScreen(ProjectLocus projectLocus, SelectModeScreen selectModeScreen) {
+    PracticePlayScreen(ProjectLocus projectLocus, MainMenuScreen mainMenuScreen) {
 
         this.projectLocus = projectLocus;
-        this.selectModeScreen = selectModeScreen;
+        this.mainMenuScreen = mainMenuScreen;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
 
         fpsText = new Text(projectLocus.font24, "60");
 
-        level = new Level(projectLocus, null, foregroundCamera, selectModeScreen,
+        level = new Level(projectLocus, null, foregroundCamera, mainMenuScreen,
                 Level.Property.generateRandom(), false);
 
         level.addShipAlive(projectLocus.playerShipProperty,
@@ -46,6 +45,10 @@ class PracticePlayScreen implements Screen, InputProcessor {
         level.addShipAlive(projectLocus.playerShipProperty,
                 ProjectLocus.WORLD_HALF_WIDTH + 100f, ProjectLocus.WORLD_HALF_HEIGHT,
                 0, false);
+
+        timer = new Timer();
+
+        timer.scheduleTask(new AddAsteroidTask(timer, level), 0);
 
     }
 
@@ -117,7 +120,7 @@ class PracticePlayScreen implements Screen, InputProcessor {
             case Input.Keys.P:
             case Input.Keys.BACKSPACE:
             case Input.Keys.BACK:
-                projectLocus.setScreen(new PauseScreen(projectLocus, selectModeScreen, this));
+                projectLocus.setScreen(new PauseScreen(projectLocus, mainMenuScreen, this));
                 break;
         }
         return false;
