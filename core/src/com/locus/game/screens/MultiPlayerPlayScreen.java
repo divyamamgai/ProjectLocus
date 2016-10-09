@@ -48,7 +48,7 @@ class MultiPlayerPlayScreen implements Screen {
     }
 
     @Override
-    public void render(float delta) {
+    public synchronized void render(float delta) {
 
         level.update(delta);
         level.render(projectLocus.spriteBatch);

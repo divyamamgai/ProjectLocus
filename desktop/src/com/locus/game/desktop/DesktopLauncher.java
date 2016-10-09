@@ -10,10 +10,10 @@ public class DesktopLauncher {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.setFromDisplayMode(LwjglApplicationConfiguration.getDesktopDisplayMode());
 
-        config.fullscreen = false;
-        config.width = 854;
-        config.height = 480;
-        config.resizable = false;
+//        config.fullscreen = false;
+//        config.width = 854;
+//        config.height = 480;
+//        config.resizable = false;
 
         new LwjglApplication(new ProjectLocus(), config);
 

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
@@ -65,12 +66,13 @@ public class ClientLevel {
     private float followShipTimePassed;
     private ArrayList<ClientShip> followShipArray;
     private int followShipIndex;
-    private TextureRegion redTransparentBackground;
 
     private float outOfLevelTimePassed;
     private short outOfLevelTimer;
     private boolean playerIsOutOfLevel, isPlayerDyingSoundPlaying;
     private Text messageText, countDownText;
+    private Sprite redTransparentSprite;
+    private boolean isRedTransparentAlphaIncreasing;
 
     public ProjectLocus getProjectLocus() {
         return projectLocus;
@@ -183,8 +185,9 @@ public class ClientLevel {
 
         messageText = new Text(projectLocus.font32, "Get Back To Planet Or Die In");
         countDownText = new Text(projectLocus.font72, "5");
-        redTransparentBackground = projectLocus.uiTextureAtlas.
-                findRegion("redTransparentBackground");
+        redTransparentSprite = projectLocus.uiTextureAtlas.createSprite("redTransparentBackground");
+        redTransparentSprite.setAlpha(0);
+        isRedTransparentAlphaIncreasing = true;
         isPlayerDyingSoundPlaying = false;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
@@ -260,6 +263,12 @@ public class ClientLevel {
                     }
                     countDownText.setTextFast(String.valueOf(outOfLevelTimer));
                     outOfLevelTimePassed = 0;
+                    redTransparentSprite.setAlpha(isRedTransparentAlphaIncreasing ? 1 : 0);
+                    isRedTransparentAlphaIncreasing = !isRedTransparentAlphaIncreasing;
+                } else {
+                    redTransparentSprite.setAlpha(
+                            isRedTransparentAlphaIncreasing ? outOfLevelTimePassed :
+                                    (1 - outOfLevelTimePassed));
                 }
             } else {
                 playerIsOutOfLevel = false;
@@ -280,12 +289,12 @@ public class ClientLevel {
             camera.update();
             followShipTimePassed += delta;
             if (followShipTimePassed >= 15f) {
-                while (followShipArray.get(followShipIndex).isAlive()) {
-                    followShip = followShipArray.get(followShipIndex);
+                while (!followShipArray.get(followShipIndex).isAlive()) {
                     followShipIndex++;
-                    if (followShipIndex == shipMap.size()) {
+                    if (followShipIndex == followShipArray.size()) {
                         followShipIndex = 0;
                     }
+                    followShip = followShipArray.get(followShipIndex);
                 }
                 followShipTimePassed = 0;
             }
@@ -349,9 +358,7 @@ public class ClientLevel {
         if (playerIsOutOfLevel) {
             spriteBatch.setProjectionMatrix(foregroundCamera.combined);
             spriteBatch.begin();
-            spriteBatch.draw(redTransparentBackground,
-                    0, 0,
-                    ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
+            redTransparentSprite.draw(spriteBatch);
             messageText.draw(spriteBatch);
             countDownText.draw(spriteBatch);
             spriteBatch.end();
@@ -369,6 +376,9 @@ public class ClientLevel {
         countDownText.setPosition(
                 ProjectLocus.screenCameraHalfWidth - countDownText.getHalfWidth(),
                 ProjectLocus.screenCameraHalfHeight - countDownText.getHalfHeight());
+        redTransparentSprite.setPosition(0, 0);
+        redTransparentSprite.setSize(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
     }
 
 }

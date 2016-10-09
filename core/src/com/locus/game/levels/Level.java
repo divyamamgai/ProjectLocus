@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
@@ -103,7 +104,7 @@ public class Level implements Disposable {
     private HashMap<Ship.Type, Queue<Ship>> shipDeadQueueMap;
     private ArrayList<Moon> moonList;
     private TextureRegion barBackgroundTexture, barForegroundTexture;
-    private Ship player;
+    private Ship player, followShip;
     private Planet planet;
     private TiledMapRenderer tiledMapRenderer;
     private InputMultiplexer inputMultiplexer;
@@ -113,11 +114,16 @@ public class Level implements Disposable {
     private ArrayList<MoonState> moonStateList;
     private ArrayList<ShipState> shipStateList;
 
+    private float followShipTimePassed;
+    private ArrayList<Ship> followShipArray;
+    private int followShipIndex;
+
     private float outOfLevelTimePassed;
     private short outOfLevelTimer;
     private boolean playerIsOutOfLevel, isPlayerDyingSoundPlaying;
     private Text messageText, countDownText;
-    private TextureRegion redTransparentBackground;
+    private Sprite redTransparentSprite;
+    private boolean isRedTransparentAlphaIncreasing;
 
     private short alivePlayerCount;
 
@@ -195,8 +201,9 @@ public class Level implements Disposable {
 
         messageText = new Text(projectLocus.font32, "Get Back To Planet Or Die In");
         countDownText = new Text(projectLocus.font72, "5");
-        redTransparentBackground = projectLocus.uiTextureAtlas.
-                findRegion("redTransparentBackground");
+        redTransparentSprite = projectLocus.uiTextureAtlas.createSprite("redTransparentBackground");
+        redTransparentSprite.setAlpha(0);
+        isRedTransparentAlphaIncreasing = true;
         isPlayerDyingSoundPlaying = false;
 
         camera = new OrthographicCamera(ProjectLocus.worldCameraWidth,
@@ -252,6 +259,10 @@ public class Level implements Disposable {
             inputMultiplexer.addProcessor(new GestureDetector(inputController));
         }
 
+        followShipArray = new ArrayList<Ship>();
+        followShipTimePassed = 15f;
+        followShipIndex = 0;
+
     }
 
     public void onShow() {
@@ -277,13 +288,14 @@ public class Level implements Disposable {
 
         shipAliveMap.put(ship.getID(), ship);
         shipStateList.add(ship.getShipState());
+        followShipArray.add(ship);
 
         if (isMultiPlayer) {
             hud.addPlayerData(ship.getShipState(), isPlayer);
         }
 
         if (isPlayer) {
-            player = ship;
+            player = followShip = ship;
             // If it's single player we need to bind controls to the Player's Ship.
             if (!isMultiPlayer) {
                 inputController = new InputController(ship, true);
@@ -362,6 +374,12 @@ public class Level implements Disposable {
                     }
                     countDownText.setTextFast(String.valueOf(outOfLevelTimer));
                     outOfLevelTimePassed = 0;
+                    redTransparentSprite.setAlpha(isRedTransparentAlphaIncreasing ? 1 : 0);
+                    isRedTransparentAlphaIncreasing = !isRedTransparentAlphaIncreasing;
+                } else {
+                    redTransparentSprite.setAlpha(
+                            isRedTransparentAlphaIncreasing ? outOfLevelTimePassed :
+                                    (1 - outOfLevelTimePassed));
                 }
             } else {
                 playerIsOutOfLevel = false;
@@ -374,6 +392,22 @@ public class Level implements Disposable {
                     e.printStackTrace();
                 }
                 countDownText.setTextFast("5");
+            }
+        } else {
+            camera.zoom = 1.5f;
+            camera.position.x += (followShip.getX() - camera.position.x) * CAMERA_FOLLOW_SPEED * delta;
+            camera.position.y += (followShip.getY() - camera.position.y) * CAMERA_FOLLOW_SPEED * delta;
+            camera.update();
+            followShipTimePassed += delta;
+            if (followShipTimePassed >= 15f) {
+                while (!followShipArray.get(followShipIndex).isAlive()) {
+                    followShipIndex++;
+                    if (followShipIndex == followShipArray.size()) {
+                        followShipIndex = 0;
+                    }
+                    followShip = followShipArray.get(followShipIndex);
+                }
+                followShipTimePassed = 0;
             }
         }
 
@@ -451,9 +485,7 @@ public class Level implements Disposable {
         if (playerIsOutOfLevel) {
             spriteBatch.setProjectionMatrix(foregroundCamera.combined);
             spriteBatch.begin();
-            spriteBatch.draw(redTransparentBackground,
-                    0, 0,
-                    ProjectLocus.screenCameraWidth, ProjectLocus.screenCameraHeight);
+            redTransparentSprite.draw(spriteBatch);
             messageText.draw(spriteBatch);
             countDownText.draw(spriteBatch);
             spriteBatch.end();
@@ -471,6 +503,9 @@ public class Level implements Disposable {
         countDownText.setPosition(
                 ProjectLocus.screenCameraHalfWidth - countDownText.getHalfWidth(),
                 ProjectLocus.screenCameraHalfHeight - countDownText.getHalfHeight());
+        redTransparentSprite.setPosition(0, 0);
+        redTransparentSprite.setSize(ProjectLocus.screenCameraWidth,
+                ProjectLocus.screenCameraHeight);
     }
 
     @Override

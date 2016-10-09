@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.locus.game.ProjectLocus;
 import com.locus.game.network.ShipState;
+import com.locus.game.screens.ErrorScreen;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,19 +117,23 @@ public class Hud {
     }
 
     public synchronized void update(ArrayList<ShipState> shipStateList) {
-        playerCount = shipStateList.size();
-        for (ShipState shipState : shipStateList) {
-            if (playerHudDataMap.containsKey(shipState.ID)) {
-                playerHudDataMap.get(shipState.ID).playerScore = shipState.score;
-                playerHudDataMap.get(shipState.ID).health = shipState.health;
-                playerHudDataMap.get(shipState.ID).playerScoreText.setTextFast(
-                        String.format(Locale.ENGLISH, "%04d", shipState.score));
-                if (playerHudDataMap.get(shipState.ID).isPlayer) {
-                    updateScore(shipState.score);
+        try {
+            playerCount = shipStateList.size();
+            for (ShipState shipState : shipStateList) {
+                if (playerHudDataMap.containsKey(shipState.ID)) {
+                    playerHudDataMap.get(shipState.ID).playerScore = shipState.score;
+                    playerHudDataMap.get(shipState.ID).health = shipState.health;
+                    playerHudDataMap.get(shipState.ID).playerScoreText.setTextFast(
+                            String.format(Locale.ENGLISH, "%04d", shipState.score));
+                    if (playerHudDataMap.get(shipState.ID).isPlayer) {
+                        updateScore(shipState.score);
+                    }
                 }
             }
+            positionUI();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        positionUI();
     }
 
     private void updateTimer(float delta) {

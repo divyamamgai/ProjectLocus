@@ -117,20 +117,10 @@ public class ErrorScreen implements Screen, InputProcessor {
     public boolean keyUp(int keycode) {
 
         switch (keycode) {
-            case Input.Keys.DOWN:
-                projectLocus.flingVerticalSound.play();
-                isBackPressed = true;
-                break;
-            case Input.Keys.UP:
-                projectLocus.flingVerticalSound.play();
-                isBackPressed = false;
-                break;
             case Input.Keys.ENTER:
-                if (isBackPressed) {
-                    projectLocus.screenTransitionSound.play();
-                    projectLocus.setScreen(selectModeScreen);
-                    isBackPressed = false;
-                }
+            case Input.Keys.BACK:
+                projectLocus.screenTransitionSound.play();
+                projectLocus.setScreen(selectModeScreen);
                 break;
         }
         return false;

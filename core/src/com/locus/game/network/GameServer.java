@@ -207,7 +207,9 @@ public class GameServer implements InputController.InputCallBack {
             Ship shipRemoved = level.removeShipAlive(connectionIDToShipIDMap.remove(connectionID));
             if (isGameStarted) {
                 if (playerMap.size() > 1) {
-                    server.sendToAllTCP(new Network.RemoveShip(shipRemoved.getID()));
+                    if (shipRemoved != null) {
+                        server.sendToAllTCP(new Network.RemoveShip(shipRemoved.getID()));
+                    }
                 } else {
                     allLeft();
                 }
