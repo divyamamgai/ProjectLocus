@@ -142,7 +142,7 @@ public class GameClient implements InputController.InputCallBack {
 
         } else if (object instanceof Network.PlayerJoinRequestRejected) {
 
-            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.mainMenuScreen,
+            projectLocus.setScreen(new ErrorScreen(projectLocus,
                     ((Network.PlayerJoinRequestRejected) object).reason));
             lobbyScreen.dispose();
 
@@ -182,8 +182,7 @@ public class GameClient implements InputController.InputCallBack {
     void onDisconnected() {
         stop();
         if (!isGameEnded) {
-            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.mainMenuScreen,
-                    "Host Disconnected"));
+            projectLocus.setScreen(new ErrorScreen(projectLocus, "Host Has Disconnected"));
             lobbyScreen.dispose();
         }
     }

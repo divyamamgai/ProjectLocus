@@ -69,7 +69,6 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     }
 
-    public MainMenuScreen mainMenuScreen;
     private float backgroundMovementAngleRad;
     private ProjectLocus projectLocus;
     private OrthographicCamera foregroundCamera, backgroundCamera;
@@ -137,7 +136,7 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
         if (!isGameToBeStarted) {
             this.startGameIn = in;
             isGameToBeStarted = true;
-            projectLocus.countdownSound.play();
+            projectLocus.countdownMusic.play();
         }
     }
 
@@ -145,14 +144,12 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     }
 
-    LobbyScreen(ProjectLocus projectLocus, MainMenuScreen mainMenuScreen,
-                LobbyScreen.Type type) {
+    LobbyScreen(ProjectLocus projectLocus, LobbyScreen.Type type) {
 
         this.projectLocus = projectLocus;
-        this.mainMenuScreen = mainMenuScreen;
         this.type = type;
 
-        backgroundMovementAngleRad = mainMenuScreen.backgroundMovementAngleRad;
+        backgroundMovementAngleRad = projectLocus.mainMenuScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -577,9 +574,9 @@ public class LobbyScreen implements Screen, InputProcessor, GestureDetector.Gest
                         projectLocus.gameClient.stop();
                         break;
                 }
-                mainMenuScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                projectLocus.mainMenuScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(mainMenuScreen);
+                projectLocus.setScreen(projectLocus.mainMenuScreen);
                 break;
         }
         return false;

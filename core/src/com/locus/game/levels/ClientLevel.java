@@ -248,7 +248,7 @@ public class ClientLevel {
                 outOfLevelTimePassed += delta;
                 if (outOfLevelTimePassed >= 1f && !isPlayerDyingSoundPlaying) {
                     try {
-                        projectLocus.dyingSound.play();
+                        projectLocus.dyingMusic.play();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -276,7 +276,7 @@ public class ClientLevel {
                 outOfLevelTimePassed = 0;
                 isPlayerDyingSoundPlaying = false;
                 try {
-                    projectLocus.dyingSound.stop();
+                    projectLocus.dyingMusic.stop();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

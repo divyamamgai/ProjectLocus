@@ -26,12 +26,9 @@ public class ErrorScreen implements Screen, InputProcessor {
     private OrthographicCamera foregroundCamera;
     private boolean isBackPressed;
     private InputMultiplexer inputMultiplexer;
-    private MainMenuScreen mainMenuScreen;
 
-    public ErrorScreen(ProjectLocus projectLocus, MainMenuScreen mainMenuScreen,
-                       String errorString) {
+    public ErrorScreen(ProjectLocus projectLocus, String errorString) {
         this.projectLocus = projectLocus;
-        this.mainMenuScreen = mainMenuScreen;
 
         errorText = new Text(projectLocus.font72, "ERROR");
         backText = new Text(projectLocus.font32, "BACK");
@@ -120,7 +117,7 @@ public class ErrorScreen implements Screen, InputProcessor {
             case Input.Keys.ENTER:
             case Input.Keys.BACK:
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(mainMenuScreen);
+                projectLocus.setScreen(projectLocus.mainMenuScreen);
                 break;
         }
         return false;
@@ -146,7 +143,7 @@ public class ErrorScreen implements Screen, InputProcessor {
         if (isBackPressed) {
             projectLocus.screenTransitionSound.play();
             isBackPressed = false;
-            projectLocus.setScreen(mainMenuScreen);
+            projectLocus.setScreen(projectLocus.mainMenuScreen);
         }
         return false;
     }

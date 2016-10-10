@@ -210,7 +210,7 @@ public class InputController implements InputProcessor, GestureDetector.GestureL
     public boolean tap(float x, float y, int count, int button) {
         Vector3 touchPosition = new Vector3(x, y, 0);
         camera.unproject(touchPosition);
-        if (count >= 1 && count <= 2) {
+        if (count == 1) {
             tapXCoordinate = x;
             tapYCoordinate = y;
             if (touchPosition.x > 0) {

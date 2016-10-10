@@ -98,7 +98,7 @@ public class Bullet extends Sprite {
                     sound = level.getProjectLocus().secondaryBulletFighterSound;
                     break;
                 case SuperSonic:
-                    sound = level.getProjectLocus().secondaryBulletSupersonicSound;
+                    sound = level.getProjectLocus().secondaryBulletSuperSonicSound;
                     break;
                 case Bomber:
                     sound = level.getProjectLocus().secondaryBulletBomberSound;

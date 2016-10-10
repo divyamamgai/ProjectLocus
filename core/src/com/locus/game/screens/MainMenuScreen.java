@@ -269,12 +269,11 @@ public class MainMenuScreen implements Screen, InputProcessor, GestureDetector.G
         switch (selectedMenuOption) {
             case 0:
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(new LobbyScreen(projectLocus, this, LobbyScreen.Type.Host));
+                projectLocus.setScreen(new LobbyScreen(projectLocus, LobbyScreen.Type.Host));
                 break;
             case 1:
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(new LobbyScreen(projectLocus, this,
-                        LobbyScreen.Type.Client));
+                projectLocus.setScreen(new LobbyScreen(projectLocus, LobbyScreen.Type.Client));
                 break;
             case 2:
                 projectLocus.screenTransitionSound.play();

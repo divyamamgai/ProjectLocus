@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.locus.game.network.GameClient;
 import com.locus.game.network.GameServer;
 import com.locus.game.screens.LoadingScreen;
+import com.locus.game.screens.MainMenuScreen;
 import com.locus.game.sprites.bullets.BulletLoader;
 import com.locus.game.sprites.entities.EntityLoader;
 import com.locus.game.sprites.entities.Ship;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 
 public class ProjectLocus extends Game implements Disposable {
 
-    public static final boolean isBulletSoundEnabled = false;
+    public static final boolean isBulletSoundEnabled = true;
 
     // GRAVITY in metres/seconds^2
     public static final Vector2 GRAVITY = new Vector2(0, 0);
@@ -92,10 +93,12 @@ public class ProjectLocus extends Game implements Disposable {
     public Ship.Property playerShipProperty;
     public GameServer gameServer;
     public GameClient gameClient;
-    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic;
+    public Music lobbyScreenBackgroundMusic, screenBackgroundMusic, playScreenBackgroundMusic,
+            dyingMusic, countdownMusic;
     public Sound flingVerticalSound, flingHorizontalSound, screenTransitionSound,
             primaryBulletSound, secondaryBulletBomberSound, secondaryBulletFighterSound,
-            secondaryBulletSupersonicSound, dyingSound, countdownSound;
+            secondaryBulletSuperSonicSound;
+    public MainMenuScreen mainMenuScreen;
 
     @Override
     public void create() {
@@ -138,6 +141,9 @@ public class ProjectLocus extends Game implements Disposable {
             gameServer.stop();
         if (gameClient != null)
             gameClient.stop();
+        if (mainMenuScreen != null) {
+            mainMenuScreen.dispose();
+        }
     }
 
 }

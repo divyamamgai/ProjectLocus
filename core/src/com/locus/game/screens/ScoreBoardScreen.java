@@ -83,7 +83,8 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
         int i = 0;
         for (ShipState shipState : shipStateList) {
             playerResultList.add(
-                    new PlayerResultData(lobbyScreen.playerDisplayList.get(i).getShipSprite(),
+                    new PlayerResultData(
+                            lobbyScreen.playerDisplayList.get(i).getShipSprite(),
                             new Text(projectLocus.font24,
                                     String.format(Locale.ENGLISH, "%01d", (i + 1))),
                             new Text(projectLocus.font24,
@@ -260,7 +261,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                     Gdx.app.log("Sound Error", "Error - " + e.toString());
                 }
                 projectLocus.screenTransitionSound.play();
-                projectLocus.setScreen(lobbyScreen.mainMenuScreen);
+                projectLocus.setScreen(projectLocus.mainMenuScreen);
                 lobbyScreen.dispose();
                 break;
         }
@@ -288,7 +289,7 @@ public class ScoreBoardScreen implements Screen, InputProcessor, GestureDetector
                 Gdx.app.log("Sound Error", "Error - " + e.toString());
             }
             projectLocus.screenTransitionSound.play();
-            projectLocus.setScreen(lobbyScreen.mainMenuScreen);
+            projectLocus.setScreen(projectLocus.mainMenuScreen);
             lobbyScreen.dispose();
         }
         return false;

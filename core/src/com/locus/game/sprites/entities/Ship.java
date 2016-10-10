@@ -49,7 +49,8 @@ public class Ship extends Entity implements InputController.InputCallBack {
     private Ship.Type type;
     private ShipState shipState;
 
-    private short primaryBulletCount, secondaryBulletCount;
+    private short primaryBulletCount, primaryBulletFireRate, secondaryBulletCount,
+            secondaryBulletFireRate;
     private Bullet.Type primaryBulletType;
     private Bullet.Type secondaryBulletType;
 
@@ -81,6 +82,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
         update();
 
         primaryBulletType = Bullet.Type.Normal;
+        primaryBulletFireRate = level.getBulletLoader().get(primaryBulletType).fireRate;
         switch (type) {
             case Fighter:
                 secondaryBulletType = Bullet.Type.Fighter;
@@ -92,6 +94,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                 secondaryBulletType = Bullet.Type.Bomber;
                 break;
         }
+        secondaryBulletFireRate = level.getBulletLoader().get(secondaryBulletType).fireRate;
         bulletPosition = new Vector2();
         primaryBulletCount = secondaryBulletCount = 0;
 
@@ -175,7 +178,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
-        } else if (primaryBulletCount >= 14) {
+        } else if (primaryBulletCount >= primaryBulletFireRate) {
             primaryBulletCount = -1;
         }
         primaryBulletCount++;
@@ -190,7 +193,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
-        } else if (secondaryBulletCount >= 30) {
+        } else if (secondaryBulletCount >= secondaryBulletFireRate) {
             secondaryBulletCount = -1;
         }
         secondaryBulletCount++;

@@ -21,7 +21,6 @@ import com.locus.game.ProjectLocus;
 import com.locus.game.network.MoonState;
 import com.locus.game.network.PlanetState;
 import com.locus.game.network.ShipState;
-import com.locus.game.screens.MainMenuScreen;
 import com.locus.game.sprites.CollisionDetector;
 import com.locus.game.sprites.bullets.Bullet;
 import com.locus.game.sprites.bullets.BulletLoader;
@@ -95,7 +94,6 @@ public class Level implements Disposable {
     private OrthographicCamera camera, foregroundCamera;
     private ProjectLocus projectLocus;
     private Hud hud;
-    private MainMenuScreen mainMenuScreen;
     private Level.Property property;
     private boolean isMultiPlayer;
     private World world;
@@ -187,7 +185,7 @@ public class Level implements Disposable {
     }
 
     public Level(ProjectLocus projectLocus, Hud hud, OrthographicCamera foregroundCamera,
-                 MainMenuScreen mainMenuScreen, Property property, boolean isMultiPlayer) {
+                 Property property, boolean isMultiPlayer) {
 
         // Reset Entity Count
         Entity.EntityCount = 0;
@@ -195,7 +193,6 @@ public class Level implements Disposable {
         this.projectLocus = projectLocus;
         this.hud = hud;
         this.foregroundCamera = foregroundCamera;
-        this.mainMenuScreen = mainMenuScreen;
         this.property = property;
         this.isMultiPlayer = isMultiPlayer;
 
@@ -384,7 +381,7 @@ public class Level implements Disposable {
                 outOfLevelTimePassed += delta;
                 if (outOfLevelTimePassed >= 1f && !isPlayerDyingSoundPlaying) {
                     try {
-                        projectLocus.dyingSound.play();
+                        projectLocus.dyingMusic.play();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -399,7 +396,7 @@ public class Level implements Disposable {
                         player = null;
                         alivePlayerCount--;
                         if (!isMultiPlayer) {
-                            projectLocus.setScreen(mainMenuScreen);
+                            projectLocus.setScreen(projectLocus.mainMenuScreen);
                         }
                         playerIsOutOfLevel = false;
                     }
@@ -418,7 +415,7 @@ public class Level implements Disposable {
                 outOfLevelTimePassed = 0;
                 isPlayerDyingSoundPlaying = false;
                 try {
-                    projectLocus.dyingSound.stop();
+                    projectLocus.dyingMusic.stop();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -301,8 +301,7 @@ public class GameServer implements InputController.InputCallBack {
     private void allLeft() {
         if (!isGameEnded) {
             stop();
-            projectLocus.setScreen(new ErrorScreen(projectLocus, lobbyScreen.mainMenuScreen,
-                    "All Clients Disconnected"));
+            projectLocus.setScreen(new ErrorScreen(projectLocus, "All Clients Disconnected"));
             lobbyScreen.dispose();
         }
     }

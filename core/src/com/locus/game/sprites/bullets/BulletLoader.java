@@ -32,8 +32,8 @@ public class BulletLoader {
         TextureRegion textureRegion;
         float width, halfWidth, height, halfHeight, speed;
         Vector2 bodyOrigin;
-        int life;
-        public float damage;
+        short life;
+        public short damage, fireRate;
 
         Definition(TextureAtlas bulletTextureAtlas, Bullet.Type type, JsonValue bulletJson) {
 
@@ -66,9 +66,10 @@ public class BulletLoader {
             speed = bulletJson.getFloat("speed");
 
             // Set the life of the Bullets till they can travel across the World.
-            life = (int) Math.ceil(ProjectLocus.WORLD_DIAGONAL / speed);
+            life = (short) Math.ceil(ProjectLocus.WORLD_DIAGONAL / speed);
 
-            damage = bulletJson.getFloat("damage");
+            damage = bulletJson.getShort("damage");
+            fireRate = bulletJson.getShort("fireRate");
 
         }
 

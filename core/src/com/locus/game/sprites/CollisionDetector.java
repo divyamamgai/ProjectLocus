@@ -106,7 +106,7 @@ public class CollisionDetector implements ContactListener {
                                 break;
                             case Asteroid:
                                 entityA.reduceHealth(entityA.getBody().getLinearVelocity().len2()
-                                        > 900f ? 20f : 10f);
+                                        > 900f ? 50f : 25f);
                                 entityB.kill();
                                 break;
                         }
@@ -145,7 +145,7 @@ public class CollisionDetector implements ContactListener {
                         switch (entityB.getDefinition().type) {
                             case Ship:
                                 entityB.reduceHealth(entityB.getBody().getLinearVelocity().len2()
-                                        > 900f ? 20f : 10f);
+                                        > 900f ? 50f : 25f);
                             case Planet:
                             case Moon:
                             case Asteroid:
