@@ -1,6 +1,5 @@
 package com.locus.game.sprites.bullets;
 
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
@@ -8,7 +7,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Timer;
-import com.locus.game.ProjectLocus;
 import com.locus.game.levels.Level;
 import com.locus.game.sprites.entities.Ship;
 
@@ -60,7 +58,6 @@ public class Bullet extends Sprite {
 
     }
 
-    private Sound sound;
     private Timer timer;
     private Ship ship;
     private Body body;
@@ -89,24 +86,6 @@ public class Bullet extends Sprite {
         timer = new Timer();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
 
-        if (ProjectLocus.isBulletSoundEnabled) {
-            switch (type) {
-                case Normal:
-                    sound = level.getProjectLocus().primaryBulletSound;
-                    break;
-                case Fighter:
-                    sound = level.getProjectLocus().secondaryBulletFighterSound;
-                    break;
-                case SuperSonic:
-                    sound = level.getProjectLocus().secondaryBulletSuperSonicSound;
-                    break;
-                case Bomber:
-                    sound = level.getProjectLocus().secondaryBulletBomberSound;
-                    break;
-            }
-            sound.play();
-        }
-
     }
 
     public void resurrect(Ship ship, Vector2 position, float angleRad) {
@@ -123,10 +102,6 @@ public class Bullet extends Sprite {
 
         timer.clear();
         timer.scheduleTask(new BulletDieTask(this), definition.life);
-
-        if (ProjectLocus.isBulletSoundEnabled) {
-            sound.play();
-        }
 
     }
 

@@ -92,13 +92,13 @@ public class LoadingScreen implements Screen {
         assetManager.load("music/screen.mp3", Music.class);
         assetManager.load("music/lobbyScreen.mp3", Music.class);
         assetManager.load("music/gamePlay.mp3", Music.class);
-        assetManager.load("sounds/flingHorizontal.wav", Sound.class);
-        assetManager.load("sounds/flingVertical.wav", Sound.class);
-        assetManager.load("sounds/screenTransition.wav", Sound.class);
-        assetManager.load("sounds/primaryBullet.wav", Sound.class);
-        assetManager.load("sounds/secondaryBulletBomber.wav", Sound.class);
-        assetManager.load("sounds/secondaryBulletFighter.wav", Sound.class);
-        assetManager.load("sounds/secondaryBulletSuperSonic.wav", Sound.class);
+        assetManager.load("sounds/flingHorizontal.mp3", Sound.class);
+        assetManager.load("sounds/flingVertical.mp3", Sound.class);
+        assetManager.load("sounds/screenTransition.mp3", Sound.class);
+        assetManager.load("sounds/primaryBullet.mp3", Sound.class);
+        assetManager.load("sounds/secondaryBulletBomber.mp3", Sound.class);
+        assetManager.load("sounds/secondaryBulletFighter.mp3", Sound.class);
+        assetManager.load("sounds/secondaryBulletSuperSonic.mp3", Sound.class);
         assetManager.load("music/dying.mp3", Music.class);
         assetManager.load("music/countdown.mp3", Music.class);
 
@@ -182,20 +182,20 @@ public class LoadingScreen implements Screen {
             projectLocus.playScreenBackgroundMusic =
                     assetManager.get("music/gamePlay.mp3", Music.class);
             projectLocus.flingVerticalSound =
-                    assetManager.get("sounds/flingVertical.wav", Sound.class);
+                    assetManager.get("sounds/flingVertical.mp3", Sound.class);
             projectLocus.flingHorizontalSound =
-                    assetManager.get("sounds/flingHorizontal.wav", Sound.class);
+                    assetManager.get("sounds/flingHorizontal.mp3", Sound.class);
             projectLocus.screenTransitionSound =
-                    assetManager.get("sounds/screenTransition.wav", Sound.class);
+                    assetManager.get("sounds/screenTransition.mp3", Sound.class);
             if (ProjectLocus.isBulletSoundEnabled) {
-                projectLocus.primaryBulletSound = assetManager.get("sounds/primaryBullet.wav",
+                projectLocus.primaryBulletSound = assetManager.get("sounds/primaryBullet.mp3",
                         Sound.class);
                 projectLocus.secondaryBulletBomberSound =
-                        assetManager.get("sounds/secondaryBulletBomber.wav", Sound.class);
+                        assetManager.get("sounds/secondaryBulletBomber.mp3", Sound.class);
                 projectLocus.secondaryBulletFighterSound =
-                        assetManager.get("sounds/secondaryBulletFighter.wav", Sound.class);
+                        assetManager.get("sounds/secondaryBulletFighter.mp3", Sound.class);
                 projectLocus.secondaryBulletSuperSonicSound =
-                        assetManager.get("sounds/secondaryBulletSuperSonic.wav", Sound.class);
+                        assetManager.get("sounds/secondaryBulletSuperSonic.mp3", Sound.class);
             }
             projectLocus.dyingMusic = assetManager.get("music/dying.mp3", Music.class);
             projectLocus.countdownMusic = assetManager.get("music/countdown.mp3", Music.class);

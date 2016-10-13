@@ -1,8 +1,8 @@
 package com.locus.game.sprites.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Frustum;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -18,9 +18,10 @@ import com.locus.game.sprites.bullets.Bullet;
 public class ClientShip extends ClientEntity {
 
     private Vector2 bulletPosition;
-    private short primaryBulletCount, secondaryBulletCount;
-    private Bullet.Type primaryBulletType;
-    private Bullet.Type secondaryBulletType;
+    private short primaryBulletCount, primaryBulletFireRate, secondaryBulletCount,
+            secondaryBulletFireRate;
+    private Bullet.Type primaryBulletType, secondaryBulletType;
+    private Sound primaryBulletSound, secondaryBulletSound;
 
     public ClientShip(ClientLevel level, Ship.Property property, ShipState shipState) {
 
@@ -44,17 +45,23 @@ public class ClientShip extends ClientEntity {
         definition.attachFixture(body);
 
         primaryBulletType = Bullet.Type.Normal;
+        primaryBulletFireRate = level.getBulletLoader().get(primaryBulletType).fireRate;
+        primaryBulletSound = level.getProjectLocus().primaryBulletSound;
         switch (property.type) {
             case Fighter:
                 secondaryBulletType = Bullet.Type.Fighter;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletFighterSound;
                 break;
             case SuperSonic:
                 secondaryBulletType = Bullet.Type.SuperSonic;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletSuperSonicSound;
                 break;
             case Bomber:
                 secondaryBulletType = Bullet.Type.Bomber;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletBomberSound;
                 break;
         }
+        secondaryBulletFireRate = level.getBulletLoader().get(secondaryBulletType).fireRate;
         bulletPosition = new Vector2();
         primaryBulletCount = secondaryBulletCount = 0;
 
@@ -122,7 +129,8 @@ public class ClientShip extends ClientEntity {
                                                 ProjectLocus.INTERPOLATION_FACTOR * delta),
                         angleRad);
             }
-        } else if (primaryBulletCount >= 14) {
+            primaryBulletSound.play();
+        } else if (primaryBulletCount >= primaryBulletFireRate) {
             primaryBulletCount = -1;
         }
         primaryBulletCount++;
@@ -140,7 +148,8 @@ public class ClientShip extends ClientEntity {
                                                 ProjectLocus.INTERPOLATION_FACTOR * delta),
                         angleRad);
             }
-        } else if (secondaryBulletCount >= 30) {
+            secondaryBulletSound.play();
+        } else if (secondaryBulletCount >= secondaryBulletFireRate) {
             secondaryBulletCount = -1;
         }
         secondaryBulletCount++;

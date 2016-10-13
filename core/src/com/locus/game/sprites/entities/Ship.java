@@ -1,5 +1,6 @@
 package com.locus.game.sprites.entities;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Frustum;
@@ -51,8 +52,8 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
     private short primaryBulletCount, primaryBulletFireRate, secondaryBulletCount,
             secondaryBulletFireRate;
-    private Bullet.Type primaryBulletType;
-    private Bullet.Type secondaryBulletType;
+    private Bullet.Type primaryBulletType, secondaryBulletType;
+    private Sound primaryBulletSound, secondaryBulletSound;
 
     public Ship(Level level, Ship.Property property, float x, float y, float angleRad) {
 
@@ -83,15 +84,19 @@ public class Ship extends Entity implements InputController.InputCallBack {
 
         primaryBulletType = Bullet.Type.Normal;
         primaryBulletFireRate = level.getBulletLoader().get(primaryBulletType).fireRate;
+        primaryBulletSound = level.getProjectLocus().primaryBulletSound;
         switch (type) {
             case Fighter:
                 secondaryBulletType = Bullet.Type.Fighter;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletFighterSound;
                 break;
             case SuperSonic:
                 secondaryBulletType = Bullet.Type.SuperSonic;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletSuperSonicSound;
                 break;
             case Bomber:
                 secondaryBulletType = Bullet.Type.Bomber;
+                secondaryBulletSound = level.getProjectLocus().secondaryBulletBomberSound;
                 break;
         }
         secondaryBulletFireRate = level.getBulletLoader().get(secondaryBulletType).fireRate;
@@ -178,6 +183,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
+            primaryBulletSound.play();
         } else if (primaryBulletCount >= primaryBulletFireRate) {
             primaryBulletCount = -1;
         }
@@ -193,6 +199,7 @@ public class Ship extends Entity implements InputController.InputCallBack {
                         bulletPosition.set(weaponPosition).rotateRad(angleRad).add(bodyPosition),
                         angleRad);
             }
+            secondaryBulletSound.play();
         } else if (secondaryBulletCount >= secondaryBulletFireRate) {
             secondaryBulletCount = -1;
         }
