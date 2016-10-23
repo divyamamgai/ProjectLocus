@@ -56,7 +56,6 @@ class PracticePlayScreen implements Screen, InputProcessor {
     public void show() {
         try {
             if (!projectLocus.playScreenBackgroundMusic.isPlaying()) {
-                projectLocus.playScreenBackgroundMusic.setVolume(0.8f);
                 projectLocus.playScreenBackgroundMusic.setLooping(true);
                 projectLocus.playScreenBackgroundMusic.play();
             }
