@@ -1,2 +1,4 @@
 # ProjectLocus
-The effective or perceived location of something abstract. A Space Shooter Multiplayer projectLocus for Android.
+The effective or perceived location of something abstract.
+
+A multi-platform multiplayer PvP arena shooter built using technologies like Java, libGDX and KryoNet.

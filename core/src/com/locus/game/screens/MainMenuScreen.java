@@ -69,7 +69,7 @@ public class MainMenuScreen implements Screen, InputProcessor, GestureDetector.G
     private float menuStartPositionY;
 
     private ProjectLocus projectLocus;
-    private SelectPlayerScreen selectPlayerScreen;
+    private ShipSelectScreen shipSelectScreen;
     private OrthographicCamera foregroundCamera, backgroundCamera;
     private TiledMapRenderer tiledMapRenderer;
     private Sprite logo;
@@ -78,12 +78,12 @@ public class MainMenuScreen implements Screen, InputProcessor, GestureDetector.G
     private InputMultiplexer inputMultiplexer;
     private boolean toSubmit, isPreviousMenuOptionSelected, isNextMenuOptionSelected;
 
-    MainMenuScreen(ProjectLocus projectLocus, SelectPlayerScreen selectPlayerScreen) {
+    MainMenuScreen(ProjectLocus projectLocus, ShipSelectScreen shipSelectScreen) {
 
         this.projectLocus = projectLocus;
-        this.selectPlayerScreen = selectPlayerScreen;
+        this.shipSelectScreen = shipSelectScreen;
         toSubmit = isPreviousMenuOptionSelected = isNextMenuOptionSelected = false;
-        backgroundMovementAngleRad = selectPlayerScreen.backgroundMovementAngleRad;
+        backgroundMovementAngleRad = shipSelectScreen.backgroundMovementAngleRad;
 
         foregroundCamera = new OrthographicCamera(ProjectLocus.screenCameraWidth,
                 ProjectLocus.screenCameraHeight);
@@ -283,8 +283,8 @@ public class MainMenuScreen implements Screen, InputProcessor, GestureDetector.G
                 break;
             case 3:
                 projectLocus.screenTransitionSound.play();
-                selectPlayerScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
-                projectLocus.setScreen(selectPlayerScreen);
+                shipSelectScreen.backgroundMovementAngleRad = backgroundMovementAngleRad;
+                projectLocus.setScreen(shipSelectScreen);
                 break;
             case 4:
                 Gdx.app.exit();

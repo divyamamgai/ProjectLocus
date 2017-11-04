@@ -29,7 +29,7 @@ import java.util.HashMap;
  * Player Select Screen
  */
 
-class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
+class ShipSelectScreen implements Screen, InputProcessor, GestureDetector.GestureListener {
 
     private static final float SHIP_SPRITE_SCALE = 10f, SIDE_PADDING = 25f, BOTTOM_PADDING = 44f;
 
@@ -62,7 +62,7 @@ class SelectPlayerScreen implements Screen, InputProcessor, GestureDetector.Gest
 
     private int selectedShipTypeIndex, selectedShipColorIndex;
 
-    SelectPlayerScreen(ProjectLocus projectLocus, float backgroundMovementAngleRad) {
+    ShipSelectScreen(ProjectLocus projectLocus, float backgroundMovementAngleRad) {
 
         this.projectLocus = projectLocus;
         this.backgroundMovementAngleRad = backgroundMovementAngleRad;

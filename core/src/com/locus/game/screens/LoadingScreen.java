@@ -224,7 +224,7 @@ public class LoadingScreen implements Screen {
 
             projectLocus.entityLoader = new EntityLoader(projectLocus);
 
-            projectLocus.setScreen(new SelectPlayerScreen(projectLocus, backgroundMovementAngleRad));
+            projectLocus.setScreen(new ShipSelectScreen(projectLocus, backgroundMovementAngleRad));
 //            projectLocus.setScreen(new PauseScreen(projectLocus));
 //            projectLocus.setScreen(new ErrorScreen(projectLocus, "Hello Error"));
 
