@@ -110,7 +110,7 @@ public class GameServer implements InputController.InputCallBack {
                 ship.fire(controllerState.isPrimaryBulletEnabled,
                         controllerState.isSecondaryBulletEnabled,
                         controllerState.doPrimaryReset, controllerState.doSecondaryReset);
-                server.sendToAllExceptTCP(connectionID, new Network.FireState(
+                server.sendToAllExceptUDP(connectionID, new Network.FireState(
                         ship.getID(),
                         controllerState.isPrimaryBulletEnabled,
                         controllerState.isSecondaryBulletEnabled,
@@ -127,12 +127,12 @@ public class GameServer implements InputController.InputCallBack {
 
             if (lobbyScreen.isGameStarted()) {
 
-                connection.sendTCP(new Network.PlayerJoinRequestRejected(
+                connection.sendUDP(new Network.PlayerJoinRequestRejected(
                         "Game Already Started"));
 
             } else if (playerMap.size() == ProjectLocus.MAX_PLAYER_COUNT) {
 
-                connection.sendTCP(new Network.PlayerJoinRequestRejected(
+                connection.sendUDP(new Network.PlayerJoinRequestRejected(
                         "Lobby Is Full"));
 
             } else {
@@ -141,7 +141,7 @@ public class GameServer implements InputController.InputCallBack {
 
                 if (playerMap.containsKey(connectionID)) {
 
-                    connection.sendTCP(new Network.PlayerJoinRequestRejected(
+                    connection.sendUDP(new Network.PlayerJoinRequestRejected(
                             "Already Existing Client #" + connectionID));
 
                 } else {
@@ -150,7 +150,7 @@ public class GameServer implements InputController.InputCallBack {
 
                     sendUpdateLobby();
 
-                    connection.sendTCP(
+                    connection.sendUDP(
                             new Network.LevelProperty(lobbyScreen.getLevelProperty()));
 
                 }
@@ -169,7 +169,7 @@ public class GameServer implements InputController.InputCallBack {
 
             } else {
 
-                connection.sendTCP(new Network.Error("Player Not Found"));
+                connection.sendUDP(new Network.Error("Player Not Found"));
 
             }
 

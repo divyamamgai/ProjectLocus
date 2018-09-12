@@ -110,7 +110,7 @@ public class GameClient implements InputController.InputCallBack {
     }
 
     void onConnected() {
-        client.sendTCP(new Network.PlayerJoinRequest(projectLocus.playerShipProperty));
+        client.sendUDP(new Network.PlayerJoinRequest(projectLocus.playerShipProperty));
     }
 
     void onReceived(Connection connection, Object object) {
@@ -188,11 +188,11 @@ public class GameClient implements InputController.InputCallBack {
     }
 
     public void sendReadyState(boolean isReady) {
-        client.sendTCP(new Network.PlayerReadyRequest(isReady));
+        client.sendUDP(new Network.PlayerReadyRequest(isReady));
     }
 
     public void sendShipKill(short ID) {
-        client.sendTCP(new Network.ShipKill(ID));
+        client.sendUDP(new Network.ShipKill(ID));
     }
 
     public void stop() {
@@ -228,7 +228,7 @@ public class GameClient implements InputController.InputCallBack {
         controllerState.doPrimaryReset = doPrimaryReset;
         controllerState.doSecondaryReset = doSecondaryReset;
 
-        client.sendTCP(controllerState);
+        client.sendUDP(controllerState);
 
         clientShip.fire(isPrimaryBulletEnabled, isSecondaryBulletEnabled,
                 doPrimaryReset, doSecondaryReset);

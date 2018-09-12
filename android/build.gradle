@@ -1,6 +1,6 @@
 android {
-    buildToolsVersion "23.0.3"
-    compileSdkVersion 23
+    buildToolsVersion '25.0.2'
+    compileSdkVersion 26
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -16,8 +16,8 @@ android {
     }
     defaultConfig {
         applicationId "com.locus.projectLocus"
-        minSdkVersion 8
-        targetSdkVersion 23
+        minSdkVersion 18
+        targetSdkVersion 26
     }
     productFlavors {
         JellyBean {
@@ -35,6 +35,10 @@ android {
         Marshmallow {
             minSdkVersion 23
             targetSdkVersion 23
+        }
+        Oreo {
+            minSdkVersion 26
+            targetSdkVersion 26
         }
     }
 }
